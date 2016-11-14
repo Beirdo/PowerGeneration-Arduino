@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include <avr/pgmspace.h>
+#include <avr/eeprom.h>
 #include <avr/sleep.h>
 #include <string.h>
 
@@ -49,7 +49,7 @@
 #define LCD_X     84
 #define LCD_Y     48
 
-static const byte PROGMEM ASCII[][5] =
+static const byte EEMEM ASCII[][5] =
 {
   {0x00, 0x00, 0x00, 0x00, 0x00}, // 20
   {0x00, 0x00, 0x5f, 0x00, 0x00}, // 21 !
@@ -165,9 +165,7 @@ void LcdCharacter(char character)
     if (last_char == 0x00) {
       memset(char_cache, 0x00, 5);
     } else {
-      for (int i = 0; i < 5; i++) {
-        char_cache[i] = pgm_read_byte_near(&ASCII[last_char][i]);
-      }
+      eeprom_read_block(char_cache, ASCII[last_char], 5);
     }
   }
 
@@ -263,10 +261,14 @@ void drawLine(void)
 #define ROW_COUNT (LCD_Y / 8)
 typedef char screen_line_t[COL_COUNT];
 screen_line_t screen_lines[ROW_COUNT];
+char show_temperature;
+int swap_count;
 
 void ScreenInitialize(void)
 {
   memset(screen_lines, 0x00, COL_COUNT * ROW_COUNT);
+  show_temperature = 0;
+  swap_count = 0;
 }
 
 void ScreenRefresh(void)
@@ -278,6 +280,11 @@ void ScreenRefresh(void)
     }
   }
 }
+
+static const char temp_string[] = "Temp";
+static const char *line_string[4] = {
+  "+5V", "IN", "OUT", "+15V"
+};
 
 int readVcc() {
   // Read 1.1V reference against AVcc
@@ -301,7 +308,7 @@ int readVcc() {
   return (int)result; // Vcc in millivolts
 }
 
-char readAvrTemperature(void) {
+int readAvrTemperature(void) {
   // set the reference to 1.1V and the measurement to the internal temperature sensor
   ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
 
@@ -317,10 +324,10 @@ char readAvrTemperature(void) {
   // 242mV (225 measured) = -45C, 380mV (353 measured) = 85C
   // use linear regression to convert from measured value to celcius
   result -= 225;
-  result *= 120;
+  result *= 1200; // * 120, have 0.1 deg
   result >>= 7;   // /= 128
-  result -= 45;
-  return (char)result;
+  result -= 450;
+  return result;
 }
 
 
@@ -374,7 +381,7 @@ long voltages[4];
 long currents[4];
 long powers[4];
 int light;
-char temperature;
+int temperature;
 
 long prev_v_in;
 long prev_i_in;
@@ -512,6 +519,8 @@ void regulateOutput(void)
 #define LO_BYTE(x)  ((x) & 0xFF)
 #define LOOP_CS_BITS  (LOOP_PRESCALER == 1 ? (_BV(CS10)) : (LOOP_PRESCALER == 8 ? (_BV(CS11)) : (LOOP_PRESCALER == 64 ? (_BV(CS11) | _BV(CS10)) : \
                        (LOOP_PRESCALER == 256 ? (_BV(CS12)) : (LOOP_PRESCALER == 1024 ? (_BV(CS12) | _BV(CS10)) : 0)))))
+#define SWAP_TIME 2000
+#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
 void TimerInitialize(void)
 {
@@ -550,8 +559,139 @@ void TimerDisable(void)
   TCCR1B = _BV(WGM12);
 }
 
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect)
+{
   TimerDisable();
+  swap_count++;
+}
+
+#define digit(x)  ((char)(((x) + 0x30) & 0xFF))
+#define split_value(value, part, scale)  do { part = value % scale;  value = value / scale; } while(0)
+
+void printTemperature(int value, char *buf, char maxlen)
+{
+  char index = maxlen - 1;
+
+  // Temperatures don't need autoscaling
+  char part;
+  char sign = (value < 0 ? '-' : ' ');
+  value = (value < 0 ? -value : value);
+
+  split_value(value, part, 10);
+  buf[index--] = digit(part);
+  buf[index--] = '.';
+
+  for (char i = 0; index >= 0 && (value != 0 || i == 0); i++) {
+    split_value(value, part, 10);
+    buf[index--] = digit(part);
+  }
+
+  buf[index] = sign;
+}
+
+void printValue(long value, char maxunits, char *buf, char maxlen)
+{
+  char index = maxlen - 1;
+
+  // Power, voltage, current do need autoscaling
+  if (value == 0) {
+    buf[index--] = digit(0);
+    return;
+  }
+
+  long tempdigit;
+  char digitcount = 0;
+
+  for (tempdigit = value; tempdigit; tempdigit /= 10) {
+    digitcount++;
+  }
+
+  char units = maxunits - (digitcount / 3);;
+
+  switch (units) {
+    case 1:
+      buf[index--] = 'm';
+      break;
+    case 2:
+      buf[index--] = 'u';
+      break;
+    case 0:
+      break;
+    default:
+      buf[index--] = digit(0);
+      return;
+  }
+
+  char digits = digitcount % 3;
+  digits = (digits ? digits : 3);
+
+  char decimals = (index - 1 <= digits ? (index - digits) : 0);
+  digits += decimals;
+
+  long scale;
+  for (scale = 1, digitcount = 0; digitcount < digits; scale *= 10) {
+    digitcount++;
+  }
+
+  value /= scale;
+  char newdigit;
+  for (; digits > 0; digits--) {
+    split_value(value, newdigit, 10);
+    buf[index--] = digit(newdigit);
+    if (decimals) {
+      decimals--;
+      if (!decimals) {
+        buf[index--] = '.';
+      }
+    }
+  }
+}
+
+void updateScreenStrings(void)
+{
+  if (swap_count >= SWAP_COUNT) {
+    show_temperature = 1 - show_temperature;
+    swap_count = 0;
+  }
+
+  for (int i = 0; i < 6; i++) {
+    memset(screen_lines[i], 0x00, COL_COUNT);
+  }
+
+  if (show_temperature) {
+    strcpy(screen_lines[0], temp_string);
+    printTemperature(temperature, &screen_lines[0][5], 5);
+    screen_lines[0][10] = 0x7F;  // °
+    screen_lines[0][11] = 'C';
+  } else {
+    strcpy(screen_lines[0], line_string[0]);
+    printValue(powers[TEST_5V], 2, &screen_lines[0][6], 5);
+    screen_lines[0][11] = 'W';
+  }
+
+  strcpy(screen_lines[1], line_string[1]);
+  printValue(powers[TEST_VIN], 2, &screen_lines[1][6], 5);
+  screen_lines[1][11] = 'W';
+
+  printValue(voltages[TEST_VIN], 1, screen_lines[2], 5);
+  screen_lines[2][5] = 'V';
+
+  printValue(currents[TEST_VIN], 2, &screen_lines[2][7], 4);
+  screen_lines[2][11] = 'A';
+
+  strcpy(screen_lines[3], line_string[2]);
+  printValue(powers[TEST_MPPT], 2, &screen_lines[3][6], 5);
+  screen_lines[3][11] = 'W';
+
+  printValue(voltages[TEST_MPPT], 1, screen_lines[4], 5);
+  screen_lines[4][5] = 'V';
+
+  printValue(currents[TEST_MPPT], 2, &screen_lines[4][7], 4);
+  screen_lines[4][11] = 'A';
+
+  strcpy(screen_lines[5], line_string[3]);
+  printValue(powers[TEST_15V], 1000000, &screen_lines[5][6], 5);
+  screen_lines[5][11] = 'W';
 }
 
 void setup(void)
@@ -578,6 +718,8 @@ void loop(void)
   updateLedPwm();
   mppt();
   regulateOutput();
+  updateScreenStrings();
+  ScreenRefresh();
 
   // Go to sleep, get woken up by the timer
   sleep_enable();

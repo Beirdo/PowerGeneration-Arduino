@@ -6,10 +6,8 @@
 
 #include <SD.h>
 
-#include <nRF24L01.h>
-#include <printf.h>
-#include <RF24.h>
-#include <RF24_config.h>
+#include "rflink.h"
+
 
 
 #include <Adafruit_GFX.h>
@@ -37,11 +35,13 @@ void printAddress(DeviceAddress deviceAddress)
 }
 
 
+#define RF_CS_PIN 4
+#define RF_CE_PIN 5
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial.println("DS12B20 Searchh");
+  Serial.println("DS12B20 Search");
     
   sensors.begin();
   
@@ -54,6 +54,8 @@ void setup() {
     printAddress(currAddress);
     Serial.println();  
   }
+
+  RFLinkInitialize(2, 0xFF);
 }
 
 void loop() {

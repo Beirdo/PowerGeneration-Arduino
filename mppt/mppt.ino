@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <SPI.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>

@@ -20,7 +20,10 @@ Ardiuno pins
 17 - PC3 - A3 - ADC_V_VMPP - IN (A)
 18 - PC4 - A4 - ADC_I_VMPP - IN (A)
 19 - PC5 - A5 - ADC_V_18V - IN (A)
-20 - PE2 - A6 - ADC_I_18V - IN (A)
-21 - PE3 - A7 - ADC_LIGHT - IN (A)
-22 - PE0 - unused
-23 - PE1 - unused
+20 - PB6 - unused
+21 - PB7 - unused
+22 - PC6 - /RESET
+23 - PE2 - A6 - ADC_I_18V - IN (A)
+24 - PE3 - A7 - ADC_LIGHT - IN (A)
+25 - PE0 - unused
+26 - PE1 - unused

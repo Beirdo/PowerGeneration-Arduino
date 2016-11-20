@@ -1,6 +1,10 @@
+#include <EEPROM.h>
+#include <avr/eeprom.h>
+
 #include <avr/sleep.h>
 #include <string.h>
 #include "nokialcd.h"
+#include "rflink.h"
 
 #define CLOCK_FREQUENCY 8000000
 
@@ -11,9 +15,9 @@
 // 4 - PD4 - IO - unused
 // 5 - PD5 - OC0B - PWM_CONV2
 // 6 - PD6 - OC0A - PWM_CONV1
-// 7 - PD7 - IO - unused
+// 7 - PD7 - IO - RF_IRQ
 
-// 8 - PB0 - IO - unused
+// 8 - PB0 - IO - RF_CE
 // 9 - PB1 - IO - LCD_DC
 // 10 - PB2 - SS - SS
 // 11 - PB3 - MOSI - MOSI
@@ -27,7 +31,7 @@
 // 18/A4 - PC4 - ADC4 - ADC_I_VMPP
 // 19/A5 - PC5 - ADC5 - ADC_V_15V
 
-// 20 - PB6 - IO - unused
+// 20 - PB6 - IO - RF_CS
 // 21 - IO - LCD_RST
 
 // 22 - PC6 - RESET - RESET
@@ -35,6 +39,7 @@
 // A6 - ADC6 - ADC_I_15V
 // A7 - ADC7 - ADC_LIGHT
 
+static const uint8_t EEMEM rf_link_id = 0;
 
 static const char temp_string[] = "Temp";
 static const char *line_string[4] = {
@@ -449,17 +454,23 @@ void updateScreenStrings(void)
   screen_lines[5][11] = 'W';
 }
 
+#define RF_CE_PIN 8
+#define RF_CS_PIN 20
+
 void setup(void)
 {
   // Setup sleep mode to idle mode
   SMCR = 0x00;
 
+  uint8_t rf_id = EEPROM.read(rf_link_id);
+  
   LcdInitialize();
   LcdClear();
   ScreenInitialize();
   ScreenRefresh();
   TimerInitialize();
   PWMInitialize();
+  RFLinkInitialize(7, rf_id);
 }
 
 void loop(void)

@@ -1,0 +1,173 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{letterpaper} % or letterpaper (US) or a5paper or....
+% \geometry{margin=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+\usepackage{mathtools}
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{0pt} % customise the layout...
+\lhead{}\chead{}\rhead{}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+\usepackage{sectsty}
+\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% ToC (table of contents) APPEARANCE
+\usepackage[nottoc,notlof,notlot]{tocbibind} % Put the bibliography in the ToC
+\usepackage[titles,subfigure]{tocloft} % Alter the style of the Table of Contents
+\renewcommand{\cftsecfont}{\rmfamily\mdseries\upshape}
+\renewcommand{\cftsecpagefont}{\rmfamily\mdseries\upshape} % No bold!
+
+%%% END Article customizations
+
+%%% The "real" document content comes below...
+
+\title{Design Calculations}
+\author{Gavin Hurlbut}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+\section{Battery Charger Part Values}
+See http://www.ti.com/lit/ds/symlink/bq24450.pdf
+
+\[ V_{th} = 10.5V (1.75V/cell) \]
+\[ V_{float} = 13.8V (2.30V/cell) \]
+\[ V_{boost} = 14.7V (2.45V/cell) \]
+\begin{align*}
+I_{max-chg} &= 0.15C \\
+&= 1.35A @ 9Ah \\
+&= 3A @ 20Ah
+\end{align*}
+\[ V_{bat,min} = 8V \]
+\[ I_{trickle} = 10mA \]
+\[ V_{ref} = 2.30V \]
+
+\begin{align*}
+R_c &= \frac{V_{ref}}{50\mu A} \\
+&= \frac{2.30V}{50\mu A} \\ 
+&= 46k\Omega \\
+&\simeq 46.4k\Omega \pm 1\% \tag{1}
+\end{align*}
+
+\begin{align*}
+V_{float} &= V_{ref}\left(\frac{R_a + R_b + R_c}{R_c}\right) \\
+\frac{V_{float}}{V_{ref}} &= \frac{R_a + R_b + R_c}{R_c} \\
+R_c \left(\frac{V_{float}}{V_{ref}}\right) &= R_a + R_b + R_c \\
+R_a + R_b &= R_c\left(\frac{V_{float}}{V_{ref}} - 1\right) \\
+&= R_c\left(\frac{13.8V}{2.30V} - 1\right) \\
+&= 5R_c \\
+&= 5\left(46.4k\Omega\right) \\
+&= 232k\Omega \tag{2}
+\end{align*}
+
+\begin{align*}
+V_{boost} &= V_{ref}\left(\frac{R_a + R_b + R_c \parallel R_d}{R_c \parallel R_d}\right) \\
+\left(R_c \parallel R_d\right)\left(\frac{V_{boost}}{V_{ref}}\right) &= R_a + R_b + R_c \parallel R_d \\
+\left(R_c \parallel R_d\right)\left(\frac{V_{boost}}{V_{ref}} - 1\right) &= R_a + R_b \\
+R_c \parallel R_d &= \frac{R_a + R_b}{\frac{V_{boost}}{V_{ref}} - 1} \\
+&= \frac{232k\Omega}{\frac{14.7V}{2.3V} - 1} \\
+&= 43.03k\Omega \\
+\frac{1}{\frac{1}{R_c} + \frac{1}{R_d}} &= 43.03k\Omega \\
+\frac{1}{R_c} + \frac{1}{R_d} &= \frac{1}{43.03k\Omega} \\
+\frac{1}{R_d} &= \frac{1}{43.03k\Omega} - \frac{1}{R_c} \\
+R_d &= \frac{1}{\frac{1}{43.03k\Omega} - \frac{1}{R_c}} \\
+&= \frac{1}{\frac{1}{43.03k\Omega} - \frac{1}{46.4k\Omega}} \\
+&= 592.46k\Omega \\
+&\simeq 590k\Omega \pm 1\% \tag{3} \\
+\\
+R_c \parallel R_d &= 46.4k\Omega \parallel 590k\Omega \text{ (using nearest resistor values)} \\
+&= 43.017k\Omega \tag{4}
+\end{align*}
+
+\begin{align*}
+V_{th} &= V_{ref} \left(\frac{R_a + R_b +  R_c \parallel R_d}{R_b + R_c \parallel R_d}\right) \\
+\left(R_b + R_c \parallel R_d\right) \left(\frac{V_{th}}{V_{ref}}\right) &= R_a + R_b + R_c \parallel R_d \\
+R_b \left(\frac{V_{th}}{V_{ref}}\right) &= R_a + R_b + \left(R_c \parallel R_d\right) \left(1 - \frac{V_{th}}{V_{ref}}\right) \\
+R_b &= \left(\frac{V_{ref}}{V_{th}}\right) \left(R_a + R_b + \left(R_c \parallel R_d\right) \left(1 - \frac{V_{th}}{V_{ref}}\right)\right) \\
+&= \left(\frac{2.30V}{10.5V}\right) \left(232k\Omega + \left(43.017k\Omega\right) \left(1 - \frac{10.5V}{2.30V}\right)\right) \\
+&= 17.225k\Omega \\
+&\simeq 17.4k\Omega \pm 1\% \tag{5} \\
+\\
+R_a &= 232k\Omega - 17.4k\Omega \\
+&= 214.6k\Omega \\
+&\simeq 215k\Omega \pm 1\% \tag{6}
+\end{align*}
+
+\begin{align*}
+I_{pre} = I_{trickle} &= \frac{V_{in} - V_{pre} - V_{Dext} - V_{bat,min}}{R_t} \\
+R_t &=  \frac{V_{in} - V_{pre} - V_{Dext} - V_{bat,min}}{I_{trickle}} \\
+&= \frac{18V - 2V - 0.7V - 8V}{10mA} \\
+&= 730\Omega \\
+&\simeq 732\Omega \pm 1\% \tag{7}
+\end{align*}
+
+\begin{align*}
+I_{max-chg} &= \frac{V_{ilim}}{R_{sens}} \\
+R_{sens} &= \frac{V_{ilim}}{I_{max-chg}} \\
+&= \frac{250mV}{1.35A} \text{ (@ 9Ah)} \\
+&= 185m\Omega \\
+&\simeq 183m\Omega \pm 1\% \tag{8} \\
+\\
+R_{sense} &= \frac{250mV}{3A} \text{ (@ 20Ah)} \\
+&= 83.3m\Omega \\
+&\simeq 84.5m\Omega \pm 1\% \tag{9}
+\end{align*}
+
+\begin{align*}
+R_p &= \frac{V_{in,min} - 0.7V}{I_{max-chg}} \times h_{fe1,min} \times h_{fe2,min} \\
+&= \frac{18V - 0.7V}{1.35A} \times 150 \times 180 \text{ (@ 9Ah)} \\
+&= 346k\Omega \\
+&\simeq 348k\Omega \pm 1\% \tag{10} \\
+\\
+R_p &= \frac{18V - 0.7V}{3A} \times 150 \times 180 \text{ (@ 20Ah)} \\
+&= 115.7k\Omega \\
+&\simeq 118k\Omega \pm 1\% \tag{11}
+\end{align*}
+
+\begin{align*}
+P_d &= I_{max-chg}\left(\frac{V_{in,max} - 0.7V}{h_{fe1,max} \times h_{fe2,max}}\right) - R_p\left(\frac{I_{max-chg}}{h_{fe1,max}\times h_{fe2,max}}\right)^2 \\
+&= 1.35A\left(\frac{18V - 0.7V}{400 \times 380}\right) - 348k\Omega \left(\frac{1.35A}{400 \times 380}\right)^2 \text{ (@ 9Ah)} \\
+&= 153.65\mu W - 27.45\mu W \\
+&= 126.20\mu W \tag{12} \\
+\\
+P_d &= 3A\left(\frac{18V - 0.7V}{400 \times 380}\right) - 118k\Omega \left(\frac{3A}{400 \times 380}\right)^2 \text{ (@ 20Ah)} \\
+&= 341.45\mu W - 45.97\mu W \\
+&= 295.48\mu W \tag{13}
+\end{align*}
+
+\end{document}

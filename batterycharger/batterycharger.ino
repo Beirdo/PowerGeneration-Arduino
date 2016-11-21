@@ -45,16 +45,16 @@ static const char *line_string[4] = {
 void convertADCReadings()
 {
   voltages[TEST_3V3] = (long)vcc;
-  currents[TEST_3V3] = convertCurrent(adc_readings[0], 55555, 1000);
+  currents[TEST_3V3] = convertCurrent(adc_readings[0], 64935, 80);
 
-  voltages[TEST_VIN] = convertVoltage(adc_readings[1], 24046);
-  currents[TEST_VIN] = convertCurrent(adc_readings[2], 2012, 1);
+  voltages[TEST_VIN] = convertVoltage(adc_readings[1], 5412);
+  currents[TEST_VIN] = convertCurrent(adc_readings[2], 60643, 20);
 
-  voltages[TEST_BATT1] = convertVoltage(adc_readings[3], 24046);
-  currents[TEST_BATT1] = convertCurrent(adc_readings[4], 2012, 1);
+  voltages[TEST_BATT1] = convertVoltage(adc_readings[3], 4554);
+  currents[TEST_BATT1] = convertCurrent(adc_readings[4], 60643, 20);
 
-  voltages[TEST_BATT2] = convertVoltage(adc_readings[5], 3004);
-  currents[TEST_BATT2] = convertCurrent(adc_readings[6], 2000, 1);
+  voltages[TEST_BATT2] = convertVoltage(adc_readings[5], 4554);
+  currents[TEST_BATT2] = convertCurrent(adc_readings[6], 60643, 20);
 
   light = adc_readings[7];
 

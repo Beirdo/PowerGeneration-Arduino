@@ -248,16 +248,16 @@ void updateScreenStrings(void)
 void convertADCReadings(void)
 {
   voltages[TEST_3V3] = (long)vcc;
-  currents[TEST_3V3] = convertCurrent(adc_readings[0], 55555, 1000);
+  currents[TEST_3V3] = convertCurrent(adc_readings[0], 65397, 395);
 
-  voltages[TEST_VIN] = convertVoltage(adc_readings[1], 24046);
-  currents[TEST_VIN] = convertCurrent(adc_readings[2], 2012, 1);
+  voltages[TEST_VIN] = convertVoltage(adc_readings[1], 36494);
+  currents[TEST_VIN] = convertCurrent(adc_readings[2], 62874, 21);
 
-  voltages[TEST_MPPT] = convertVoltage(adc_readings[3], 24046);
-  currents[TEST_MPPT] = convertCurrent(adc_readings[4], 2012, 1);
+  voltages[TEST_MPPT] = convertVoltage(adc_readings[3], 36494);
+  currents[TEST_MPPT] = convertCurrent(adc_readings[4], 62874, 21);
 
-  voltages[TEST_18V] = convertVoltage(adc_readings[5], 3004);
-  currents[TEST_18V] = convertCurrent(adc_readings[6], 2000, 1);
+  voltages[TEST_18V] = convertVoltage(adc_readings[5], 5412);
+  currents[TEST_18V] = convertCurrent(adc_readings[6], 63333, 19);
 
   light = adc_readings[7];
 

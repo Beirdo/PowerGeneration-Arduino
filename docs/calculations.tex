@@ -21,6 +21,7 @@
 
 \usepackage{graphicx} % support the \includegraphics command and options
 \usepackage{mathtools}
+\usepackage{xfrac}
 
 % \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
 
@@ -168,6 +169,157 @@ P_d &= I_{max-chg}\left(\frac{V_{in,max} - 0.7V}{h_{fe1,max} \times h_{fe2,max}}
 P_d &= 3A\left(\frac{18V - 0.7V}{400 \times 380}\right) - 118k\Omega \left(\frac{3A}{400 \times 380}\right)^2 \text{ (@ 20Ah)} \\
 &= 341.45\mu W - 45.97\mu W \\
 &= 295.48\mu W \tag{13}
+\end{align*}
+
+\section{ADC Gain Factors}
+
+\begin{align*}
+reading &= \left\lfloor \left(\frac{value_{actual} \times gain}{V_{cc,actual}}\right) 1023 \right. \\ 
+&= \left\lfloor \left(\frac{value_{actual} \times \left(\frac{1000 \times factor_2}{factor_1}\right)}{V_{cc,actual}}\right)1023 \right. \\
+value_{measured} &= \left\lfloor\frac{\left\lfloor \frac{\left(\left\lfloor\frac{reading \times V_{cc,measured}}{1023}\right.\right)factor_1}{factor_2}\right.}{1000} \right. \\
+\end{align*}
+
+\(V_{cc,measured}\) is in units of mV, and we want current in units of \(\mu A\), so multiply by 1000
+
+\begin{align*}
+current_{measured} &= \left\lfloor \frac{\left(\left\lfloor\frac{reading \times V_{cc,measured}}{1023}\right.\right)factor_1}{factor_2}\right.
+\end{align*}
+
+for voltages, set \(factor_2 = 1\), leave results in mV
+
+\begin{align*}
+voltage_{measured} &= \left\lfloor\frac{\left(\left\lfloor\frac{reading \times V_{cc, measured}}{1023}\right.\right)factor_1}{1000}\right. \tag{2}
+\end{align*}
+
+\begin{align*}
+gain &= 1000\left(\frac{factor_2}{factor_1}\right) \\
+\frac{factor_1}{factor_2} &= \frac{1000}{gain} \text{ (both 16bit unsigned)} \tag{3}
+\end{align*}
+
+\begin{align*}
+V_{ADC} &= value_{actual} \times gain \tag{4}
+\end{align*}
+
+
+
+\subsection{MPPT Card}
+
+\begin{align*}
+gain_{I_{Vin}} &= \left(\frac{100mV}{10A}\right) \left(1 + \frac{32.4k\Omega}{1k\Omega}\right) \\
+&= 0.334~\sfrac{V}{A} \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.334} \\
+&= 2994.01
+\\
+factor_1 &= 62874 \\
+factor_2 &= 21 \\
+gain_{quantitized} &= 1000 \left(\frac{21}{62874}\right) \\
+&= 0.334001
+\end{align*}
+
+\(gain_{I_{MPPT}}\) is the same as \(gain_{I_{Vin}}\), so they share the same factors.
+
+
+\begin{align*}
+gain_{I_{Vout}} &= \left(\frac{60mV}{10A}\right) \left(\frac{50}{1}\right) \\
+&= 0.3~\sfrac{V}{A} \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.3} \\
+&= 3333.33
+\\
+factor_1 &= 63333 \\
+factor_2 &= 19 \\
+gain_{quantitized} &= 1000 \left(\frac{19}{63333}\right) \\
+&= 0.300001
+\end{align*}
+
+\begin{align*}
+gain_{I_{Vcc}} &= \left(\frac{32.616mV}{540mA}\right) \left(\frac{100}{1}\right) \\
+&= 6.04~\sfrac{V}{A} \\
+\frac{factor_1}{factor_2} &= \frac{1000}{6.04} \\
+&= 165.563
+\\
+factor_1 &= 65397 \\
+factor_2 &= 395 \\
+gain_{quantitized} &= 1000 \left(\frac{395}{65397}\right) \\
+&= 6.04003
+\end{align*}
+
+\begin{align*}
+gain_{V_{Vin}} &= \frac{32.4k\Omega}{1.15M\Omega + 32.4k\Omega} \\
+&= 0.0274019 \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.0274019} \\
+&= 36493.82
+\\
+factor_1 &= 36494 \\
+factor_2 &= 1 \\
+gain_{quantitized} &= 1000 \left(\frac{1}{36494}\right) \\
+&= 0.0274018
+\end{align*}
+
+\(gain_{V_{MPPT}}\) is the same as \(gain_{V_{Vin}}\), so they share the same factors.
+
+\begin{align*}
+gain_{V_{Vout}} &= \frac{34k\Omega}{150k\Omega + 34k\Omega} \\
+&= 0.18478 \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.18478} \\
+&= 5411.765
+\\
+factor_1 &= 5412 \\
+factor_2 &= 1 \\
+gain_{quantitized} &= 1000 \left(\frac{1}{5412}\right) \\
+&= 0.18477
+\end{align*}
+
+
+\subsection{Battery Charger Card}
+
+\begin{align*}
+gain_{I_{Vin}} &= \left(\frac{100mV}{10A}\right) \left(\frac{20}{1}\right) \left(1 + \frac{6.49k\Omega}{10k\Omega}\right) \\
+&= 0.3298~\sfrac{V}{A} \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.3298} \\
+&= 3032.14
+\\
+factor_1 &= 60643 \\
+factor_2 &= 20 \\
+gain_{quantitized} &= 1000 \left(\frac{20}{60643}\right) \\
+&= 0.329799
+\end{align*}
+
+Both \(gain_{I_{batt_1}}\) and \(gain_{I_{batt_2}}\) are the same as \(gain_{I_{Vin}}\), so they share the same factors.
+
+\begin{align*}
+gain_{I_{Vcc}} &= \left(\frac{10mV}{1A}\right) \left(\frac{100}{1}\right) \left(1 + \frac{23.2k\Omega}{10k\Omega}\right) \\
+&= 1.232~\sfrac{V}{A} \\
+\frac{factor_1}{factor_2} &= \frac{1000}{1.232} \\
+&= 811.688
+\\
+factor_1 &= 64935 \\
+factor_2 &= 80 \\
+gain_{quantitized} &= 1000 \left(\frac{80}{64935}\right) \\
+&= 1.232001
+\end{align*}
+
+\begin{align*}
+gain_{V_{Vin}} &= \frac{34k\Omega}{150k\Omega + 34k\Omega} \\
+&= 0.18478 \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.18478} \\
+&= 5411.765
+\\
+factor_1 &= 5412 \\
+factor_2 &= 1 \\
+gain_{quantitized} &= 1000 \left(\frac{1}{5412}\right) \\
+&= 0.18477
+\end{align*}
+
+\begin{align*}
+gain_{V_{batt_{1,2}}} &= \frac{33.2k\Omega}{118k\Omega + 33.2k\Omega} \\
+&= 0.21958 \\
+\frac{factor_1}{factor_2} &= \frac{1000}{0.21958} \\
+&= 4554.22
+\\
+factor_1 &= 4554 \\
+factor_2 &= 1 \\
+gain_{quantitized} &= 1000 \left(\frac{1}{4554}\right) \\
+&= 0.21959
 \end{align*}
 
 \end{document}

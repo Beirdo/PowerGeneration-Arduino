@@ -1,0 +1,3 @@
+[submodule "libraries/Arduino-PCF2129"]
+	path = libraries/Arduino-PCF2129
+	url = git@github.com:Beirdo/Arduino-PCF2129.git

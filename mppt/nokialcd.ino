@@ -227,13 +227,11 @@ void drawLine(void)
 
 screen_line_t screen_lines[ROW_COUNT];
 char show_temperature;
-int swap_count;
 
 void ScreenInitialize(void)
 {
   memset(screen_lines, 0x00, COL_COUNT * ROW_COUNT);
   show_temperature = 0;
-  swap_count = 0;
 }
 
 void ScreenRefresh(void)

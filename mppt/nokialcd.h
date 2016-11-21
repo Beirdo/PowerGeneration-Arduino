@@ -14,7 +14,6 @@ extern "C" {
 typedef char screen_line_t[COL_COUNT];
 extern screen_line_t screen_lines[ROW_COUNT];
 extern char show_temperature;
-extern int swap_count;
 
 void LcdInitialize(void);
 void ScreenInitialize(void);

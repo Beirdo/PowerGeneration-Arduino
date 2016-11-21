@@ -5,193 +5,39 @@
 #include <string.h>
 #include "nokialcd.h"
 #include "rflink.h"
+#include "sleeptimer.h"
+#include "adcread.h"
 
 #define CLOCK_FREQUENCY 8000000
 
-// 0 - PD0 - RXD - RXD
-// 1 - PD1 - TXD - TXD
-// 2 - PD2 - IO - unused
-// 3 - PD3 - OC2B - PWM_LED
-// 4 - PD4 - IO - unused
-// 5 - PD5 - OC0B - PWM_CONV2
-// 6 - PD6 - OC0A - PWM_CONV1
-// 7 - PD7 - IO - RF_IRQ
+// in ms
+#define LOOP_CADENCE 10
+#define SWAP_TIME 2000
+#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
-// 8 - PB0 - IO - RF_CE
-// 9 - PB1 - IO - LCD_DC
-// 10 - PB2 - SS - SS
-// 11 - PB3 - MOSI - MOSI
-// 12 - PB4 - MISO - MISO
-// 13 - PB5 - SCK - SCK
+#define RF_CE_PIN 8
+#define RF_CS_PIN 20
 
-// 14/A0 - PC0 - ADC0 - ADC_I_5V
-// 15/A1 - PC1 - ADC1 - ADC_V_VIN
-// 16/A2 - PC2 - ADC2 - ADC_I_VIN
-// 17/A3 - PC3 - ADC3 - ADC_V_VMPP
-// 18/A4 - PC4 - ADC4 - ADC_I_VMPP
-// 19/A5 - PC5 - ADC5 - ADC_V_15V
-
-// 20 - PB6 - IO - RF_CS
-// 21 - IO - LCD_RST
-
-// 22 - PC6 - RESET - RESET
-
-// A6 - ADC6 - ADC_I_15V
-// A7 - ADC7 - ADC_LIGHT
 
 static const uint8_t EEMEM rf_link_id = 0;
 
 static const char temp_string[] = "Temp";
 static const char *line_string[4] = {
-  "+5V", "IN", "OUT", "+15V"
+  "+3V3", "IN", "OUT", "+18V"
 };
 
-int readVcc() {
-  // Read 1.1V reference against AVcc
-  // set the reference to Vcc and the measurement to the internal 1.1V reference
-  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA, ADSC)); // measuring
-
-  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH
-  uint8_t high = ADCH; // unlocks both
-
-  long result = (high << 8) | low;
-
-  // result = (1100mV / Vcc) * 1023
-  // we want Vcc
-  // Vcc = 1100mV * 1023 / result
-  // Vcc = 1125300mV / result
-  result = 1125300L / result;
-  return (int)result; // Vcc in millivolts
-}
-
-int readAvrTemperature(void) {
-  // set the reference to 1.1V and the measurement to the internal temperature sensor
-  ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
-
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA, ADSC)); // measuring
-
-  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH
-  uint8_t high = ADCH; // unlocks both
-
-  int result = (high << 8) | low;
-
-  // 242mV (225 measured) = -45C, 380mV (353 measured) = 85C
-  // use linear regression to convert from measured value to celcius
-  result -= 225;
-  result *= 1200; // * 120, have 0.1 deg
-  result >>= 7;   // /= 128
-  result -= 450;
-  return result;
-}
-
-
-long convertVoltage(char input, int vcc, int factor)
-{
-  // reading is from ADC (0 - 1023)
-  // vcc is measured in millivolts
-  // factor is 1000/gain - gain is Vcc / max voltage in the circuit
-  // return value is measured in millivolts
-
-  // reading = (voltage * gain) / Vcc * 1023
-  // reading = voltage * 1000 / factor / Vcc * 1023
-  // voltage = reading * factor * Vcc / 1000 / 1023
-  // voltage = ((reading * Vcc / 1023) * factor) / 1000
-  long value = (long)analogRead(input);
-  value *= vcc;
-  value /= 1023;
-  value *= factor;
-  value /= 1000;
-  return value;
-}
-
-long convertCurrent(char input, int vcc, int factor1, int factor2)
-{
-  // reading is from ADC (0 - 1023)
-  // vcc is measured in millivolts
-  // factor1 is factor2 * 1000 / gain - gain is Vcc / max current in the circuit
-  // return value is measured in microamps
-
-  // reading = (current * gain) / Vcc * 1023
-  // reading = current * 1000 * factor2 / factor1 / Vcc * 1023
-  // current = reading * factor1 * Vcc / factor2 / 1000 / 1023
-  // current = (((reading * Vcc / 1023) * factor1) / factor2) / 1000
-  // to get current in microamps.
-  // current = ((reading * Vcc / 1023) * factor1) / factor2
-  long value = (long)analogRead(input);
-  value *= vcc;
-  value /= 1023;
-  value *= factor1;
-  value /= factor2;
-  return value;
-}
-
-#define TEST_5V   0
+#define TEST_3V3  0
 #define TEST_VIN  1
 #define TEST_MPPT 2
-#define TEST_15V  3
+#define TEST_18V  3
 
-int readings[8];
-long voltages[4];
-long currents[4];
-long powers[4];
-int light;
-int temperature;
+uint32_t voltages[4];
+uint32_t currents[4];
+uint32_t powers[4];
+uint16_t light;
 
-long prev_v_in;
-long prev_i_in;
-
-long calculatePower(long voltage, long current)
-{
-  // voltage in millivolts
-  // current in microamps
-  // result in milliwatts
-
-  current >>= 6;  // We need to lose some bits to fit the calculation into 32 bits along the way
-  long result = voltage * current;
-  result /= 15625;  // divide result (in nanowatts down to milliwatts - factor of 1e6 = (15625 << 6)
-  return result;
-}
-
-void ADCPoll(void)
-{
-  prev_v_in = voltages[TEST_VIN];
-  prev_i_in = currents[TEST_VIN];
-
-  int vcc = readVcc();
-  voltages[TEST_5V] = (long)vcc;
-
-  temperature = readAvrTemperature();
-
-  // Setup to read ADC readings with VCC reference
-  analogReference(DEFAULT);
-
-  for (int i = 0; i < 8; i++) {
-    readings[i] = analogRead(i);
-  }
-
-  currents[TEST_5V] = convertCurrent(readings[0], vcc, 55555, 1000);
-
-  voltages[TEST_VIN] = convertVoltage(readings[1], vcc, 24046);
-  currents[TEST_VIN] = convertCurrent(readings[2], vcc, 2012, 1);
-
-  voltages[TEST_MPPT] = convertVoltage(readings[3], vcc, 24046);
-  currents[TEST_MPPT] = convertCurrent(readings[4], vcc, 2012, 1);
-
-  voltages[TEST_15V] = convertVoltage(readings[5], vcc, 3004);
-  currents[TEST_15V] = convertCurrent(readings[6], vcc, 2000, 1);
-
-  light = readings[7];
-
-  for (int i = 0; i < 4; i++) {
-    powers[i] = calculatePower(voltages[i], currents[i]);
-  }
-}
+uint32_t prev_v_in = 0;
+uint32_t prev_i_in = 0;
 
 void PWMInitialize(void)
 {
@@ -224,8 +70,8 @@ void updateLedPwm(void)
 void mppt(void)
 {
   // Incremental conductance
-  long delta_v = voltages[TEST_VIN] - prev_v_in;
-  long delta_i = currents[TEST_VIN] - prev_i_in;
+  int32_t delta_v = (int32_t)voltages[TEST_VIN] - (int32_t)prev_v_in;
+  int32_t delta_i = (int32_t)currents[TEST_VIN] - (int32_t)prev_i_in;
 
   if (delta_v == 0) {
     if (delta_i == 0) {
@@ -236,8 +82,8 @@ void mppt(void)
       pwm_conv1 = MPPT_DECREMENT(pwm_conv1);
     }
   } else {
-    long di_dv = delta_i / delta_v;
-    long i_v = -1 * currents[TEST_VIN] / voltages[TEST_VIN];
+    int32_t di_dv = delta_i / delta_v;
+    int32_t i_v = -1 * currents[TEST_VIN] / voltages[TEST_VIN];
     if (di_dv = i_v) {
       // No change, we are there
     } else if (di_dv > i_v) {
@@ -253,14 +99,14 @@ void mppt(void)
 
 void regulateOutput(void)
 {
-  int value = 15000 - (int)voltages[TEST_15V];
+  int16_t value = 18000 - (int)voltages[TEST_18V];
 
-  // We want to regulate the 15V output to 15V (duh)
+  // We want to regulate the 18V output to 18V (duh)
   if (value >= - REGULATE_RIPPLE && value <= REGULATE_RIPPLE) {
     // Do nothing, we are close enough
   } else {
     // Try using linear regression to get closer to the right spot
-    int scale = pwm_conv2 * 1000000 / (int)voltages[TEST_15V];
+    int scale = pwm_conv2 * 1000000 / (int)voltages[TEST_18V];
     value *= scale;
     value /= 1000000;
     value += (int)pwm_conv2;
@@ -268,61 +114,6 @@ void regulateOutput(void)
     pwm_conv2 = (uint8_t)value;
   }
   OCR0B = pwm_conv2;
-}
-
-// in ms
-#define LOOP_CADENCE 10
-#define LOOP_PRESCALER 8
-#define LOOP_TICK_CLOCK (CLOCK_FREQUENCY / (2 * LOOP_PRESCALER))
-#define LOOP_TICK_TOP (LOOP_CADENCE * LOOP_TICK_CLOCK / 1000)
-#define HI_BYTE(x)  (((x) >> 8) & 0xFF)
-#define LO_BYTE(x)  ((x) & 0xFF)
-#define LOOP_CS_BITS  (LOOP_PRESCALER == 1 ? (_BV(CS10)) : (LOOP_PRESCALER == 8 ? (_BV(CS11)) : (LOOP_PRESCALER == 64 ? (_BV(CS11) | _BV(CS10)) : \
-                       (LOOP_PRESCALER == 256 ? (_BV(CS12)) : (LOOP_PRESCALER == 1024 ? (_BV(CS12) | _BV(CS10)) : 0)))))
-#define SWAP_TIME 2000
-#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
-
-void TimerInitialize(void)
-{
-  // Use Timer1 as a delay timer to pace the main loop.  We want to run every x ms and sleep between
-  // Prescale of 1 gives a maximum timer of 16.384ms
-  // Prescale of 8 gives a maximum timer of 131.072ms
-  // Prescale of 64 gives a maximum timer of 1.049s
-  // Prescale of 256 gives a maximum timer of 4.194s
-  // Prescale of 1024 gives a maximum timer of 16.777s
-  TCCR1A = 0x00;
-  TCCR1B = _BV(WGM12);  // Set it up in CTC mode, but leave it disabled
-  TCCR1C = 0x00;
-  OCR1AH = HI_BYTE(LOOP_TICK_TOP);
-  OCR1AL = LO_BYTE(LOOP_TICK_TOP);
-  TIMSK1 = _BV(OCIE1A);
-}
-
-void TimerEnable(void)
-{
-  // disable it
-  TCCR1B = _BV(WGM12);
-
-  // clear it
-  TCNT1H = 0x00;
-  TCNT1L = 0x00;
-
-  // clear pending flag
-  TIFR1 = _BV(OCF1A);
-
-  // enable it
-  TCCR1B = _BV(WGM12) | LOOP_CS_BITS;
-}
-
-void TimerDisable(void)
-{
-  TCCR1B = _BV(WGM12);
-}
-
-ISR(TIMER1_COMPA_vect)
-{
-  TimerDisable();
-  swap_count++;
 }
 
 #define digit(x)  ((char)(((x) + 0x30) & 0xFF))
@@ -409,9 +200,9 @@ void printValue(long value, char maxunits, char *buf, char maxlen)
 
 void updateScreenStrings(void)
 {
-  if (swap_count >= SWAP_COUNT) {
+  if (timer_count >= SWAP_COUNT) {
     show_temperature = 1 - show_temperature;
-    swap_count = 0;
+    timer_count = 0;
   }
 
   for (int i = 0; i < 6; i++) {
@@ -425,7 +216,7 @@ void updateScreenStrings(void)
     screen_lines[0][11] = 'C';
   } else {
     strcpy(screen_lines[0], line_string[0]);
-    printValue(powers[TEST_5V], 2, &screen_lines[0][6], 5);
+    printValue(powers[TEST_3V3], 2, &screen_lines[0][6], 5);
     screen_lines[0][11] = 'W';
   }
 
@@ -450,12 +241,30 @@ void updateScreenStrings(void)
   screen_lines[4][11] = 'A';
 
   strcpy(screen_lines[5], line_string[3]);
-  printValue(powers[TEST_15V], 1000000, &screen_lines[5][6], 5);
+  printValue(powers[TEST_18V], 1000000, &screen_lines[5][6], 5);
   screen_lines[5][11] = 'W';
 }
 
-#define RF_CE_PIN 8
-#define RF_CS_PIN 20
+void convertADCReadings(void)
+{
+  voltages[TEST_3V3] = (long)vcc;
+  currents[TEST_3V3] = convertCurrent(adc_readings[0], 55555, 1000);
+
+  voltages[TEST_VIN] = convertVoltage(adc_readings[1], 24046);
+  currents[TEST_VIN] = convertCurrent(adc_readings[2], 2012, 1);
+
+  voltages[TEST_MPPT] = convertVoltage(adc_readings[3], 24046);
+  currents[TEST_MPPT] = convertCurrent(adc_readings[4], 2012, 1);
+
+  voltages[TEST_18V] = convertVoltage(adc_readings[5], 3004);
+  currents[TEST_18V] = convertCurrent(adc_readings[6], 2000, 1);
+
+  light = adc_readings[7];
+
+  for (int i = 0; i < 4; i++) {
+    powers[i] = calculatePower(voltages[i], currents[i]);
+  }
+}
 
 void setup(void)
 {
@@ -477,7 +286,12 @@ void loop(void)
 {
   noInterrupts();
   TimerEnable();
+
+  prev_v_in = voltages[TEST_VIN];
+  prev_i_in = currents[TEST_VIN];
+
   ADCPoll();
+  convertADCReadings();
   updateLedPwm();
   mppt();
   regulateOutput();

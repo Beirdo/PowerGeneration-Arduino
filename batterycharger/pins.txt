@@ -6,10 +6,10 @@ Ardiuno pins
 3  - PD3 - /GPIO_IRQ (EXT INT1) - IN
 4  - PD4 - /RF_CS - OUT
 5  - PD5 - /RF_CE - OUT
-6  - PD6 - /LCD_RST - OUT
-7  - PD7 - LCD_DC - OUT
+6  - PD6 - LED_PWM (OC0A) - OUT
+7  - PD7 - /LCD_RST - OUT
 8  - PB0 - /RTC_IRQ (PCINT0) - IN
-9  - PB1 - LED_PWM (OC1A) - OUT
+9  - PB1 - LCD_DC - OUT
 10 - PB2 - /LCD_CS (SS) - OUT
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN

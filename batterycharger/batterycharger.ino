@@ -8,6 +8,7 @@
 #include "rtclock.h"
 #include "sleeptimer.h"
 #include "adcread.h"
+#include "pwm.h"
 
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
@@ -75,7 +76,7 @@ void setup()
   ScreenInitialize();
   ScreenRefresh();
   TimerInitialize();
-  PWMInitialize();
+  PWMInitialize(0, 0, OCR0A);
   RTClockInitialize();
   TemperaturesInitialize();
   RFLinkInitialize(2, 0xFF);
@@ -87,7 +88,7 @@ void loop()
   TimerEnable();
   ADCPoll();
   convertADCReadings();
-  updateLedPwm();
+  PWMUpdateLed(light);
   TemperaturesPoll(temperatures, 8);
   updateScreenStrings();
   ScreenRefresh()

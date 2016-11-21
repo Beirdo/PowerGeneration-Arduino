@@ -7,6 +7,7 @@
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"
+#include "pwm.h"
 
 #define CLOCK_FREQUENCY 8000000
 
@@ -23,7 +24,7 @@ static const uint8_t EEMEM rf_link_id = 0;
 
 static const char temp_string[] = "Temp";
 static const char *line_string[4] = {
-  "+3V3", "IN", "OUT", "+18V"
+  "+3V3", "IN", "MPPT", "+18V"
 };
 
 #define TEST_3V3  0
@@ -38,30 +39,6 @@ uint16_t light;
 
 uint32_t prev_v_in = 0;
 uint32_t prev_i_in = 0;
-
-void PWMInitialize(void)
-{
-  // Set both OC0A and OC0B to Fast PWM mode, starting from BOTTOM, going to TOP, clearing output at OCRA
-  TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM01) | _BV(WGM00);
-  // prescale of 1, gives a PWM frequency of 31.25kHz (off a 8MHz internal RC osc)
-  TCCR0B = _BV(CS00);
-
-  // Setup OC2B to Fast PWM mode too.  Prescaler of 64 for a PWM frequency of 488Hz (from 8MHz)
-  TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
-  TCCR2B = _BV(CS22);
-}
-
-uint8_t pwm_conv1 = 0x00;
-uint8_t pwm_conv2 = 0x00;
-uint8_t pwm_led = 0x00;
-
-void updateLedPwm(void)
-{
-  uint8_t value = 0xFF - (uint8_t)(light >> 2);
-  pwm_led = value;
-
-  OCR2B = pwm_led;
-}
 
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
@@ -92,7 +69,7 @@ void mppt(void)
       pwm_conv1 = MPPT_DECREMENT(pwm_conv1);
     }
   }
-  OCR0A = pwm_conv1;
+  PWMUpdateConverter(1, pwm_conv1);
 }
 
 #define REGULATE_RIPPLE 120   // millivolts ripple allowed (peak)
@@ -113,7 +90,7 @@ void regulateOutput(void)
     value = (value < 0 ? 0 : (value > 255 ? 255 : value));
     pwm_conv2 = (uint8_t)value;
   }
-  OCR0B = pwm_conv2;
+  PWMUpdateConverter(2, pwm_conv2);
 }
 
 #define digit(x)  ((char)(((x) + 0x30) & 0xFF))
@@ -278,7 +255,7 @@ void setup(void)
   ScreenInitialize();
   ScreenRefresh();
   TimerInitialize();
-  PWMInitialize();
+  PWMInitialize(OCR0A, OCR0B, OCR2B);
   RFLinkInitialize(7, rf_id);
 }
 
@@ -292,7 +269,7 @@ void loop(void)
 
   ADCPoll();
   convertADCReadings();
-  updateLedPwm();
+  PWMUpdateLed(light);
   mppt();
   regulateOutput();
   updateScreenStrings();

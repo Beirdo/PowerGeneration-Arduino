@@ -1,3 +1,6 @@
 [submodule "libraries/Arduino-PCF2129"]
 	path = libraries/Arduino-PCF2129
 	url = git@github.com:Beirdo/Arduino-PCF2129.git
+[submodule "libraries/Library-Arduino-Cbor"]
+	path = libraries/Library-Arduino-Cbor
+	url = git@github.com:Beirdo/Library-Arduino-Cbor.git

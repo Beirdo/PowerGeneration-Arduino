@@ -10,6 +10,7 @@
 #include "adcread.h"
 #include "pwm.h"
 #include "cbormap.h"
+#include "sdlogging.h"
 
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
@@ -102,6 +103,7 @@ void setup()
     
     Serial.begin(115200);
 
+    SDCardInitialize(20);
     LcdInitialize();
     LcdClear();
     ScreenInitialize();
@@ -137,12 +139,6 @@ void loop()
     interrupts();
     sleep_cpu();
     sleep_disable();
-}
-
-void blah(void)
-{
-    DateTime now = RTClockGetTime();
-    delay(10000);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

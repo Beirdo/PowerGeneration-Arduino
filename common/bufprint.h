@@ -1,4 +1,4 @@
-#ifdef BUFPRINT_H__
+#ifndef BUFPRINT_H__
 #define BUFPRINT_H__
 
 void printTemperature(int value, char *buf, char maxlen);

@@ -20,7 +20,7 @@ Ardiuno pins
 17 - PC3 - A3 - ADC_V_BATT1 - IN (A)
 18 - PC4 - A4 - ADC_I_BATT1 - IN (A)
 19 - PC5 - A5 - ADC_V_BATT2 - IN (A)
-20 - PB6 - unused
+20 - PB6 - /SD_CS - OUT
 21 - PB7 - unused
 22 - PC6 - /RESET
 23 - PE2 - A6 - ADC_I_BATT2 - IN (A)

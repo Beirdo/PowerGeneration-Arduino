@@ -86,3 +86,4 @@ void printValue(long value, char maxunits, char *buf, char maxlen)
   }
 }
 
+// vim:ts=4:sw=4:ai:et:si:sts=4

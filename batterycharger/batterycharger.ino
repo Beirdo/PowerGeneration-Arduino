@@ -11,6 +11,8 @@
 #include "pwm.h"
 #include "cbormap.h"
 #include "sdlogging.h"
+#include "serialcli.h"
+#include "battery.h"
 
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
@@ -96,12 +98,117 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
     CborMapAddCborPayload(payload, len);
 }
 
+class BatteryCLICommand(CLICommand)
+{
+    public:
+        DisableCommand(void) : CLICommand("battery", 2);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                int8_t batteryNum = *args[0] - 0x31;
+                if (batteryNum < 0 || batteryNum > 1) {
+                    Serial.print("Battery ");
+                    Serial.print(args[0]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+                int8_t chargerEnable = *args[1] - 0x31;
+                if (chargerEnable < 0 || chargerEnable > 1) {
+                    Serial.print("Enabled value ");
+                    Serial.print(args[1]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+
+                battery[batteryNum].setEnabled(chargerEnable);
+
+                Serial.print("Battery Charger ");
+                Serial.print(batteryNum);
+                if (chargerEnable) {
+                    Serial.println(" enabled");
+                } else {
+                    Serial.println(" disabled");
+                }
+                return 1;
+            };
+}
+
+class DesulfateCLICommand(CLICommand)
+{
+    public:
+        DesulfateCLICommand(void) : CLICommand("desulfate", 2);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                int8_t batteryNum = *args[0] - 0x31;
+                if (batteryNum < 0 || batteryNum > 1) {
+                    Serial.print("Battery ");
+                    Serial.print(args[0]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+                int8_t desulfateEnable = *args[1] - 0x31;
+                if (desulfateEnable < 0 || desulfateEnable > 1) {
+                    Serial.print("Enabled value ");
+                    Serial.print(args[1]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+
+                battery[batteryNum].setDesulfate(desulfateEnable);
+
+                Serial.print("Desulfator for battery ");
+                Serial.print(batteryNum);
+                if (chargerEnable) {
+                    Serial.println(" enabled");
+                } else {
+                    Serial.println(" disabled");
+                }
+                return 1;
+            };
+}
+
+class CapacityCLICommand(CLICommand)
+{
+    public:
+        CapacityCLICommand(void) : CLICommand("capacity", 2);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                int8_t batteryNum = *args[0] - 0x31;
+                if (batteryNum < 0 || batteryNum > 1) {
+                    Serial.print("Battery ");
+                    Serial.print(args[0]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+                int8_t capacity = (int8_t)strtoul(args[1], 0, 10);
+                if (capacity != 9 && capacity != 20) {
+                    Serial.print("Enabled value ");
+                    Serial.print(args[1]);
+                    Serial.println(" invalid");
+                    return 0;
+                }
+                
+                battery[batteryNum].setCapacity(capacity);
+
+                Serial.print("Capacity of battery ");
+                Serial.print(batteryNum);
+                Serial.print(" set to ");
+                Serial.print(capacity);
+                Serial.println(" Ah");
+                return 1;
+            };
+}
+
+
 void setup() 
 {
     // Setup sleep to idle mode
     SMCR = 0x00;
     
     Serial.begin(115200);
+
+    cli.registerCommand(BatteryCLICommand());
+    cli.registerCommand(DesulfateCLICommand());
+    cli.registerCommand(CapacityCLICommand());
 
     SDCardInitialize(20);
     LcdInitialize();
@@ -112,7 +219,7 @@ void setup()
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
     TemperaturesInitialize();
-    RFLinkInitialize(2, 0xFF);
+    RFLinkInitialize(2, 0xFE);
 }
 
 void loop() 
@@ -133,6 +240,8 @@ void loop()
     if (buffer && len) {
         SDCardWrite(buffer, len);
     }
+
+    cli.handleInput();
 
     // Go to sleep, get woken up by the timer
     sleep_enable();

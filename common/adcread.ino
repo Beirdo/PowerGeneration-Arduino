@@ -113,3 +113,4 @@ void ADCPoll(void)
   }
 }
 
+// vim:ts=4:sw=4:ai:et:si:sts=4

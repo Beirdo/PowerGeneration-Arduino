@@ -19,7 +19,7 @@ void RFLinkInitialize(uint8_t irq, uint8_t nodeNum)
   radio.begin();
   radio.enableDynamicPayloads();
 
-  if (nodeNum == 0xFF) {
+  if (nodeNum == 0xFE) {
     // Master
     for (uint8_t i = 0; i < 6; i++) {
       radio.openReadingPipe(i + 1, rf_pipe_base + i);
@@ -60,5 +60,4 @@ uint8_t RFLinkReceive(void *buf, uint8_t maxlen)
   return pktlen;
 }
 
-
-
+// vim:ts=4:sw=4:ai:et:si:sts=4

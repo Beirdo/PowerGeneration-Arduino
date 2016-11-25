@@ -1,8 +1,9 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
-
 #include <avr/sleep.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include "nokialcd.h"
 #include "rflink.h"
 #include "sleeptimer.h"
@@ -10,6 +11,7 @@
 #include "pwm.h"
 #include "bufprint.h"
 #include "cbormap.h"
+#include "serialcli.h"
 
 #define CLOCK_FREQUENCY 8000000
 
@@ -41,6 +43,8 @@ uint16_t light;
 
 uint32_t prev_v_in = 0;
 uint32_t prev_i_in = 0;
+
+uint8_t enabled = 1;
 
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
@@ -175,10 +179,72 @@ void CborMessageBuild(void)
     CborMapAddCoreTemperature(temperature);
 }
 
+class GetRFIDCLICommand(CLICommand)
+{
+    public:
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = EEPROM.read(rf_link_id);
+                Serial.print("Current RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+}
+
+class SetRFIDCLICommand(CLICommand)
+{
+    public:
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                EEPROM.update(rf_link_id, rf_id);
+                Serial.print("New RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+}
+
+class EnableCLICommand(CLICommand)
+{
+    public:
+        EnableCLICommand(void) : CLICommand("enable", 0);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                if (!enabled) {
+                    prev_v_in = 0;
+                    prev_i_in = 0;
+                    enabled = 1;
+                }
+                Serial.println("Regulators enabled");
+                return 1;
+            };
+}
+
+class DisableCLICommand(CLICommand)
+{
+    public:
+        DisableCLICommand(void) : CLICommand("disable", 0);
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                enabled = 0;
+                Serial.println("Regulators disabled");
+                return 1;
+            };
+}
+
 void setup(void)
 {
     // Setup sleep mode to idle mode
     SMCR = 0x00;
+
+    Serial.begin(115200);
+
+    cli.registerCommand(GetRFIDCLICommand());
+    cli.registerCommand(SetRFIDCLICommand());
+    cli.registerCommand(EnableCLICommand());
+    cli.registerCommand(DisableCLICommand());
 
     uint8_t rf_id = EEPROM.read(rf_link_id);
     
@@ -199,21 +265,25 @@ void loop(void)
     noInterrupts();
     TimerEnable();
 
-    prev_v_in = voltages[TEST_VIN];
-    prev_i_in = currents[TEST_VIN];
+    if (enabled) {
+        prev_v_in = voltages[TEST_VIN];
+        prev_i_in = currents[TEST_VIN];
 
-    ADCPoll();
-    convertADCReadings();
-    PWMUpdateLed(light);
-    mppt();
-    regulateOutput();
-    updateScreenStrings();
-    ScreenRefresh();
-    CborMessageBuild();
-    CborMessageBuffer(&buffer, &len);
-    if (buffer && len) {
-        RFLinkSend(buffer, len);
+        ADCPoll();
+        convertADCReadings();
+        PWMUpdateLed(light);
+        mppt();
+        regulateOutput();
+        updateScreenStrings();
+        ScreenRefresh();
+        CborMessageBuild();
+        CborMessageBuffer(&buffer, &len);
+        if (buffer && len) {
+            RFLinkSend(buffer, len);
+        }
     }
+
+    cli.handleInput();
 
     // Go to sleep, get woken up by the timer
     sleep_enable();

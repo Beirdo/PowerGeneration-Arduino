@@ -99,3 +99,4 @@ void PWMUpdateConverter(uint16_t conversion, uint8_t value)
   }
 }
 
+// vim:ts=4:sw=4:ai:et:si:sts=4

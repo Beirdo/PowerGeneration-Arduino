@@ -56,3 +56,4 @@ ISR(TIMER1_COMPA_vect)
   timer_count++;
 }
 
+// vim:ts=4:sw=4:ai:et:si:sts=4

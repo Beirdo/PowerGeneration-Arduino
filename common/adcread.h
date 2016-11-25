@@ -13,3 +13,4 @@ uint32_t calculatePower(uint32_t voltage, uint32_t current);
 void ADCPoll(void);
 
 #endif
+// vim:ts=4:sw=4:ai:et:si:sts=4

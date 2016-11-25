@@ -12,3 +12,4 @@ void PWMUpdateLed(uint16_t light_value);
 void PWMUpdateConverter(uint16_t conversion, uint8_t value);
 
 #endif
+// vim:ts=4:sw=4:ai:et:si:sts=4

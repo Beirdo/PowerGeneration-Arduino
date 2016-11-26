@@ -11,9 +11,9 @@ class PCF8574 {
     protected:
         void sendValues(uint8_t value);
         uint8_t readValues(void);
+        void ISR(void);
 
         uint8_t m_address;
-        uint8_t m_irq;
         uint8_t m_input_mask;
         uint8_t m_output_values;
         uint8_t m_read_values;

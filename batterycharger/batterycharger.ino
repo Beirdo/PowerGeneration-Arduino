@@ -235,6 +235,8 @@ void loop()
     TemperaturesPoll(temperatures, 8);
     updateScreenStrings();
     ScreenRefresh()
+
+    RTClockPoll();
     CborMessageBuildLocal();
     CborMessageBuffer(&buffer, &len);
     if (buffer && len) {

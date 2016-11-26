@@ -3,7 +3,8 @@
 
 #include "rtclock.h"
 
-PCF2129 rtc;
+PCF2129 rtc(PCF2129_SLAVE_ADDRESS, 8);
+DateTime now;
 
 void RTClockInitialize(void)
 {
@@ -12,6 +13,13 @@ void RTClockInitialize(void)
     while(1);
   }
   rtc.configure();
+}
+
+void RTClockPoll(void)
+{
+  if (rtc.getPoll()) {
+    now = rtc.now();
+  }
 }
 
 uint16_t parseNumber(uint8_t **string, uint8_t terminator);
@@ -58,6 +66,6 @@ void RTClockSet(uint8_t *datestring)
 
 DateTime RTClockGetTime(void)
 {
-  return rtc.now();
+  return now;
 }
 

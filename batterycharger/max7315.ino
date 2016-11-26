@@ -41,6 +41,7 @@ MAX7315::setOutput8PWM(uint8_t enable)
 
 void MAX7315::sendRegister(uint8_t regNum, uint8_t value)
 {
+    Wire1.setClock(400000L);
     Wire1.beginTransmission(m_address); // transmit to device #8
     Wire1.write(regNum);                // sends one byte
     Wire1.write(value);                 // sends one byte
@@ -50,6 +51,7 @@ void MAX7315::sendRegister(uint8_t regNum, uint8_t value)
 void MAX7315::sendRegisters(uint8_t regNum, uint32_t value32)
 {
     uint8_t value;
+    Wire1.setClock(400000L);
     Wire1.beginTransmission(m_address); // transmit to device #8
     Wire1.write(regNum);                // sends one byte
     for (uint8_t i = 0; i < 4; i++) {   // sends four bytes

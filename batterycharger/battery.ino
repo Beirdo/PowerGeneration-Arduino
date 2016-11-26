@@ -1,4 +1,6 @@
 #include "battery.h"
+#include "max7315.h"
+#include "pcf8574.h"
 
 Desulfator desulfator;
 Battery battery[2] = { Battery(0), Battery(1) };
@@ -64,8 +66,9 @@ void Battery::setEnabled(uint8_t enabled)
     pcf8574.update(m_enable_mask, enabled ? m_enable_mask : 0);
 }
 
-void Battery::setState(uint8_t state)
+void Battery::updateState(void)
 {
+    uint8_t state = pcf8574.read();
     m_state = (state & m_status_mask) >> m_status_shift;
     m_powergood = !(!(state & m_powergood_mask));
 }

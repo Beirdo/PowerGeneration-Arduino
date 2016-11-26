@@ -241,6 +241,8 @@ void loop()
         SDCardWrite(buffer, len);
     }
 
+    battery[0].updateState();
+    battery[1].updateState();
     cli.handleInput();
 
     // Go to sleep, get woken up by the timer

@@ -23,7 +23,7 @@ class Battery {
         void setCapacity(uint8_t capacity);
         void setDesulfate(uint8_t desulfate);
         void setEnabled(uint8_t enabled);
-        void setState(uint8_t state);
+        void updateState(void);
 
     protected:
         uint8_t m_num;

@@ -6,7 +6,7 @@ LinkedListItem::LinkedListItem(void *item)
     m_next = 0;
 }
 
-LinkedListItem::setNext(LinkedListItem *next)
+void LinkedListItem::setNext(LinkedListItem *next)
 {
     m_next = next;
 }
@@ -23,7 +23,7 @@ void LinkedList::add(void *item)
     LinkedListItem llItem(item);
 
     if (!m_head) {
-        m_head = *llItem;
+        m_head = &llItem;
     }
 
     if (m_tail) {

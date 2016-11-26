@@ -11,7 +11,7 @@ class LinkedListItem {
     protected:
         void *m_data;
         LinkedListItem *m_next;
-}
+};
 
 class LinkedList {
     public:

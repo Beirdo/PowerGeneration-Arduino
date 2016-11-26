@@ -24,7 +24,7 @@ class CLICommand {
 class SerialCLI {
     public:
         SerialCLI(void);
-        void registerCommand(CLICommand &command);
+        void registerCommand(CLICommand *command);
         void listCommands(void);
         void handleInput(void);
 
@@ -36,6 +36,8 @@ class SerialCLI {
         uint8_t m_index;
         uint8_t m_buffer[SERIAL_BUFFER_SIZE];
 };
+
+extern SerialCLI cli;
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

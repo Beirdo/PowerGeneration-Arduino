@@ -32,9 +32,9 @@ SerialCLI::SerialCLI(void)
     prompt();
 }
 
-void SerialCLI::registerCommand(CLICommand &command)
+void SerialCLI::registerCommand(CLICommand *command)
 {
-    m_commands.add((void *)&command);
+    m_commands.add((void *)command);
 }
 
 void SerialCLI::parseBuffer(void)
@@ -113,14 +113,14 @@ void SerialCLI::parseBuffer(void)
     prompt();
 }
 
-class HelpCLICommand(CLICommand) {
+class HelpCLICommand : public CLICommand {
     public:
         HelpCLICommand(void) : CLICommand("help", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
           { cli.listCommands();  return(1); };
 };
 
-class ResetCLICommand(CLICommand) {
+class ResetCLICommand : public CLICommand {
     public:
         ResetCLICommand(void) : CLICommand("reset", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
@@ -129,8 +129,8 @@ class ResetCLICommand(CLICommand) {
 
 
 void SerialCLI::registerCommonCommands(void) {
-    registerCommand(HelpCLICommand());
-    registerCommand(ResetCLICommand());
+    registerCommand(new HelpCLICommand());
+    registerCommand(new ResetCLICommand());
 }
 
 void SerialCLI::listCommands(void)
@@ -139,9 +139,9 @@ void SerialCLI::listCommands(void)
 
     Serial.println("Commands (nargs)");
     for (cmd = m_commands.head(); cmd; cmd = m_commands.next()) {
-        Serial.print(cmd->command);
+        Serial.print(cmd->command());
         Serial.print(" (");
-        Serial.print(cmd->nargs);
+        Serial.print(cmd->nargs());
         Serial.println(")");
     }
 }

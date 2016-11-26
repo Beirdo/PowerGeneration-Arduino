@@ -14,20 +14,19 @@ void setup()
     // Setup sleep to idle mode
     SMCR = 0x00;
     
-    Serial.begin(115200);
+    Serial.begin(57600);
 
 //    cli.registerCommand(BatteryCLICommand());
 //    cli.registerCommand(DesulfateCLICommand());
 //    cli.registerCommand(CapacityCLICommand());
+
+    cli.initialize();
 
     TimerInitialize();
 }
 
 void loop() 
 {
-    uint8_t *buffer;
-    uint8_t len;
-
     noInterrupts();
     TimerEnable();
 

@@ -20,17 +20,17 @@ LinkedList::LinkedList(void)
 
 void LinkedList::add(void *item)
 {
-    LinkedListItem llItem(item);
-
+    LinkedListItem *llItem = new LinkedListItem(item);
+    
     if (!m_head) {
-        m_head = &llItem;
+        m_head = llItem;
     }
 
     if (m_tail) {
-        m_tail->setNext(&llItem);
+        m_tail->setNext(llItem);
     }
 
-    m_tail = &llItem;
+    m_tail = llItem;
 }
 
 void *LinkedList::head(void)

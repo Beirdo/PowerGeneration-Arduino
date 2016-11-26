@@ -28,6 +28,11 @@ SerialCLI::SerialCLI(void)
 {
     m_commands = LinkedList();
     m_index = 0;
+    registerCommonCommands();
+}
+
+void SerialCLI::initialize(void)
+{
     Serial.println("CLI Ready");
     prompt();
 }
@@ -98,7 +103,7 @@ void SerialCLI::parseBuffer(void)
     if (cmd) {
         if (!cmd->pre_run(nargs)) {
             Serial.print("ERROR: Command ");
-            Serial.print(cmd->command());
+            Serial.print((char *)cmd->command());
             Serial.print(" requires ");
             Serial.print(cmd->nargs());
             Serial.println(" arguments");
@@ -124,7 +129,7 @@ class ResetCLICommand : public CLICommand {
     public:
         ResetCLICommand(void) : CLICommand("reset", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
-          { Serial.println("Resetting...");  asm volatile ("jmp 0"); };
+          { Serial.println("Resetting...");  delay(1000); asm volatile ("jmp 0"); };
 };
 
 
@@ -139,7 +144,7 @@ void SerialCLI::listCommands(void)
 
     Serial.println("Commands (nargs)");
     for (cmd = m_commands.head(); cmd; cmd = m_commands.next()) {
-        Serial.print(cmd->command());
+        Serial.print((char *)cmd->command());
         Serial.print(" (");
         Serial.print(cmd->nargs());
         Serial.println(")");

@@ -10,7 +10,7 @@ class CLICommand {
         virtual uint8_t run(uint8_t nargs, uint8_t **args) = 0;
         uint8_t pre_run(uint8_t nargs);
         uint8_t nargs(void) { return m_nargs; };
-        uint8_t command(void) { return m_command; };
+        uint8_t *command(void) { return m_command; };
 
     protected:
 
@@ -24,6 +24,7 @@ class CLICommand {
 class SerialCLI {
     public:
         SerialCLI(void);
+        void initialize(void);
         void registerCommand(CLICommand *command);
         void listCommands(void);
         void handleInput(void);

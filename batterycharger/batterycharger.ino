@@ -98,7 +98,7 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
     CborMapAddCborPayload(payload, len);
 }
 
-class BatteryCLICommand(CLICommand)
+class BatteryCLICommand : public CLICommand
 {
     public:
         DisableCommand(void) : CLICommand("battery", 2);
@@ -132,7 +132,7 @@ class BatteryCLICommand(CLICommand)
             };
 }
 
-class DesulfateCLICommand(CLICommand)
+class DesulfateCLICommand : public CLICommand
 {
     public:
         DesulfateCLICommand(void) : CLICommand("desulfate", 2);
@@ -166,7 +166,7 @@ class DesulfateCLICommand(CLICommand)
             };
 }
 
-class CapacityCLICommand(CLICommand)
+class CapacityCLICommand : public CLICommand
 {
     public:
         CapacityCLICommand(void) : CLICommand("capacity", 2);
@@ -206,9 +206,11 @@ void setup()
     
     Serial.begin(115200);
 
-    cli.registerCommand(BatteryCLICommand());
-    cli.registerCommand(DesulfateCLICommand());
-    cli.registerCommand(CapacityCLICommand());
+    cli.registerCommand(new BatteryCLICommand());
+    cli.registerCommand(new DesulfateCLICommand());
+    cli.registerCommand(new CapacityCLICommand());
+
+    cli.initialize()
 
     SDCardInitialize(20);
     LcdInitialize();
@@ -229,6 +231,7 @@ void loop()
 
     noInterrupts();
     TimerEnable();
+
     ADCPoll();
     convertADCReadings();
     PWMUpdateLed(light);

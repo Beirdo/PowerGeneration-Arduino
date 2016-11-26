@@ -16,10 +16,6 @@ void setup()
     
     Serial.begin(57600);
 
-//    cli.registerCommand(BatteryCLICommand());
-//    cli.registerCommand(DesulfateCLICommand());
-//    cli.registerCommand(CapacityCLICommand());
-
     cli.initialize();
 
     TimerInitialize();

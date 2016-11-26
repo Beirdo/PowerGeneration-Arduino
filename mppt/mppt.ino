@@ -179,7 +179,7 @@ void CborMessageBuild(void)
     CborMapAddCoreTemperature(temperature);
 }
 
-class GetRFIDCLICommand(CLICommand)
+class GetRFIDCLICommand : public CLICommand
 {
     public:
         GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0);
@@ -192,7 +192,7 @@ class GetRFIDCLICommand(CLICommand)
             };
 }
 
-class SetRFIDCLICommand(CLICommand)
+class SetRFIDCLICommand : public CLICommand
 {
     public:
         SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1);
@@ -206,7 +206,7 @@ class SetRFIDCLICommand(CLICommand)
             };
 }
 
-class EnableCLICommand(CLICommand)
+class EnableCLICommand : public CLICommand
 {
     public:
         EnableCLICommand(void) : CLICommand("enable", 0);
@@ -222,7 +222,7 @@ class EnableCLICommand(CLICommand)
             };
 }
 
-class DisableCLICommand(CLICommand)
+class DisableCLICommand : public CLICommand
 {
     public:
         DisableCLICommand(void) : CLICommand("disable", 0);
@@ -241,10 +241,12 @@ void setup(void)
 
     Serial.begin(115200);
 
-    cli.registerCommand(GetRFIDCLICommand());
-    cli.registerCommand(SetRFIDCLICommand());
-    cli.registerCommand(EnableCLICommand());
-    cli.registerCommand(DisableCLICommand());
+    cli.registerCommand(new GetRFIDCLICommand());
+    cli.registerCommand(new SetRFIDCLICommand());
+    cli.registerCommand(new EnableCLICommand());
+    cli.registerCommand(new DisableCLICommand());
+
+    cli.initialize();
 
     uint8_t rf_id = EEPROM.read(rf_link_id);
     

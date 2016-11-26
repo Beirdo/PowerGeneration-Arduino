@@ -37,3 +37,14 @@ P4 - /STAT12 (IN, OD)
 P5 - /STAT22 (IN, OD)
 P6 - /PGOOD2 (IN, OD)
 P7 - ENABLE2 (OUT)
+
+Via I2C slave at address 0x21 (MAX7315) - outputs OD, inverted
+P0 - DESULFATE1 (OUT)
+P1 - BATT9AH1 (OUT)
+P2 - BATT20AH1 (OUT)
+P3 - unused
+P4 - DESULFATE2 (OUT)
+P5 - BATT9AH1 (OUT)
+P6 - BATT20AH1 (OUT)
+P7 - unused
+P8 - DESULFATE_PWM

@@ -14,7 +14,7 @@ void setup()
     // Setup sleep to idle mode
     SMCR = 0x00;
     
-    Serial.begin(57600);
+    Serial.begin(115200);
 
     cli.initialize();
 

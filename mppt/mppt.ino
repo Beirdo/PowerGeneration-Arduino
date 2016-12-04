@@ -46,6 +46,8 @@ uint32_t prev_i_in = 0;
 
 uint8_t enabled = 1;
 
+RFLink *rflink = NULL;
+
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
 #define MPPT_DECREMENT(x)  ((x) < MPPT_INTERVAL ? 0x00 : (x) - MPPT_INTERVAL)
@@ -256,7 +258,7 @@ void setup(void)
     ScreenRefresh();
     TimerInitialize();
     PWMInitialize(OCR0A, OCR0B, OCR2B);
-    RFLinkInitialize(7, rf_id);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, 7, rf_id);
 }
 
 void loop(void)
@@ -281,7 +283,7 @@ void loop(void)
         CborMessageBuild();
         CborMessageBuffer(&buffer, &len);
         if (buffer && len) {
-            RFLinkSend(buffer, len);
+            rflink->send(buffer, len);
         }
     }
 

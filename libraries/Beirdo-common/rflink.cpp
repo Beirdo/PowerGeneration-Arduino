@@ -8,57 +8,59 @@
 
 #include "rflink.h"
 
-RF24 radio(RF_CE_PIN, RF_CS_PIN);
-uint8_t rf_valid = 0;
-
 const uint64_t rf_pipe_base = 0xC0FFEE0000LL;
 
-void RFLinkInitialize(uint8_t irq, uint8_t nodeNum)
+RFLink::RFLink(uint8_t ce, uint8_t cs, uint8_t irq, uint8_t nodeNum)
 {
-  // ignore irq for now
-  
-  radio.begin();
-  radio.enableDynamicPayloads();
+    m_rf = RF24(ce, cs);
+    m_nodeNum = nodeNum;
+    m_irq = irq;
+    m_valid = 0;
 
-  if (nodeNum == 0xFE) {
-    // Master
-    for (uint8_t i = 0; i < 6; i++) {
-      radio.openReadingPipe(i + 1, rf_pipe_base + i);
+    // ignore irq for now
+    
+    m_rf.begin();
+    m_rf.enableDynamicPayloads();
+
+    if (m_nodeNum == 0xFE) {
+        // Master
+        for (uint8_t i = 0; i < 6; i++) {
+            m_rf.openReadingPipe(i + 1, rf_pipe_base + i);
+        }
+        m_rf.startListening();
+    } else if (m_nodeNum >= 6) {
+        return;
+    } else {
+        m_rf.openWritingPipe(rf_pipe_base + m_nodeNum + 1);
     }
-    radio.startListening();
-  } else if (nodeNum >= 6) {
-    return;
-  } else {
-    radio.openWritingPipe(rf_pipe_base + nodeNum + 1);
-  }
 
-  rf_valid = 1;
+    m_valid = 1;
 }
 
-void RFLinkSend(const void *buf, uint8_t len)
+void RFLink::send(const void *buf, uint8_t len)
 {
-  if (!rf_valid) {
-    return;
-  }
-  radio.write(buf, len);
+    if (!m_valid) {
+        return;
+    }
+    m_rf.write(buf, len);
 }
 
-uint8_t RFLinkReceive(void *buf, uint8_t maxlen)
+uint8_t RFLink::receive(void *buf, uint8_t maxlen)
 {
-  uint8_t pipeNum;
-  uint8_t pktlen;
+    uint8_t pipeNum;
+    uint8_t pktlen;
 
-  if (!rf_valid || !radio.available(&pipeNum)) {
-    return 0;
-  }
+    if (!m_valid || !m_rf.available(&pipeNum)) {
+        return 0;
+    }
 
-  pktlen = radio.getDynamicPayloadSize();
-  if (pktlen > maxlen) {
-    pktlen = maxlen;
-  }
-  radio.read(buf, pktlen);
-  maxlen = pktlen;
-  return pktlen;
+    pktlen = m_rf.getDynamicPayloadSize();
+    if (pktlen > maxlen) {
+        pktlen = maxlen;
+    }
+    m_rf.read(buf, pktlen);
+    maxlen = pktlen;
+    return pktlen;
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

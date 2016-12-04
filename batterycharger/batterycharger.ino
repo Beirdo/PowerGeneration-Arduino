@@ -45,7 +45,7 @@ static const char *line_string[4] = {
     "+3V3", "IN", "BATT1", "BATT2"
 };
 
-// TODO: implement I2C on port 1.  Wire only uses port 0
+RFLink *rflink = NULL;
 
 void convertADCReadings()
 {
@@ -221,7 +221,7 @@ void setup()
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
     TemperaturesInitialize();
-    RFLinkInitialize(2, 0xFE);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, 2, 0xFE);
 }
 
 void loop() 

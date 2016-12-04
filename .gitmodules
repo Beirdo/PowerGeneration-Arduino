@@ -16,3 +16,9 @@
 [submodule "libraries/Arduino-DS18B20"]
 	path = libraries/Arduino-DS18B20
 	url = git@github.com:Beirdo/Arduino-DS18B20.git
+[submodule "libraries/Arduino-DS24820-OneWire"]
+	path = libraries/Arduino-DS24820-OneWire
+	url = git@github.com:Beirdo/Arduino-DS2482-OneWire.git
+[submodule "libraries/Arduino-DS2482-OneWire"]
+	path = libraries/Arduino-DS2482-OneWire
+	url = git@github.com:Beirdo/Arduino-DS2482-OneWire.git

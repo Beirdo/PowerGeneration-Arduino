@@ -25,3 +25,6 @@
 [submodule "libraries/Arduino-CBOR"]
 	path = libraries/Arduino-CBOR
 	url = git@github.com:Beirdo/Arduino-CBOR.git
+[submodule "libraries/Arduino-nRF24L01"]
+	path = libraries/Arduino-nRF24L01
+	url = git@github.com:Beirdo/Arduino-nRF24L01.git

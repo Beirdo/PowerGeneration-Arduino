@@ -1,11 +1,21 @@
 #ifndef SLEEPTIMER_H__
 #define SLEEPTIMER_H__
 
-extern uint16_t timer_count;
-
-void TimerInitialize(void);
-void TimerEnable(void);
-void TimerDisable(void);
+class SleepTimer {
+    public:
+        SleepTimer(uint32_t clock_freq, uint16_t loop_ms);
+        void enable(void);
+        void disable(void);
+        uint16_t count(void) { return m_count; };
+        void setCount(uint16_t value) { m_count = value; };
+        void incrementCount(void) { m_count++; };
+    protected:
+        uint16_t m_count;
+        uint16_t m_cadence;
+        uint16_t m_prescaler;
+        uint16_t m_tick_top;
+        uint32_t m_tick_clock;
+};
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

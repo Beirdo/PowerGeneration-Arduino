@@ -47,6 +47,7 @@ uint32_t prev_i_in = 0;
 uint8_t enabled = 1;
 
 RFLink *rflink = NULL;
+SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
 
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
@@ -103,9 +104,9 @@ void regulateOutput(void)
 
 void updateScreenStrings(void)
 {
-    if (timer_count >= SWAP_COUNT) {
+    if (sleepTimer.count() >= SWAP_COUNT) {
         show_temperature = 1 - show_temperature;
-        timer_count = 0;
+        sleepTimer.setCount(0);
     }
 
     for (int i = 0; i < 6; i++) {
@@ -256,7 +257,6 @@ void setup(void)
     LcdClear();
     ScreenInitialize();
     ScreenRefresh();
-    TimerInitialize();
     PWMInitialize(OCR0A, OCR0B, OCR2B);
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, 7, rf_id);
 }
@@ -267,7 +267,7 @@ void loop(void)
     uint8_t len;
 
     noInterrupts();
-    TimerEnable();
+    sleepTimer.enable();
 
     if (enabled) {
         prev_v_in = voltages[TEST_VIN];

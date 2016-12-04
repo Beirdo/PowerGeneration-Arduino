@@ -46,6 +46,7 @@ static const char *line_string[4] = {
 };
 
 RFLink *rflink = NULL;
+SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
 
 void convertADCReadings()
 {
@@ -217,7 +218,6 @@ void setup()
     LcdClear();
     ScreenInitialize();
     ScreenRefresh();
-    TimerInitialize();
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
     TemperaturesInitialize();
@@ -230,7 +230,7 @@ void loop()
     uint8_t len;
 
     noInterrupts();
-    TimerEnable();
+    sleepTimer.enable();
 
     ADCPoll();
     convertADCReadings();

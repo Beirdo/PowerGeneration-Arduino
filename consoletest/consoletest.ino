@@ -8,6 +8,7 @@
 // in ms
 #define LOOP_CADENCE 100
 
+SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
 
 void setup() 
 {
@@ -17,14 +18,12 @@ void setup()
     Serial.begin(115200);
 
     cli.initialize();
-
-    TimerInitialize();
 }
 
 void loop() 
 {
     noInterrupts();
-    TimerEnable();
+    sleepTimer.enable();
 
     cli.handleInput();
 

@@ -19,7 +19,7 @@ void CborMessageInitialize(void)
         delete cbor_output;
     }
     cbor_output = new CborStaticOutput(CBOR_MAX_LEN);
-    cbor_writer = new CborWriter(*output);
+    cbor_writer = new CborWriter(*cbor)output);
 }
 
 void CborMessageAddMap(uint8_t size)
@@ -31,7 +31,7 @@ void CborMessageAddMap(uint8_t size)
     cbor_writer->writeMap(size);
 }
 
-void CborMapAddArray(cborKey_t keyType, void *array, uint8 itemCount)
+void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount)
 {
     uint8_t tag;
     int8_t exponent;
@@ -165,7 +165,7 @@ void CborMapAddTimestamp(uint16_t years, uint8_t months, uint8_t days,
     timestamp[20] = '\0';
 
     // map key
-    cbor_writer->writeInt(CBOR_KEY_CBOR_TIMESTAMP);
+    cbor_writer->writeInt(CBOR_KEY_TIMESTAMP);
     // map value
     cbor_writer->writeTag(0);           // timestamp string
     cbor_writer->writeString(timestamp, 20);

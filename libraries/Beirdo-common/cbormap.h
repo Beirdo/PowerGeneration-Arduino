@@ -16,7 +16,7 @@ typedef enum {
 
 void CborMessageInitialize(void);
 void CborMessageAddMap(uint8_t size);
-void CborMapAddArray(cborKey_t keyType, void *array, uint8 itemCount);
+void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount);
 void CborMapAddSource(uint8_t source);
 void CborMapAddCoreTemperature(int16_t temperature);
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len);

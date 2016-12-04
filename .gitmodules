@@ -22,3 +22,6 @@
 [submodule "libraries/Arduino-DS2482-OneWire"]
 	path = libraries/Arduino-DS2482-OneWire
 	url = git@github.com:Beirdo/Arduino-DS2482-OneWire.git
+[submodule "libraries/Arduino-CBOR"]
+	path = libraries/Arduino-CBOR
+	url = git@github.com:Beirdo/Arduino-CBOR.git

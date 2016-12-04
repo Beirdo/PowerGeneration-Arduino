@@ -19,7 +19,7 @@ void CborMessageInitialize(void)
         delete cbor_output;
     }
     cbor_output = new CborStaticOutput(CBOR_MAX_LEN);
-    cbor_writer = new CborWriter(*cbor)output);
+    cbor_writer = new CborWriter(*cbor_output);
 }
 
 void CborMessageAddMap(uint8_t size)

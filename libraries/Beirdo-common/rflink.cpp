@@ -10,9 +10,9 @@
 
 const uint64_t rf_pipe_base = 0xC0FFEE0000LL;
 
-RFLink::RFLink(uint8_t ce, uint8_t cs, uint8_t irq, uint8_t nodeNum)
+RFLink::RFLink(uint8_t ce, uint8_t cs, uint8_t irq, uint8_t nodeNum) : 
+    m_rf(RF24(ce, cs))
 {
-    m_rf = RF24(ce, cs);
     m_nodeNum = nodeNum;
     m_irq = irq;
     m_valid = 0;

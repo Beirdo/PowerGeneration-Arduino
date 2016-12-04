@@ -3,7 +3,7 @@
 
 class SleepTimer {
     public:
-        SleepTimer(uint32_t clock_freq, uint16_t loop_ms);
+        SleepTimer(uint16_t loop_ms);
         void enable(void);
         void disable(void);
         uint16_t count(void) { return m_count; };
@@ -13,6 +13,7 @@ class SleepTimer {
         uint16_t m_count;
         uint16_t m_cadence;
         uint16_t m_prescaler;
+        uint8_t m_cs_bits;
         uint16_t m_tick_top;
         uint32_t m_tick_clock;
 };

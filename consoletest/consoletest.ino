@@ -3,12 +3,10 @@
 #include "sleeptimer.h"
 #include "serialcli.h"
 
-#define CLOCK_FREQUENCY 8000000
-
 // in ms
 #define LOOP_CADENCE 100
 
-SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
+SleepTimer sleepTimer(LOOP_CADENCE);
 
 void setup() 
 {

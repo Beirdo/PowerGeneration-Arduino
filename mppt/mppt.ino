@@ -13,8 +13,6 @@
 #include "cbormap.h"
 #include "serialcli.h"
 
-#define CLOCK_FREQUENCY 8000000
-
 // in ms
 #define LOOP_CADENCE 10
 #define SWAP_TIME 2000
@@ -47,7 +45,7 @@ uint32_t prev_i_in = 0;
 uint8_t enabled = 1;
 
 RFLink *rflink = NULL;
-SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
+SleepTimer sleepTimer(LOOP_CADENCE);
 
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)

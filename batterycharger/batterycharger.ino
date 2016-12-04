@@ -19,8 +19,6 @@
 
 #include <Adafruit_ILI9340.h>
 
-#define CLOCK_FREQUENCY 8000000
-
 // in ms
 #define LOOP_CADENCE 100
 
@@ -46,7 +44,7 @@ static const char *line_string[4] = {
 };
 
 RFLink *rflink = NULL;
-SleepTimer sleepTimer(CLOCK_FREQUENCY, LOOP_CADENCE);
+SleepTimer sleepTimer(LOOP_CADENCE);
 
 void convertADCReadings()
 {

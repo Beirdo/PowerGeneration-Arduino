@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <CborEncoder.h>
 #include "cbormap.h"
 

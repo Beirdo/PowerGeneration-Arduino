@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "adcread.h"
 
 uint16_t adc_readings[8];	///< raw readings

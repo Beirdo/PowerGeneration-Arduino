@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "linkedlist.h"
 
 LinkedListItem::LinkedListItem(void *item)

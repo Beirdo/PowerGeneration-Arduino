@@ -1,3 +1,4 @@
+#include <Arduino.h>
 
 uint8_t *timer_port_conv1 = 0;
 uint8_t *timer_port_conv2 = 0;

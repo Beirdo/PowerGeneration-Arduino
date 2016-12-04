@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "bufprint.h"
 
 #define digit(x)  ((char)(((x) + 0x30) & 0xFF))

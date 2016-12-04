@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <string.h>
 #include "serialcli.h"
 

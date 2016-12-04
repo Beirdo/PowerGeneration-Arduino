@@ -10,3 +10,6 @@
 [submodule "libraries/Arduino-Wire1"]
 	path = libraries/Arduino-Wire1
 	url = git@github.com:Beirdo/Arduino-Wire1.git
+[submodule "libraries/Arduino-ATSHA204"]
+	path = libraries/Arduino-ATSHA204
+	url = git@github.com:Beirdo/Arduino-ATSHA204.git

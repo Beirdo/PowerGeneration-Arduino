@@ -13,3 +13,6 @@
 [submodule "libraries/Arduino-ATSHA204"]
 	path = libraries/Arduino-ATSHA204
 	url = git@github.com:Beirdo/Arduino-ATSHA204.git
+[submodule "libraries/Arduino-DS18B20"]
+	path = libraries/Arduino-DS18B20
+	url = git@github.com:Beirdo/Arduino-DS18B20.git

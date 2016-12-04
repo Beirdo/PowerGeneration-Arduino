@@ -20,9 +20,11 @@
 
 #define RF_CE_PIN 8
 #define RF_CS_PIN 20
+#define RF_IRQ_PIN 7
 
 
 static const uint8_t EEMEM rf_link_id = 0;
+uint8_t rf_id;
 
 static const char temp_string[] = "Temp";
 static const char *line_string[4] = {
@@ -173,7 +175,8 @@ void CborMessageBuild(void);
 void CborMessageBuild(void)
 {
     CborMessageInitialize();
-    CborMessageAddMap(4);
+    CborMessageAddMap(5);
+    CborMapAddSource(CBOR_SOURCE_MPPT);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
@@ -249,14 +252,14 @@ void setup(void)
 
     cli.initialize();
 
-    uint8_t rf_id = EEPROM.read(rf_link_id);
+    rf_id = EEPROM.read(rf_link_id);
     
     LcdInitialize();
     LcdClear();
     ScreenInitialize();
     ScreenRefresh();
     PWMInitialize(OCR0A, OCR0B, OCR2B);
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, 7, rf_id);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 }
 
 void loop(void)

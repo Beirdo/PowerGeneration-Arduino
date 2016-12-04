@@ -85,7 +85,7 @@ void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount)
     }
 }
 
-void CborMapAddSource(uint8_t source)
+void CborMapAddSource(cborSource_t source)
 {
     if (!cbor_writer) {
         return;
@@ -95,6 +95,18 @@ void CborMapAddSource(uint8_t source)
     cbor_writer->writeInt(CBOR_KEY_SOURCE);
     // map value
     cbor_writer->writeInt(source);
+}
+
+void CborMapAddRfId(uint8_t id);
+{
+    if (!cbor_writer) {
+        return;
+    }
+
+    // map key
+    cbor_writer->writeInt(CBOR_KEY_RF_ID);
+    // map value
+    cbor_writer->writeInt(id);
 }
 
 void CborMapAddCoreTemperature(int16_t temperature)

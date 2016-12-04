@@ -4,7 +4,6 @@
 #include <SdFat.h>
 
 #include "rflink.h"
-#include "temperatures.h"
 #include "rtclock.h"
 #include "sleeptimer.h"
 #include "adcread.h"
@@ -26,13 +25,13 @@ SdFat sdcard;
 
 #define RF_CS_PIN 4
 #define RF_CE_PIN 5
+#define RF_IRQ_PIN 2
 
 #define TEST_3V3   0
 #define TEST_VIN   1
 #define TEST_BATT1 2
 #define TEST_BATT2 3
 
-uint16_t temperatures[8];
 uint16_t voltages[4];
 uint32_t currents[4];
 uint32_t powers[4];
@@ -76,11 +75,11 @@ void CborMessageBuildLocal(void)
     CborMessageAddMap(7);
     CborMapAddTimestamp(now.years(), now.months(), now.days(), now.hours(),
                         now.minutes(), now.seconds());
-    CborMapAddSource(0);
+    CborMapAddSource(CBOR_SOURCE_CHARGER);
+    CborMapAddRfId(0xFE);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
-    CborMapAddArray(CBOR_KEY_TEMPERATURE_ARRAY, temperatures, 8);
     CborMapAddCoreTemperature(temperature);
 }
 
@@ -93,7 +92,7 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
     CborMessageAddMap(3);
     CborMapAddTimestamp(now.years(), now.months(), now.days(), now.hours(),
                         now.minutes(), now.seconds());
-    CborMapAddSource(source);
+    CborMapAddRfId(source);
     CborMapAddCborPayload(payload, len);
 }
 
@@ -219,7 +218,7 @@ void setup()
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
     TemperaturesInitialize();
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, 2, 0xFE);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, 0xFE);
 }
 
 void loop() 
@@ -233,7 +232,6 @@ void loop()
     ADCPoll();
     convertADCReadings();
     PWMUpdateLed(light);
-    TemperaturesPoll(temperatures, 8);
     updateScreenStrings();
     ScreenRefresh()
 

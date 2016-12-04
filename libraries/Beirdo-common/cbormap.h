@@ -6,6 +6,7 @@
 typedef enum {
     CBOR_KEY_TIMESTAMP,
     CBOR_KEY_SOURCE,
+    CBOR_KEY_RF_ID,
     CBOR_KEY_VOLTAGE_ARRAY,
     CBOR_KEY_CURRENT_ARRAY,
     CBOR_KEY_POWER_ARRAY,
@@ -14,10 +15,18 @@ typedef enum {
     CBOR_KEY_CBOR_PAYLOAD,
 } cborKey_t;
 
+typedef enum {
+    CBOR_SOURCE_CHARGER,
+    CBOR_SOURCE_MPPT,
+    CBOR_SOURCE_NANO_TEMPERATURE,
+    CBOR_SOURCE_NANO_GPRS,
+} cborSource_t;
+
 void CborMessageInitialize(void);
 void CborMessageAddMap(uint8_t size);
 void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount);
-void CborMapAddSource(uint8_t source);
+void CborMapAddSource(cborSource_t source);
+void CborMapAddRfId(uint8_t id);
 void CborMapAddCoreTemperature(int16_t temperature);
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len);
 void CborMapAddTimestamp(uint16_t years, uint8_t months, uint8_t days,

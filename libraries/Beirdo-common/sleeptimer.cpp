@@ -60,7 +60,7 @@ void SleepTimer::enable(void)
     TIFR1 = _BV(OCF1A);
 
     // enable it
-    TCCR1B = _BV(WGM12) | LOOP_CS_BITS;
+    TCCR1B = _BV(WGM12) | LOOP_CS_BITS(m_prescaler);
 }
 
 void SleepTimer::disable(void)

@@ -27,6 +27,8 @@ SdFat sdcard;
 #define RF_CE_PIN 5
 #define RF_IRQ_PIN 2
 
+#define SD_CS_PIN 20
+
 #define TEST_3V3   0
 #define TEST_VIN   1
 #define TEST_BATT1 2
@@ -73,14 +75,14 @@ void CborMessageBuildLocal(void)
     DateTime now = RTClockGetTime();
     CborMessageInitialize();
     CborMessageAddMap(7);
-    CborMapAddTimestamp(now.years(), now.months(), now.days(), now.hours(),
-                        now.minutes(), now.seconds());
+    CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
+                        now.minute(), now.second());
     CborMapAddSource(CBOR_SOURCE_CHARGER);
     CborMapAddRfId(0xFE);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
-    CborMapAddCoreTemperature(temperature);
+    CborMapAddCoreTemperature(core_temperature);
 }
 
 void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len);
@@ -90,8 +92,8 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
     DateTime now = RTClockGetTime();
     CborMessageInitialize();
     CborMessageAddMap(3);
-    CborMapAddTimestamp(now.years(), now.months(), now.days(), now.hours(),
-                        now.minutes(), now.seconds());
+    CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
+                        now.minute(), now.second());
     CborMapAddRfId(source);
     CborMapAddCborPayload(payload, len);
 }
@@ -99,20 +101,20 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
 class BatteryCLICommand : public CLICommand
 {
     public:
-        DisableCommand(void) : CLICommand("battery", 2);
+        BatteryCLICommand(void) : CLICommand("battery", 2) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
                     Serial.print("Battery ");
-                    Serial.print(args[0]);
+                    Serial.print((char *)args[0]);
                     Serial.println(" invalid");
                     return 0;
                 }
                 int8_t chargerEnable = *args[1] - 0x31;
                 if (chargerEnable < 0 || chargerEnable > 1) {
                     Serial.print("Enabled value ");
-                    Serial.print(args[1]);
+                    Serial.print((char *)args[1]);
                     Serial.println(" invalid");
                     return 0;
                 }
@@ -128,25 +130,25 @@ class BatteryCLICommand : public CLICommand
                 }
                 return 1;
             };
-}
+};
 
 class DesulfateCLICommand : public CLICommand
 {
     public:
-        DesulfateCLICommand(void) : CLICommand("desulfate", 2);
+        DesulfateCLICommand(void) : CLICommand("desulfate", 2) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
                     Serial.print("Battery ");
-                    Serial.print(args[0]);
+                    Serial.print((char *)args[0]);
                     Serial.println(" invalid");
                     return 0;
                 }
                 int8_t desulfateEnable = *args[1] - 0x31;
                 if (desulfateEnable < 0 || desulfateEnable > 1) {
                     Serial.print("Enabled value ");
-                    Serial.print(args[1]);
+                    Serial.print((char *)args[1]);
                     Serial.println(" invalid");
                     return 0;
                 }
@@ -155,32 +157,32 @@ class DesulfateCLICommand : public CLICommand
 
                 Serial.print("Desulfator for battery ");
                 Serial.print(batteryNum);
-                if (chargerEnable) {
+                if (desulfateEnable) {
                     Serial.println(" enabled");
                 } else {
                     Serial.println(" disabled");
                 }
                 return 1;
             };
-}
+};
 
 class CapacityCLICommand : public CLICommand
 {
     public:
-        CapacityCLICommand(void) : CLICommand("capacity", 2);
+        CapacityCLICommand(void) : CLICommand("capacity", 2) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
                     Serial.print("Battery ");
-                    Serial.print(args[0]);
+                    Serial.print((char *)args[0]);
                     Serial.println(" invalid");
                     return 0;
                 }
                 int8_t capacity = (int8_t)strtoul(args[1], 0, 10);
                 if (capacity != 9 && capacity != 20) {
                     Serial.print("Enabled value ");
-                    Serial.print(args[1]);
+                    Serial.print((char *)args[1]);
                     Serial.println(" invalid");
                     return 0;
                 }
@@ -194,7 +196,7 @@ class CapacityCLICommand : public CLICommand
                 Serial.println(" Ah");
                 return 1;
             };
-}
+};
 
 
 void setup() 
@@ -208,16 +210,15 @@ void setup()
     cli.registerCommand(new DesulfateCLICommand());
     cli.registerCommand(new CapacityCLICommand());
 
-    cli.initialize()
+    cli.initialize();
 
-    SDCardInitialize(20);
+    SDCardInitialize(SD_CS_PIN);
     LcdInitialize();
     LcdClear();
     ScreenInitialize();
     ScreenRefresh();
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
-    TemperaturesInitialize();
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, 0xFE);
 }
 

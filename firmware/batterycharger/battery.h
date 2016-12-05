@@ -10,7 +10,7 @@ class Desulfator {
         void setPWM(uint8_t enable);
         uint8_t m_enabled;
         uint8_t m_desulfate_mask[2];
-}
+};
 
 class Battery {
     public:

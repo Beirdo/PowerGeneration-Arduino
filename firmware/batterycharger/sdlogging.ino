@@ -51,7 +51,7 @@ void SDCardInitialize(uint8_t cs)
     }
 }
 
-void SDCardWrite(buffer, len)
+void SDCardWrite(uint8_t *buffer, uint8_t len)
 {
     file.write(buffer, len);
 }

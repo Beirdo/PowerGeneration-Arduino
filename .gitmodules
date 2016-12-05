@@ -34,3 +34,6 @@
 [submodule "libraries/Adafruit_ILI9340"]
 	path = libraries/Adafruit_ILI9340
 	url = https://github.com/adafruit/Adafruit_ILI9340
+[submodule "libraries/Adafruit-GFX-Library"]
+	path = libraries/Adafruit-GFX-Library
+	url = https://github.com/adafruit/Adafruit-GFX-Library.git

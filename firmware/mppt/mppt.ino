@@ -115,7 +115,7 @@ void updateScreenStrings(void)
 
     if (show_temperature) {
         strcpy(screen_lines[0], temp_string);
-        printTemperature(temperature, &screen_lines[0][5], 5);
+        printTemperature(core_temperature, &screen_lines[0][5], 5);
         screen_lines[0][10] = 0x7F;  // °
         screen_lines[0][11] = 'C';
     } else {
@@ -180,13 +180,13 @@ void CborMessageBuild(void)
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
-    CborMapAddCoreTemperature(temperature);
+    CborMapAddCoreTemperature(core_temperature);
 }
 
 class GetRFIDCLICommand : public CLICommand
 {
     public:
-        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0);
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(rf_link_id);
@@ -194,12 +194,12 @@ class GetRFIDCLICommand : public CLICommand
                 Serial.println(rf_id, HEX);
                 return 1;
             };
-}
+};
 
 class SetRFIDCLICommand : public CLICommand
 {
     public:
-        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1);
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
@@ -208,12 +208,12 @@ class SetRFIDCLICommand : public CLICommand
                 Serial.println(rf_id, HEX);
                 return 1;
             };
-}
+};
 
 class EnableCLICommand : public CLICommand
 {
     public:
-        EnableCLICommand(void) : CLICommand("enable", 0);
+        EnableCLICommand(void) : CLICommand("enable", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
                 if (!enabled) {
@@ -224,19 +224,19 @@ class EnableCLICommand : public CLICommand
                 Serial.println("Regulators enabled");
                 return 1;
             };
-}
+};
 
 class DisableCLICommand : public CLICommand
 {
     public:
-        DisableCLICommand(void) : CLICommand("disable", 0);
+        DisableCLICommand(void) : CLICommand("disable", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
                 enabled = 0;
                 Serial.println("Regulators disabled");
                 return 1;
             };
-}
+};
 
 void setup(void)
 {

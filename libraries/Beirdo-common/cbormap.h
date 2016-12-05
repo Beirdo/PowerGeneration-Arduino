@@ -1,6 +1,7 @@
 #ifndef CBORMAP_H__
 #define CBORMAP_H__
 
+#include <Arduino.h>
 #include <inttypes.h>
 
 typedef enum {

@@ -1,5 +1,5 @@
 #include <Wire1.h>
-#include "max7135.h"
+#include "max7315.h"
 
 MAX7315 max7315(0x21);
 

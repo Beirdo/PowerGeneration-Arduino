@@ -97,7 +97,7 @@ void CborMapAddSource(cborSource_t source)
     cbor_writer->writeInt(source);
 }
 
-void CborMapAddRfId(uint8_t id);
+void CborMapAddRfId(uint8_t id)
 {
     if (!cbor_writer) {
         return;

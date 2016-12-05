@@ -16,7 +16,6 @@
 #define RF_IRQ_PIN 2
 
 uint16_t temperatures[8];
-uint16_t core_temperature;
 
 static const uint8_t EEMEM rf_link_id = 0;
 
@@ -37,7 +36,7 @@ void CborMessageBuild(void)
 class GetRFIDCLICommand : public CLICommand
 {
     public:
-        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0);
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(rf_link_id);
@@ -45,12 +44,12 @@ class GetRFIDCLICommand : public CLICommand
                 Serial.println(rf_id, HEX);
                 return 1;
             };
-}
+};
 
 class SetRFIDCLICommand : public CLICommand
 {
     public:
-        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1);
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
@@ -59,7 +58,7 @@ class SetRFIDCLICommand : public CLICommand
                 Serial.println(rf_id, HEX);
                 return 1;
             };
-}
+};
 
 
 void setup() 
@@ -72,7 +71,7 @@ void setup()
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
 
-    cli.initialize()
+    cli.initialize();
 
     uint8_t rf_id = EEPROM.read(rf_link_id);
 
@@ -88,7 +87,7 @@ void loop()
     noInterrupts();
     sleepTimer.enable();
 
-    core_temperature = readAvrTemperature(void);
+    core_temperature = readAvrTemperature();
     TemperaturesPoll(temperatures, 8);
 
     CborMessageBuild();

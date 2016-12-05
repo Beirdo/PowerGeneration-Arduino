@@ -37,3 +37,6 @@
 [submodule "libraries/Adafruit-GFX-Library"]
 	path = libraries/Adafruit-GFX-Library
 	url = https://github.com/adafruit/Adafruit-GFX-Library.git
+[submodule "libraries/Arduino-SIM800"]
+	path = libraries/Arduino-SIM800
+	url = git@github.com:Beirdo/Arduino-SIM800.git

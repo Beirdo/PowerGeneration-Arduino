@@ -133,10 +133,41 @@ class ResetCLICommand : public CLICommand {
           { Serial.println("Resetting...");  delay(1000); asm volatile ("jmp 0"); };
 };
 
+class GetRFIDCLICommand : public CLICommand
+{
+    public:
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = EEPROM.read(rf_link_id);
+                Serial.print("Current RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
 
-void SerialCLI::registerCommonCommands(void) {
+class SetRFIDCLICommand : public CLICommand
+{
+    public:
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                EEPROM.update(rf_link_id, rf_id);
+                Serial.print("New RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+
+
+void SerialCLI::registerCommonCommands(void)
+{
     registerCommand(new HelpCLICommand());
     registerCommand(new ResetCLICommand());
+    registerCommand(new GetRFIDCLICommand());
+    registerCommand(new SetRFIDCLICommand());
 }
 
 void SerialCLI::listCommands(void)

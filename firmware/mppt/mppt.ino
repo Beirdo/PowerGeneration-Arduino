@@ -176,39 +176,12 @@ void CborMessageBuild(void)
 {
     CborMessageInitialize();
     CborMessageAddMap(5);
-    CborMapAddSource(CBOR_SOURCE_MPPT);
+    CborMapAddInteger(CBOR_KEY_SOURCE, CBOR_SOURCE_MPPT);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
-    CborMapAddCoreTemperature(core_temperature);
+    CborMapAddInteger(CBOR_KEY_CORE_TEMPERATURE, core_temperature);
 }
-
-class GetRFIDCLICommand : public CLICommand
-{
-    public:
-        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
-        uint8_t run(uint8_t nargs, uint8_t **args)
-            {
-                uint8_t rf_id = EEPROM.read(rf_link_id);
-                Serial.print("Current RF ID = ");
-                Serial.println(rf_id, HEX);
-                return 1;
-            };
-};
-
-class SetRFIDCLICommand : public CLICommand
-{
-    public:
-        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
-        uint8_t run(uint8_t nargs, uint8_t **args)
-            {
-                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
-                EEPROM.update(rf_link_id, rf_id);
-                Serial.print("New RF ID = ");
-                Serial.println(rf_id, HEX);
-                return 1;
-            };
-};
 
 class EnableCLICommand : public CLICommand
 {
@@ -245,8 +218,6 @@ void setup(void)
 
     Serial.begin(115200);
 
-    cli.registerCommand(new GetRFIDCLICommand());
-    cli.registerCommand(new SetRFIDCLICommand());
     cli.registerCommand(new EnableCLICommand());
     cli.registerCommand(new DisableCLICommand());
 

@@ -77,12 +77,12 @@ void CborMessageBuildLocal(void)
     CborMessageAddMap(7);
     CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
                         now.minute(), now.second());
-    CborMapAddSource(CBOR_SOURCE_CHARGER);
-    CborMapAddRfId(0xFE);
+    CborMapAddInteger(CBOR_KEY_SOURCE, CBOR_SOURCE_CHARGER);
+    CborMapAddInteger(CBOR_KEY_RF_ID, 0xFE);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
     CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
     CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
-    CborMapAddCoreTemperature(core_temperature);
+    CborMapAddInteger(CBOR_KEY_CORE_TEMPERATURE, core_temperature);
 }
 
 void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len);
@@ -94,7 +94,7 @@ void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
     CborMessageAddMap(3);
     CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
                         now.minute(), now.second());
-    CborMapAddRfId(source);
+    CborMapAddInteger(CBOR_KEY_SOURCE, source);
     CborMapAddCborPayload(payload, len);
 }
 

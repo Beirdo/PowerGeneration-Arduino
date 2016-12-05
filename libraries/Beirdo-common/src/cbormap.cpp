@@ -85,43 +85,16 @@ void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount)
     }
 }
 
-void CborMapAddSource(cborSource_t source)
+void CborMapAddInteger(cborKey_t key, int value)
 {
     if (!cbor_writer) {
         return;
     }
 
     // map key
-    cbor_writer->writeInt(CBOR_KEY_SOURCE);
+    cbor_writer->writeInt(key);
     // map value
-    cbor_writer->writeInt(source);
-}
-
-void CborMapAddRfId(uint8_t id)
-{
-    if (!cbor_writer) {
-        return;
-    }
-
-    // map key
-    cbor_writer->writeInt(CBOR_KEY_RF_ID);
-    // map value
-    cbor_writer->writeInt(id);
-}
-
-void CborMapAddCoreTemperature(int16_t temperature)
-{
-    if (!cbor_writer) {
-        return;
-    }
-
-    // map key
-    cbor_writer->writeInt(CBOR_KEY_CORE_TEMPERATURE);
-    // map value
-    cbor_writer->writeTag(4);       // decimal fraction (1/10 degC)
-    cbor_writer->writeArray(2);
-    cbor_writer->writeInt(-1);      // exponent
-    cbor_writer->writeInt(temperature);
+    cbor_writer->writeInt(value);
 }
 
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len)

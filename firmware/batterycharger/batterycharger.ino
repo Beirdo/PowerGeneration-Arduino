@@ -85,19 +85,6 @@ void CborMessageBuildLocal(void)
     CborMapAddInteger(CBOR_KEY_CORE_TEMPERATURE, core_temperature);
 }
 
-void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len);
-
-void CborMessageBuildRemote(uint8_t source, uint8_t *payload, uint8_t len)
-{
-    DateTime now = RTClockGetTime();
-    CborMessageInitialize();
-    CborMessageAddMap(3);
-    CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
-                        now.minute(), now.second());
-    CborMapAddInteger(CBOR_KEY_SOURCE, source);
-    CborMapAddCborPayload(payload, len);
-}
-
 class BatteryCLICommand : public CLICommand
 {
     public:

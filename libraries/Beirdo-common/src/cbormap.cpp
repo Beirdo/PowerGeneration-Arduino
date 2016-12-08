@@ -4,9 +4,6 @@
 
 #define CBOR_MAX_LEN 64
 
-uint8_t cbor_buffer[CBOR_MAX_LEN];
-
-
 CborStaticOutput *cbor_output = NULL;
 CborWriter *cbor_writer = NULL;
 
@@ -97,6 +94,22 @@ void CborMapAddInteger(cborKey_t key, int value)
     cbor_writer->writeInt(value);
 }
 
+void CborMapAddLocation(float lat, float long)
+{
+    if (!cbor_writer) {
+        return;
+    }
+
+    // map key
+    cbor_writer->writeInt(CBOR_KEY_GPRS_LOCATION);
+    // Map value is an array of two floats
+    cbor_writer->writeArray(2);
+    cbor_writer->writeSpecial(26);  // 32-bit float
+    cbor_writer->writeBytes((uint8_t *)&lat, 4);
+    cbor_writer->writeSpecial(26);  // 32-bit float
+    cbor_writer->writeBytes((uint8_t *)&lon, 4);
+}
+
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len)
 {
     if (!cbor_writer) {
@@ -156,16 +169,33 @@ void CborMapAddTimestamp(uint16_t years, uint8_t months, uint8_t days,
     cbor_writer->writeString(timestamp, 20);
 }
 
-void CborMessageBuffer(uint8_t **buffer, uint8_t *len)
+bool CborMessageBuffer(uint8_t **buffer, uint8_t *len)
 {
     if (!cbor_output) {
         *buffer = NULL;
         *len = 0;
-        return;
+        return false;
     }
 
-    *buffer = cbor_output->getData();
-    *len = cbor_output->getSize();
+    uint8_t *outBuf = *buffer;
+    uint8_t maxLen = *len;
+    
+    uint8_t *cborBuf = cbor_output->getData();
+    uint8_t cborLen = cbor_output->getSize();
+
+    if (outBuf) {
+        if (cborLen > maxLen) {
+            return false;
+        }
+
+        memcpy(outBuf, cborBuf, cborLen);
+        *len = cborLen;
+        return true;
+    }
+
+    *buffer = cborBuf;
+    *len = cborLen;
+    return true;
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

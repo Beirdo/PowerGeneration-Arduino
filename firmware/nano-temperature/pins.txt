@@ -1,7 +1,7 @@
 Arduino pins (on attached Nano module)
 
-0  - RXD (UART) - IN - MARKED AS TXD
-1  - TXD (UART) - OUT - MARKED AS RXD
+0  - RXD (UART) - IN
+1  - TXD (UART) - OUT
 2  - /RF_IRQ (EXT INT0) - IN
 3  - unused
 4  - unused

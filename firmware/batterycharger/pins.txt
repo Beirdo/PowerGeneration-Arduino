@@ -8,25 +8,25 @@ Ardiuno pins
 5  - PD5 - /RF_CE - OUT
 6  - PD6 - LED_PWM (OC0A) - OUT
 7  - PD7 - /LCD_RST - OUT
-8  - PB0 - /RTC_IRQ (PCINT0) - IN
-9  - PB1 - LCD_DC - OUT
+8  - PB0 - /LI_ION_IRQ (PCINT0) - IN
+9  - PB1 - DESULFATE_PWM (OC1A) - OUT
 10 - PB2 - /LCD_CS (SS) - OUT
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN
 13 - PB5 - SCK - OUT
-14 - PC0 - A0 - ADC_I_3V3 - IN (A)
-15 - PC1 - A1 - ADC_V_VIN - IN (A)
-16 - PC2 - A2 - ADC_I_VIN - IN (A)
-17 - PC3 - A3 - ADC_V_BATT1 - IN (A)
-18 - PC4 - A4 - ADC_I_BATT1 - IN (A)
-19 - PC5 - A5 - ADC_V_BATT2 - IN (A)
+14 - PC0 - unused
+15 - PC1 - unused
+16 - PC2 - unused
+17 - PC3 - unused
+18 - PC4 - SDA (I2C) - IN/OUT
+19 - PC5 - SCL (I2C) - IN/OUT
 20 - PB6 - /SD_CS - OUT
-21 - PB7 - unused
+21 - PB7 - LCD_DC - OUT
 22 - PC6 - /RESET
-23 - PE2 - A6 - ADC_I_BATT2 - IN (A)
+23 - PE2 - unused
 24 - PE3 - A7 - ADC_LIGHT - IN (A)
-25 - PE0 - SDA (I2C1) - IN/OUT
-26 - PE1 - SCL (I2C1) - IN/OUT
+25 - PE0 - unused
+26 - PE1 - unused
 
 Via I2C slave at address 0x20 (PCF8574)
 P0 - /STAT11 (IN, OD)
@@ -38,7 +38,7 @@ P5 - /STAT22 (IN, OD)
 P6 - /PGOOD2 (IN, OD)
 P7 - ENABLE2 (OUT)
 
-Via I2C slave at address 0x21 (MAX7315) - outputs OD, inverted
+Via I2C slave at address 0x21 (PCF8574)
 P0 - DESULFATE1 (OUT)
 P1 - BATT9AH1 (OUT)
 P2 - BATT20AH1 (OUT)
@@ -47,4 +47,13 @@ P4 - DESULFATE2 (OUT)
 P5 - BATT9AH1 (OUT)
 P6 - BATT20AH1 (OUT)
 P7 - unused
-P8 - DESULFATE_PWM
+
+Via I2C slave at address 0x22 (PCF8574)
+P0 - LI_ION_EN (OUT)
+P1 - /REG_5V_PGOOD (IN)
+P2 - /LI_ION_PGOOD (IN)
+P3 - /LI_ION_STAT1 (IN)
+P4 - /LI_ION_STAT2 (IN)
+P5 - unused
+P6 - unused
+P7 - unused

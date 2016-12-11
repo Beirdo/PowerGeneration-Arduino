@@ -46,3 +46,6 @@
 [submodule "libraries/Adafruit_PCD8544"]
 	path = libraries/Adafruit_PCD8544
 	url = https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library.git
+[submodule "libraries/Arduino-PCF8574"]
+	path = libraries/Arduino-PCF8574
+	url = https://github.com/Beirdo/Arduino-PCF8574.git

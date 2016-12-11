@@ -49,3 +49,6 @@
 [submodule "libraries/Arduino-PCF8574"]
 	path = libraries/Arduino-PCF8574
 	url = https://github.com/Beirdo/Arduino-PCF8574.git
+[submodule "libraries/Adafruit_INA219"]
+	path = libraries/Adafruit_INA219
+	url = https://github.com/adafruit/Adafruit_INA219.git

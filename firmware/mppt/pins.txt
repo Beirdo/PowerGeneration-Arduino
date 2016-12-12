@@ -14,16 +14,16 @@ Ardiuno pins
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN
 13 - PB5 - SCK - OUT
-14 - PC0 - A0 - ADC_I_3V3 - IN (A)
-15 - PC1 - A1 - ADC_V_VIN - IN (A)
-16 - PC2 - A2 - ADC_I_VIN - IN (A)
-17 - PC3 - A3 - ADC_V_VMPP - IN (A)
-18 - PC4 - A4 - ADC_I_VMPP - IN (A)
-19 - PC5 - A5 - ADC_V_18V - IN (A)
-20 - PB6 - unused
+14 - PC0 - unused
+15 - PC1 - unused
+16 - PC2 - unused
+17 - PC3 - unused
+18 - PC4 - SDA (I2C) - IN/OUT
+19 - PC5 - SCL (I2C) - IN/OUT
+20 - PB6 - /ADC_IRQ (PCINT) - IN
 21 - PB7 - unused
 22 - PC6 - /RESET
-23 - PE2 - A6 - ADC_I_18V - IN (A)
+23 - PE2 - unused
 24 - PE3 - A7 - ADC_LIGHT - IN (A)
 25 - PE0 - unused
 26 - PE1 - unused

@@ -1,0 +1,5 @@
+I2C Bus addresses:
+
+0x40 - INA219A - Monitoring - +3V3
+0x41 - INA219A - Monitoring - +18V (output)
+0x48 - ADS1115 - Monitoring - Vin / Vmppt

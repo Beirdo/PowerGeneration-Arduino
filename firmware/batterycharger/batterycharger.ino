@@ -63,9 +63,9 @@ void CborMessageBuildLocal(void)
                         now.minute(), now.second());
     CborMapAddInteger(CBOR_KEY_SOURCE, CBOR_SOURCE_CHARGER);
     CborMapAddInteger(CBOR_KEY_RF_ID, 0xFE);
-    CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 4);
-    CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 4);
-    CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 4);
+    CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 6);
+    CborMapAddArray(CBOR_KEY_CURRENT_ARRAY, currents, 6);
+    CborMapAddArray(CBOR_KEY_POWER_ARRAY, powers, 6);
     CborMapAddInteger(CBOR_KEY_CORE_TEMPERATURE, core_temperature);
 }
 

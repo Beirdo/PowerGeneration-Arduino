@@ -55,3 +55,6 @@
 [submodule "libraries/Arduino-ADS1115"]
 	path = libraries/Arduino-ADS1115
 	url = https://github.com/Beirdo/Arduino-ADS1115.git
+[submodule "libraries/Arduino-INA219"]
+	path = libraries/Arduino-INA219
+	url = https://github.com/Beirdo/Arduino-INA219.git

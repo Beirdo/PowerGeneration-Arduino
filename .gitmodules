@@ -4,9 +4,6 @@
 [submodule "libraries/Library-Arduino-Cbor"]
 	path = libraries/Library-Arduino-Cbor
 	url = git@github.com:Beirdo/Library-Arduino-Cbor.git
-[submodule "libraries/Wire1"]
-	path = libraries/Wire1
-	url = git@github.com:Beirdo/Arduino-Wire1.git
 [submodule "libraries/Arduino-Wire1"]
 	path = libraries/Arduino-Wire1
 	url = git@github.com:Beirdo/Arduino-Wire1.git
@@ -48,13 +45,13 @@
 	url = https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library.git
 [submodule "libraries/Arduino-PCF8574"]
 	path = libraries/Arduino-PCF8574
-	url = https://github.com/Beirdo/Arduino-PCF8574.git
+	url = git@github.com:Beirdo/Arduino-PCF8574.git
 [submodule "libraries/Adafruit_INA219"]
 	path = libraries/Adafruit_INA219
 	url = https://github.com/adafruit/Adafruit_INA219.git
 [submodule "libraries/Arduino-ADS1115"]
 	path = libraries/Arduino-ADS1115
-	url = https://github.com/Beirdo/Arduino-ADS1115.git
+	url = git@github.com:Beirdo/Arduino-ADS1115.git
 [submodule "libraries/Arduino-INA219"]
 	path = libraries/Arduino-INA219
-	url = https://github.com/Beirdo/Arduino-INA219.git
+	url = git@github.com:Beirdo/Arduino-INA219.git

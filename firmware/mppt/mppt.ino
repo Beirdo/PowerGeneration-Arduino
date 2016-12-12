@@ -22,20 +22,23 @@
 #define RF_CS_PIN 20
 #define RF_IRQ_PIN 7
 
+#define LIGHT_ADC_PIN 7
+
 
 static const uint8_t EEMEM rf_link_id = 0;
 uint8_t rf_id;
 
 static const char temp_string[] = "Temp";
 static const char *line_string[4] = {
-    "+3V3", "IN", "MPPT", "+18V"
+    "+3V3", "+18V", "IN", "MPPT""
 };
 
 #define TEST_3V3  0
-#define TEST_VIN  1
-#define TEST_MPPT 2
-#define TEST_18V  3
+#define TEST_18V  1
+#define TEST_VIN  2
+#define TEST_MPPT 3
 
+PowerMonitor *monitors[4];
 uint32_t voltages[4];
 uint32_t currents[4];
 uint32_t powers[4];
@@ -149,27 +152,6 @@ void updateScreenStrings(void)
     screen_lines[5][11] = 'W';
 }
 
-void convertADCReadings(void)
-{
-    voltages[TEST_3V3] = (long)vcc;
-    currents[TEST_3V3] = convertCurrent(adc_readings[0], 65397, 395);
-
-    voltages[TEST_VIN] = convertVoltage(adc_readings[1], 36494);
-    currents[TEST_VIN] = convertCurrent(adc_readings[2], 62874, 21);
-
-    voltages[TEST_MPPT] = convertVoltage(adc_readings[3], 36494);
-    currents[TEST_MPPT] = convertCurrent(adc_readings[4], 62874, 21);
-
-    voltages[TEST_18V] = convertVoltage(adc_readings[5], 5412);
-    currents[TEST_18V] = convertCurrent(adc_readings[6], 63333, 19);
-
-    light = adc_readings[7];
-
-    for (int i = 0; i < 4; i++) {
-        powers[i] = calculatePower(voltages[i], currents[i]);
-    }
-}
-
 void CborMessageBuild(void);
 
 void CborMessageBuild(void)
@@ -216,6 +198,19 @@ void setup(void)
     // Setup sleep mode to idle mode
     SMCR = 0x00;
 
+    monitors[0] = new INA219PowerMonitor(0x40, 5, 30, 60, 0.540);
+    monitors[1] = new INA219PowerMonitor(0x41, 18, 60, 6, 10.0);
+    monitors[2] = new ADS1115PowerMonitor(0x48, ADS1115_MUX_P0_NG,
+                                          ADS1115_MUX_P2_NG,
+                                          ADS1115_PGA_0P256,
+                                          ADS1115_PGA_4P096,
+                                          0.01, 0.0274);
+    monitors[3] = new ADS1115PowerMonitor(0x48, ADS1115_MUX_P1_NG,
+                                          ADS1115_MUX_P3_NG,
+                                          ADS1115_PGA_0P256,
+                                          ADS1115_PGA_4P096,
+                                          0.01, 0.0274);
+
     Serial.begin(115200);
 
     cli.registerCommand(new EnableCLICommand());
@@ -245,8 +240,15 @@ void loop(void)
         prev_v_in = voltages[TEST_VIN];
         prev_i_in = currents[TEST_VIN];
 
-        ADCPoll();
-        convertADCReadings();
+        for (i = 0; i < 4; i++) {
+            if (monitor[i]->readMonitor()) {
+                voltages[i] = monitor[i]->voltage();
+                currents[i] = monitor[i]->current();
+                powers[i]   = monitor[i]->power();
+            }
+        }
+
+        light = analogRead(LIGHT_ADC_PIN);
         PWMUpdateLed(light);
         mppt();
         regulateOutput();

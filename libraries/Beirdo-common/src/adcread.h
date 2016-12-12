@@ -41,7 +41,7 @@ class ADS1115PowerMonitor : public PowerMonitor {
     public:
         ADS1115PowerMonitor(uint8_t address, uint8_t current, uint8_t voltage,
                             uint8_t currentPga, uint8_t voltagePga,
-                            float voltageGain, float currentGain);
+                            float currentGain, float voltageGain);
     protected:
         ADS1115 m_device;
         volatile bool readCurrent(uint32_t &value);

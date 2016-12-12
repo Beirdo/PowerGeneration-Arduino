@@ -29,45 +29,29 @@ SdFat sdcard;
 
 #define SD_CS_PIN 20
 
-#define TEST_3V3   0
-#define TEST_VIN   1
-#define TEST_BATT1 2
-#define TEST_BATT2 3
+#define LIGHT_ADC_PIN 7
 
-uint16_t voltages[4];
-uint32_t currents[4];
-uint32_t powers[4];
+#define TEST_VIN   0
+#define TEST_BATT1 1
+#define TEST_BATT2 2
+#define TEST_LIION 3
+#define TEST_3V3   4
+#define TEST_5V    5
+
+PowerMonitor *monitors[6];
+uint16_t voltages[6];
+uint32_t currents[6];
+uint32_t powers[6];
 uint16_t light;
 
 static const char temp_string[] = "Temp";
-static const char *line_string[4] = {
-    "+3V3", "IN", "BATT1", "BATT2"
+static const char *line_string[6] = {
+    "IN", "BATT1", "BATT2", "LiIon", "+3V3", "+5V"
 };
 
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
-void convertADCReadings()
-{
-    voltages[TEST_3V3] = (long)vcc;
-    currents[TEST_3V3] = convertCurrent(adc_readings[0], 64935, 80);
-
-    voltages[TEST_VIN] = convertVoltage(adc_readings[1], 5412);
-    currents[TEST_VIN] = convertCurrent(adc_readings[2], 60643, 20);
-
-    voltages[TEST_BATT1] = convertVoltage(adc_readings[3], 4554);
-    currents[TEST_BATT1] = convertCurrent(adc_readings[4], 60643, 20);
-
-    voltages[TEST_BATT2] = convertVoltage(adc_readings[5], 4554);
-    currents[TEST_BATT2] = convertCurrent(adc_readings[6], 60643, 20);
-
-    light = adc_readings[7];
-
-    for (int i = 0; i < 4; i++) {
-        powers[i] = calculatePower(voltages[i], currents[i]);
-    }
-}
-    
 void CborMessageBuildLocal(void);
 
 void CborMessageBuildLocal(void)
@@ -190,6 +174,13 @@ void setup()
 {
     // Setup sleep to idle mode
     SMCR = 0x00;
+
+    monitors[0] = new INA219PowerMonitor(0x40, 18, 100, 10, 40.0);
+    monitors[1] = new INA219PowerMonitor(0x41, 16, 100, 10, 5.0);
+    monitors[2] = new INA219PowerMonitor(0x42, 16, 100, 10, 5.0);
+    monitors[3] = new INA219PowerMonitor(0x43, 6, 10, 10, 5.0);
+    monitors[4] = new INA219PowerMonitor(0x44, 6, 10, 10, 0.5);
+    monitors[5] = new INA219PowerMonitor(0x45, 6, 10, 10, 3.0);
     
     Serial.begin(115200);
 
@@ -217,8 +208,15 @@ void loop()
     noInterrupts();
     sleepTimer.enable();
 
-    ADCPoll();
-    convertADCReadings();
+    for (i = 0; i < 6; i++) {
+        if (monitor[i]->readMonitor()) {
+            voltages[i] = monitor[i]->voltage();
+            currents[i] = monitor[i]->current();
+            powers[i]   = monitor[i]->power();
+        }
+    }
+
+    light = analogRead(LIGHT_ADC_PIN);
     PWMUpdateLed(light);
     updateScreenStrings();
     ScreenRefresh()

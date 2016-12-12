@@ -84,10 +84,10 @@ volatile bool INA219PowerMonitor::readPower(uint32_t &value)
 }
 
 
-ADS1115PowerMonitor::ADS1115PowerMonitor(uint8_t address, uint8_t current,
-                                         uint8_t voltage, uint8_t currentPga,
-                                         uint8_t voltagePga, float voltageGain,
-                                         float currentGain) :
+ADS1115PowerMonitor::ADS1115PowerMonitor(uint8_t address,
+        uint8_t current, uint8_t voltage,
+        uint8_t currentPga, uint8_t voltagePga,
+        float currentGain, float voltageGain) :
         PowerMonitor(), m_device(ADS1115(address))
 {
     m_address = address;

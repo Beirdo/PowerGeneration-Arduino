@@ -188,8 +188,7 @@ void setup()
     cli.registerCommand(new DesulfateCLICommand());
     cli.registerCommand(new CapacityCLICommand());
 
-    cli.initialize();
-
+    BatteryChargerInitialize();
     SDCardInitialize(SD_CS_PIN);
     LcdInitialize();
     LcdClear();
@@ -198,6 +197,8 @@ void setup()
     PWMInitialize(0, 0, OCR0A);
     RTClockInitialize();
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, 0xFE);
+
+    cli.initialize();
 }
 
 void loop() 
@@ -216,6 +217,7 @@ void loop()
         }
     }
 
+    updateAllIO();
     light = analogRead(LIGHT_ADC_PIN);
     PWMUpdateLed(light);
     updateScreenStrings();

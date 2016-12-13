@@ -1,9 +1,196 @@
+#include <PCF8574.h>
 #include "battery.h"
-#include "max7315.h"
-#include "pcf8574.h"
 
 Desulfator desulfator;
 Battery battery[2] = { Battery(0), Battery(1) };
+PCF8574 pcf8574[3];
+
+typedef struct {
+    uint8_t dev;
+    uint8_t pin;
+    uint8_t *variable;
+} io_t;
+
+uint8_t reg5VPgood;
+uint8_t liIonPgood;
+uint8_t liIonStat1;
+uint8_t liIonStat2;
+
+io_t inputs[] {
+    {0, 0, NULL},
+    {0, 1, NULL},
+    {0, 2, NULL},
+    {0, 4, NULL},
+    {0, 5, NULL},
+    {0, 6, NULL},
+    {2, 1, &reg5VPgood},
+    {2, 2, &liIonPgood},
+    {2, 3, &liIonStat1},
+    {2, 4, &liIonStat2},
+};
+
+uint8_t liIonEn;
+
+io_t outputs[] {
+    {0, 3, &enable1},
+    {0, 7, &enable2},
+    {1, 0, &desulfate1},
+    {1, 1, &batt9ah1},
+    {1, 2, &batt20ah1},
+    {1, 4, &desulfate2},
+    {1, 5, &batt9ah2},
+    {1, 6, &batt20ah2},
+    {2, 0, &liIonEn},
+};
+
+
+void BatteryChargerInitialize(uint8_t addr0, uint8_t addr1, uint8_t addr2)
+{
+    pcf8574[0].begin(0x20);
+    pcf8574[1].begin(0x21);
+    pcf8574[2].begin(0x22);
+
+    uint8_t count = sizeof(inputs);
+    io_t *io;
+
+    for (int i = 0; i < count; i++) {
+        io = &input[i];
+        pcf8574[io->dev].pinMode(io->pin, INPUT_PULLUP, false);
+        switch (io->dev) {
+            case 0:
+                switch(io->pin) {
+                    case 0:
+                        io->variable = battery[0].stat1Ptr();
+                        break;
+                    case 1:
+                        io->variable = battery[0].stat2Ptr();
+                        break;
+                    case 2:
+                        io->variable = battery[0].pwrgoodPtr();
+                        break;
+                    case 4:
+                        io->variable = battery[1].stat1Ptr();
+                        break;
+                    case 5:
+                        io->variable = battery[1].stat2Ptr();
+                        break;
+                    case 6:
+                        io->variable = battery[1].pwrgoodPtr();
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 2:
+                switch(io->pin) {
+                    case 1:
+                        // {2, 1, &reg5VPgood},
+                        break;
+                    case 2:
+                        // {2, 2, &liIonPgood},
+                        break;
+                    case 3:
+                        // {2, 3, &liIonStat1},
+                        break;
+                    case 4:
+                        // {2, 4, &liIonStat2},
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    count = sizeof(outputs);
+    for (int i = 0; i < count; i++) {
+        io = &output[i];
+        *io->variable = 0;
+        pcf8574[io->dev].pinMode(io->pin, OUTPUT, false);
+
+        switch (io->dev) {
+            case 0:
+                switch (io->pin) {
+                    case 3:
+                        io->variable = battery[0].enabledPtr();
+                        break;
+                    case 7:
+                        io->variable = battery[1].enabledPtr();
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 1:
+                switch (io->pin) {
+                    case 0:
+                        io->variable = battery[0].desulatePtr();
+                        break;
+                    case 1:
+                        io->variable = battery[0].capacity9AhPtr();
+                        break;
+                    case 2:
+                        io->variable = battery[0].capacity20AhPtr();
+                        break;
+                    case 4:
+                        io->variable = battery[0].desulatePtr();
+                        break;
+                    case 5:
+                        io->variable = battery[0].capacity9AhPtr();
+                        break;
+                    case 6:
+                        io->variable = battery[0].capacity20AhPtr();
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 2:
+                switch (io->pin) {
+                    case 0:
+                        // {2, 0, &liIonEn},
+                        break;
+                    default;
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    updateAllIO();
+}
+
+void updateAllIO(void)
+{
+    uint8_t values[3] = {0, 0, 0};
+
+    uint8_t count = sizeof(outputs);
+    for (int i = 0; i < count; i++) {
+        io = &output[i];
+        if (*io->variable) {
+            value[i] |= 1 << io->pin;
+        }
+    }
+
+    for (int i = 0; i < 3; i++) {
+        pcf8574[i].write(value[i]);
+        values[i] = pcf8574[i].read();
+    }
+
+    count = sizeof(inputs);
+    for (int i = 0; i < count; i++) {
+        io = &input[i];
+        if (value[i] & (1 << io->pin)) {
+            *io->variable = 1;
+        } else {
+            *io->variable = 0;
+        }
+    }
+}
 
 Battery::Battery(uint8_t num)
 {
@@ -45,38 +232,22 @@ void Battery::setCapacity(uint8_t capacity)
     uint8_t mask = m_9ah_mask | m_20ah_mask;
     uint8_t value;
 
-    if (capacity == 9) {
-        value = m_9ah_mask;
-    } else {
-        value = m_20ah_mask;
-    }
-
-    max7315.update(mask, value);
+    m_capacity9Ah  = (capacity == 9);
+    m_capacity20Ah = (capacity == 20);
 }
 
 void Battery::setDesulfate(uint8_t desulfate)
 {
     m_desulfate = desulfate;
-    desulfator.set(m_num, desulfate);
 }
 
 void Battery::setEnabled(uint8_t enabled)
 {
     m_enabled = enabled;
-    pcf8574.update(m_enable_mask, enabled ? m_enable_mask : 0);
-}
-
-void Battery::updateState(void)
-{
-    uint8_t state = pcf8574.read();
-    m_state = (state & m_status_mask) >> m_status_shift;
-    m_powergood = !(!(state & m_powergood_mask));
 }
 
 Desulfator::Desulfator(void)
 {
-    m_desulfate_mask[0] = _BV(0);
-    m_desulfate_mask[1] = _BV(4);
     m_enabled = 0;
 
     setPWM(0);
@@ -86,30 +257,22 @@ Desulfator::Desulfator(void)
 
 Desulfator::set(uint8_t battery, uint8_t enable)
 {
-    uint8_t mask = m_desulfate_mask[battery];
-    uint8_t value = m_enabled;
+    bool oldEnabled = (m_enabled[0] || m_enabled[1]);
+    m_enabled[battery] = enable;
+    bool enabled = (m_enabled[0] || m_enabled[1]);
 
-    if (enabled) {
-        value |= mask;
-    } else {
-        value &= ~mask;
+    if (!oldEnabled && enabled) {
+        setPWM(1);
     }
 
-    if (value != m_enabled) {
-        max7315.update(mask, value);
-        if (!m_enabled) {
-            setPWM(1);
-        }
-        m_enabled = value;
-        if (!m_enabled) {
-            setPWM(0);
-        }
+    if (oldEnabled && !enabled) {
+        setPWM(0);
     }
 }
 
 Desulfator::setPWM(uint8_t enable)
 {
-    max7315.setOutput8PWM(enable);
+    // TODO: implement. - on OC3B
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

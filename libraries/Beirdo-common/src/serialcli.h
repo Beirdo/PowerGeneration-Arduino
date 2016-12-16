@@ -1,6 +1,8 @@
 #ifndef SERIALCLI_H__
 #define SERIALCLI_H__
 
+#include <EEPROM.h>
+#include <avr/eeprom.h>
 #include "linkedlist.h"
 
 class CLICommand {
@@ -39,6 +41,7 @@ class SerialCLI {
 };
 
 extern SerialCLI cli;
+extern const uint8_t EEMEM rf_link_id;
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

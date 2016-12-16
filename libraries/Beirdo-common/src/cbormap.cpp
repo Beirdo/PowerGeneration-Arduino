@@ -94,7 +94,7 @@ void CborMapAddInteger(cborKey_t key, int value)
     cbor_writer->writeInt(value);
 }
 
-void CborMapAddLocation(float lat, float long)
+void CborMapAddLocation(float lat, float lon)
 {
     if (!cbor_writer) {
         return;

@@ -25,7 +25,7 @@
 #define LIGHT_ADC_PIN 7
 
 
-static const uint8_t EEMEM rf_link_id = 0;
+const uint8_t EEMEM rf_link_id = 0;
 uint8_t rf_id;
 
 static const char temp_string[] = "Temp";

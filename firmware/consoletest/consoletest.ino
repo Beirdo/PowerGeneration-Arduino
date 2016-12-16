@@ -6,6 +6,8 @@
 // in ms
 #define LOOP_CADENCE 100
 
+const uint8_t EEMEM rf_link_id = 0;
+
 SleepTimer sleepTimer(LOOP_CADENCE);
 
 void setup() 

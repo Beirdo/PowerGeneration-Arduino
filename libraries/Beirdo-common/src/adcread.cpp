@@ -65,21 +65,21 @@ INA219PowerMonitor::INA219PowerMonitor(uint8_t address, uint8_t maxVoltage,
     m_device.setCalibration(maxVoltage, maxVShunt, rShunt, maxIExpected);
 }
 
-volatile bool INA219PowerMonitor::readCurrent(uint32_t &value)
+bool INA219PowerMonitor::readCurrent(uint32_t &value)
 {
     value = m_device.getCurrent_mA();
     return true;
 }
 
-volatile bool INA219PowerMonitor::readVoltage(uint32_t &value)
+bool INA219PowerMonitor::readVoltage(uint32_t &value)
 {
     value = m_device.getBusVoltage_mV();
     return true;
 }
 
-volatile bool INA219PowerMonitor::readPower(uint32_t &value)
+bool INA219PowerMonitor::readPower(uint32_t &value)
 {
-    value = m_device.getPower_mA();
+    value = m_device.getPower_mW();
     return true;
 }
 
@@ -127,7 +127,7 @@ bool ADS1115PowerMonitor::readVoltage(uint32_t &value)
 
 bool ADS1115PowerMonitor::readPower(uint32_t &value)
 {
-    value = convertPower();
+    value = calculatePower();
     return true;
 }
 
@@ -137,7 +137,7 @@ uint32_t ADS1115PowerMonitor::convertVoltage(void)
   // reading is from 16-bit signed ADC
   // gain value is the external gain
   //  i.e. 120V -> 3.3V is a gain of 0.0275
-  uint32_t value = (uint32_t)(m_rawVoltage < 0 : -m_rawVoltage : m_rawVoltage);
+  uint32_t value = (uint32_t)(m_rawVoltage < 0 ? -m_rawVoltage : m_rawVoltage);
   value *= m_device.getFullScale(m_voltageInput);
   value >>= 15;
   return (uint32_t)(float(value) / m_voltageGain);
@@ -148,7 +148,7 @@ uint32_t ADS1115PowerMonitor::convertCurrent(void)
   // reading is from 16-bit signed ADC
   // gain value is the external gain
   //  i.e. 10A -> 100mV is a gain of 0.01
-  uint32_t value = (uint32_t)(m_rawCurrent < 0 : -m_rawCurrent : m_rawCurrent);
+  uint32_t value = (uint32_t)(m_rawCurrent < 0 ? -m_rawCurrent : m_rawCurrent);
   value *= m_device.getFullScale(m_currentInput);
   value >>= 15;
   return (uint32_t)(float(value) / m_currentGain);

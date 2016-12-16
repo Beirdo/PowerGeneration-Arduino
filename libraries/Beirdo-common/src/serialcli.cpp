@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <EEPROM.h>
+#include <avr/eeprom.h>
 #include <string.h>
 #include "serialcli.h"
 

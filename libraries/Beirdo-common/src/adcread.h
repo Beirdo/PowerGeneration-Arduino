@@ -16,9 +16,9 @@ class PowerMonitor {
         uint32_t voltage(void) { return m_voltage; };
         uint32_t power(void)   { return m_power; };
     protected:
-        volatile bool readCurrent(uint32_t &value) = 0;
-        volatile bool readVoltage(uint32_t &value) = 0;
-        volatile bool readPower(uint32_t &value) = 0;
+        virtual bool readCurrent(uint32_t &value) = 0;
+        virtual bool readVoltage(uint32_t &value) = 0;
+        virtual bool readPower(uint32_t &value) = 0;
         uint32_t m_current;
         uint32_t m_voltage;
         uint32_t m_power;
@@ -31,9 +31,9 @@ class INA219PowerMonitor : public PowerMonitor {
                            float maxIExpected);
     protected:
         INA219 m_device;
-        volatile bool readCurrent(uint32_t &value);
-        volatile bool readVoltage(uint32_t &value);
-        volatile bool readPower(uint32_t &value);
+        virtual bool readCurrent(uint32_t &value);
+        virtual bool readVoltage(uint32_t &value);
+        virtual bool readPower(uint32_t &value);
         uint8_t m_address;
 };
 
@@ -44,9 +44,9 @@ class ADS1115PowerMonitor : public PowerMonitor {
                             float currentGain, float voltageGain);
     protected:
         ADS1115 m_device;
-        volatile bool readCurrent(uint32_t &value);
-        volatile bool readVoltage(uint32_t &value);
-        volatile bool readPower(uint32_t &value);
+        virtual bool readCurrent(uint32_t &value);
+        virtual bool readVoltage(uint32_t &value);
+        virtual bool readPower(uint32_t &value);
         uint8_t m_address;
         uint8_t m_currentInput;
         uint8_t m_voltageInput;

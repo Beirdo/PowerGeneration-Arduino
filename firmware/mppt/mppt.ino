@@ -10,7 +10,7 @@
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"
-#include "pwm.h"
+#include "converterpwm.h"
 #include "cbormap.h"
 #include "serialcli.h"
 #include "lcdscreen.h"
@@ -26,6 +26,9 @@ int8_t lcdIndex;
 #define RF_CE_PIN 25
 #define RF_CS_PIN 4
 #define RF_IRQ_PIN 2
+
+#define CONV1_PWM OCR0A
+#define CONV2_PWM OCR0B
 
 #define OLED_RESET -1
 
@@ -56,10 +59,10 @@ SleepTimer sleepTimer(LOOP_CADENCE);
 
 Adafruit_SSD1306 LCD(OLED_RESET);
 LCDDeck lcdDeck(&LCD);
+ConverterPWM mpptConverter(&CONV1_PWM);
+ConverterPWM outConverter(&CONV2_PWM);
 
 #define MPPT_INTERVAL 1
-#define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
-#define MPPT_DECREMENT(x)  ((x) < MPPT_INTERVAL ? 0x00 : (x) - MPPT_INTERVAL)
 
 void mppt(void)
 {
@@ -71,9 +74,9 @@ void mppt(void)
         if (delta_i == 0) {
             // No change, we are there
         } else if (delta_i > 0) {
-            pwm_conv1 = MPPT_INCREMENT(pwm_conv1);
+            mpptConverter.increment(MPPT_INTERVAL);
         } else {
-            pwm_conv1 = MPPT_DECREMENT(pwm_conv1);
+            mpptConverter.decrement(MPPT_INTERVAL);
         }
     } else {
         int32_t di_dv = delta_i / delta_v;
@@ -81,33 +84,31 @@ void mppt(void)
         if (di_dv = i_v) {
             // No change, we are there
         } else if (di_dv > i_v) {
-            pwm_conv1 = MPPT_INCREMENT(pwm_conv1);
+            mpptConverter.increment(MPPT_INTERVAL);
         } else {
-            pwm_conv1 = MPPT_DECREMENT(pwm_conv1);
+            mpptConverter.decrement(MPPT_INTERVAL);
         }
     }
-    PWMUpdateConverter(1, pwm_conv1);
 }
 
 #define REGULATE_RIPPLE 120   // millivolts ripple allowed (peak)
 
 void regulateOutput(void)
 {
-    int16_t value = 18000 - (int)voltages[TEST_18V];
+    int32_t value = 18000L - (int32_t)voltages[TEST_18V];
 
     // We want to regulate the 18V output to 18V (duh)
     if (value >= - REGULATE_RIPPLE && value <= REGULATE_RIPPLE) {
         // Do nothing, we are close enough
     } else {
         // Try using linear regression to get closer to the right spot
-        int scale = pwm_conv2 * 1000000 / (int)voltages[TEST_18V];
+        int32_t scale = outConverter.getValue() * 1000000L /
+                        (int32_t)voltages[TEST_18V];
         value *= scale;
         value /= 1000000;
-        value += (int)pwm_conv2;
-        value = (value < 0 ? 0 : (value > 255 ? 255 : value));
-        pwm_conv2 = (uint8_t)value;
+        value += (int32_t)outConverter.getValue();
+        outConverter.updateValue((uint8_t)constrain(value, 0, 255));
     }
-    PWMUpdateConverter(2, pwm_conv2);
 }
 
 void CborMessageBuild(void);

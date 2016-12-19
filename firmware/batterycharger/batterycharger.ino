@@ -6,7 +6,6 @@
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"
-#include "pwm.h"
 #include "cbormap.h"
 #include "serialcli.h"
 #include "battery.h"

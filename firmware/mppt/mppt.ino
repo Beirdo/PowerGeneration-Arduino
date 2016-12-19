@@ -1,3 +1,6 @@
+#define SERIAL_TX_BUFFER_SIZE 16
+#define SERIAL_RX_BUFFER_SIZE 16
+
 #include <EEPROM.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>

@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <SdFat.h>
+#include "sdlogging.h"
 
 #define error(msg) m_sd.errorHalt(F(msg))
 
@@ -19,7 +20,7 @@ SDLogging::SDLogging(uint8_t cs) : m_sd(SdFat()), m_file(SdFile())
         error("FILE_BASE_NAME too long");
     }
 
-    while (m_sd.exists(fileName)) {
+    while (m_sd.exists(m_filename)) {
         if (m_filename[m_baseNameSize + 3] != '9') {
             m_filename[m_baseNameSize + 3]++;
         } else if (m_filename[m_baseNameSize + 2] != '9') {
@@ -39,14 +40,14 @@ SDLogging::SDLogging(uint8_t cs) : m_sd(SdFat()), m_file(SdFile())
         }
     }
 
-    if (!file.open(m_filename, O_CREAT | O_WRITE | O_EXCL)) {
+    if (!m_file.open(m_filename, O_CREAT | O_WRITE | O_EXCL)) {
         error("file.open");
     }
 }
 
 void SDLogging::write(uint8_t *buffer, uint8_t len)
 {
-    file.write(buffer, len);
+    m_file.write(buffer, len);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

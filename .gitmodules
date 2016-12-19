@@ -1,21 +1,9 @@
-[submodule "libraries/Arduino-PCF2129"]
-	path = libraries/Arduino-PCF2129
-	url = git@github.com:Beirdo/Arduino-PCF2129.git
-[submodule "libraries/Library-Arduino-Cbor"]
-	path = libraries/Library-Arduino-Cbor
-	url = git@github.com:Beirdo/Library-Arduino-Cbor.git
-[submodule "libraries/Arduino-Wire1"]
-	path = libraries/Arduino-Wire1
-	url = git@github.com:Beirdo/Arduino-Wire1.git
 [submodule "libraries/Arduino-ATSHA204"]
 	path = libraries/Arduino-ATSHA204
 	url = git@github.com:Beirdo/Arduino-ATSHA204.git
 [submodule "libraries/Arduino-DS18B20"]
 	path = libraries/Arduino-DS18B20
 	url = git@github.com:Beirdo/Arduino-DS18B20.git
-[submodule "libraries/Arduino-DS24820-OneWire"]
-	path = libraries/Arduino-DS24820-OneWire
-	url = git@github.com:Beirdo/Arduino-DS2482-OneWire.git
 [submodule "libraries/Arduino-DS2482-OneWire"]
 	path = libraries/Arduino-DS2482-OneWire
 	url = git@github.com:Beirdo/Arduino-DS2482-OneWire.git
@@ -30,7 +18,7 @@
 	url = git@github.com:Beirdo/Arduino-SD-FAT.git
 [submodule "libraries/Adafruit_ILI9340"]
 	path = libraries/Adafruit_ILI9340
-	url = https://github.com/adafruit/Adafruit_ILI9340
+	url = https://github.com/adafruit/Adafruit_ILI9340.git
 [submodule "libraries/Adafruit-GFX-Library"]
 	path = libraries/Adafruit-GFX-Library
 	url = https://github.com/adafruit/Adafruit-GFX-Library.git
@@ -40,15 +28,9 @@
 [submodule "libraries/Adafruit_SSD1306"]
 	path = libraries/Adafruit_SSD1306
 	url = https://github.com/adafruit/Adafruit_SSD1306.git
-[submodule "libraries/Adafruit_PCD8544"]
-	path = libraries/Adafruit_PCD8544
-	url = https://github.com/adafruit/Adafruit-PCD8544-Nokia-5110-LCD-library.git
 [submodule "libraries/Arduino-PCF8574"]
 	path = libraries/Arduino-PCF8574
 	url = git@github.com:Beirdo/Arduino-PCF8574.git
-[submodule "libraries/Adafruit_INA219"]
-	path = libraries/Adafruit_INA219
-	url = https://github.com/adafruit/Adafruit_INA219.git
 [submodule "libraries/Arduino-ADS1115"]
 	path = libraries/Arduino-ADS1115
 	url = git@github.com:Beirdo/Arduino-ADS1115.git

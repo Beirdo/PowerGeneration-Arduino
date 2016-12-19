@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <SdFat.h>
+#include <string.h>
 #include "sdlogging.h"
 
 #define error(msg) m_sd.errorHalt(F(msg))
@@ -7,7 +8,8 @@
 SDLogging::SDLogging(uint8_t cs) : m_sd(SdFat()), m_file(SdFile())
 {
     m_baseNameSize = sizeof(FILE_BASE_NAME) - 1;
-    m_filename = FILE_BASE_NAME "0000.log";
+    strcpy(m_filename, FILE_BASE_NAME);
+    strcat(m_filename, "0000.log");
 
     // Initialize the SD card at SPI_HALF_SPEED to avoid bus errors with
     // breadboards.  use SPI_FULL_SPEED for better performance.

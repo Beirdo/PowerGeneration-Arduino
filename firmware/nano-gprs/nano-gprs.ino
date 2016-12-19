@@ -1,6 +1,9 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9340.h>
+
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"
@@ -11,6 +14,11 @@
 
 // in ms
 #define LOOP_CADENCE 1000
+#define SWAP_TIME 2000
+#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
+
+uint16_t lcdTicks;
+int8_t lcdIndex;
 
 #define RF_CS_PIN 10
 #define RF_CE_PIN 9
@@ -19,6 +27,13 @@
 #define GPRS_RST_PIN 4
 #define GPRS_EN_PIN 5
 #define GPRS_DTR_PIN 3
+
+#define LCD_RST_PIN 7
+#define LCD_CS_PIN 8
+#define LCD_DC_PIN 16
+#define LCD_PWM OC0A
+
+#define SD_CS_PIN 17
 
 typedef uint8_t apn_t[MAX_APN_LEN];
 static const uint8_t EEMEM rf_link_id = 0;
@@ -29,6 +44,9 @@ SleepTimer sleepTimer(LOOP_CADENCE);
 
 apn_t gprs_apn;
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
+
+Adafruit_ILI9340 LCD(LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN);
+LCDDeck lcdDeck(&LCD);
 
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];
@@ -63,6 +81,15 @@ void setup()
     EEPROM.get(ee_gprs_apn, gprs_apn);
     gprs.setApn(gprs_apn);
 
+    LCD.begin();
+    LCD.setRotation(1);     // use in landscape mode
+    LCD.display();
+
+    lcdDeck.addFrame(new LCDScreen("Core Temp",
+                     (void *)&core_temperature, formatTemperature, "C"));
+
+    lcdTicks = 0;
+
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 
     Sha204Initialize();
@@ -92,10 +119,19 @@ void loop()
     if (gprsDisabled) {
         cli.handleInput();
     } else {
-        CborMessageBuild();
-        CborMessageBuffer(&buffer, &len);
-        if (buffer && len) {
-            gprs.sendCborPacket(CBOR_SOURCE_NANO_GPRS, buffer, len);
+        lcdTicks++;
+        if (lcdTicks >= SWAP_TIME) {
+            lcdTicks -= SWAP_TIME;
+
+            lcdIndex = lcdDeck.nextIndex();
+            lcdDeck.formatFrame(lcdIndex);
+            lcdDeck.displayFrame();
+
+            CborMessageBuild();
+            CborMessageBuffer(&buffer, &len);
+            if (buffer && len) {
+                gprs.sendCborPacket(CBOR_SOURCE_NANO_GPRS, buffer, len);
+            }
         }
 
         uint8_t source;

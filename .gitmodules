@@ -19,9 +19,6 @@
 [submodule "libraries/Adafruit_ILI9340"]
 	path = libraries/Adafruit_ILI9340
 	url = https://github.com/adafruit/Adafruit_ILI9340.git
-[submodule "libraries/Adafruit-GFX-Library"]
-	path = libraries/Adafruit-GFX-Library
-	url = https://github.com/adafruit/Adafruit-GFX-Library.git
 [submodule "libraries/Arduino-SIM800"]
 	path = libraries/Arduino-SIM800
 	url = git@github.com:Beirdo/Arduino-SIM800.git
@@ -37,3 +34,6 @@
 [submodule "libraries/Arduino-INA219"]
 	path = libraries/Arduino-INA219
 	url = git@github.com:Beirdo/Arduino-INA219.git
+[submodule "libraries/Arduino-Adafruit-GFX"]
+	path = libraries/Arduino-Adafruit-GFX
+	url = git@github.com:Beirdo/Arduino-Adafruit-GFX.git

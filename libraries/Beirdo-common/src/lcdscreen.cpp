@@ -132,13 +132,13 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
     }
 }
 
-LCDScreen::LCDScreen(uint8_t *title, void *variable, formatter_t *formatter, 
-                     uint8_t *units)
+LCDScreen::LCDScreen(char *title, void *variable, formatter_t *formatter, 
+                     char *units)
 {
-    m_title = title;
+    m_title = (uint8_t *)title;
     m_variable = variable;
     m_formatter = formatter;
-    m_units = units;
+    m_units = (uint8_t *)units;
 }
 
 void LCDScreen::title_line(uint8_t **buffer, uint8_t maxlen)

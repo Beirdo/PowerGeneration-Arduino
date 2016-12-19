@@ -14,8 +14,8 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
 
 class LCDScreen {
     public:
-        LCDScreen(uint8_t *title, void *variable, formatter_t *formatter, 
-                  uint8_t *units);
+        LCDScreen(char *title, void *variable, formatter_t *formatter, 
+                  char *units);
         void title_line(uint8_t **buffer, uint8_t maxlen);
         void data_line(uint8_t **buffer, uint8_t maxlen);
     protected:

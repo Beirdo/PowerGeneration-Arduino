@@ -1,58 +1,50 @@
 #include <SPI.h>
-#include "SdFat.h"
+#include <SdFat.h>
 
-#define FILE_BASE_NAME "cbor"
+#define error(msg) m_sd.errorHalt(F(msg))
 
-#define error(msg) sd.errorHalt(F(msg))
-
-// File system object.
-SdFat sd;
-
-// Log file.
-SdFile file;
-
-void SDCardInitialize(uint8_t cs)
+SDLogging::SDLogging(uint8_t cs) : m_sd(SdFat()), m_file(SdFile())
 {
-    const uint8_t BASE_NAME_SIZE = sizeof(FILE_BASE_NAME) - 1;
-    char fileName[13] = FILE_BASE_NAME "0000.log";
+    m_baseNameSize = sizeof(FILE_BASE_NAME) - 1;
+    m_filename = FILE_BASE_NAME "0000.log";
 
     // Initialize the SD card at SPI_HALF_SPEED to avoid bus errors with
     // breadboards.  use SPI_FULL_SPEED for better performance.
-    if (!sd.begin(cs, SPI_FULL_SPEED)) {
-        sd.initErrorHalt();
+    if (!m_sd.begin(cs, SPI_FULL_SPEED)) {
+        m_sd.initErrorHalt();
     }
 
     // Find an unused file name.
-    if (BASE_NAME_SIZE > 6) {
+    if (m_baseNameSize > 6) {
         error("FILE_BASE_NAME too long");
     }
 
-    while (sd.exists(fileName)) {
-        if (fileName[BASE_NAME_SIZE + 3] != '9') {
-            fileName[BASE_NAME_SIZE + 3]++;
-        } else if (fileName[BASE_NAME_SIZE + 2] != '9') {
-            fileName[BASE_NAME_SIZE + 3] = '0';
-            fileName[BASE_NAME_SIZE + 2]++;
-        } else if (fileName[BASE_NAME_SIZE + 1] != '9') {
-            fileName[BASE_NAME_SIZE + 3] = '0';
-            fileName[BASE_NAME_SIZE + 2] = '0';
-            fileName[BASE_NAME_SIZE + 1]++;
-        } else if (fileName[BASE_NAME_SIZE] != '9') {
-            fileName[BASE_NAME_SIZE + 3] = '0';
-            fileName[BASE_NAME_SIZE + 2] = '0';
-            fileName[BASE_NAME_SIZE + 1] = '0';
-            fileName[BASE_NAME_SIZE]++;
+    while (m_sd.exists(fileName)) {
+        if (m_filename[m_baseNameSize + 3] != '9') {
+            m_filename[m_baseNameSize + 3]++;
+        } else if (m_filename[m_baseNameSize + 2] != '9') {
+            m_filename[m_baseNameSize + 3] = '0';
+            m_filename[m_baseNameSize + 2]++;
+        } else if (m_filename[m_baseNameSize + 1] != '9') {
+            m_filename[m_baseNameSize + 3] = '0';
+            m_filename[m_baseNameSize + 2] = '0';
+            m_filename[m_baseNameSize + 1]++;
+        } else if (m_filename[m_baseNameSize] != '9') {
+            m_filename[m_baseNameSize + 3] = '0';
+            m_filename[m_baseNameSize + 2] = '0';
+            m_filename[m_baseNameSize + 1] = '0';
+            m_filename[m_baseNameSize]++;
         } else {
             error("Can't create file name");
         }
     }
 
-    if (!file.open(fileName, O_CREAT | O_WRITE | O_EXCL)) {
+    if (!file.open(m_filename, O_CREAT | O_WRITE | O_EXCL)) {
         error("file.open");
     }
 }
 
-void SDCardWrite(uint8_t *buffer, uint8_t len)
+void SDLogging::write(uint8_t *buffer, uint8_t len)
 {
     file.write(buffer, len);
 }

@@ -31,7 +31,7 @@ class LCDDeck {
         void resetIndex(uint8_t index);
         void formatFrame(uint8_t index);
         void displayFrame(void);
-        uint8_t nextIndex(void);
+        int8_t nextIndex(void);
         void addFrame(LCDScreen *frame);
     protected:
         LCDScreen *getFrame(uint8_t index);
@@ -44,7 +44,7 @@ class LCDDeck {
         int16_t m_width;
 
         uint8_t m_frameCount;
-        uint8_t m_index;
+        int8_t m_index;
         LCDScreen *m_currentFrame;
         uint8_t m_data_buffer[64];
         uint8_t m_title_blank[1];

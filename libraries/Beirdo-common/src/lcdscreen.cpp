@@ -164,15 +164,15 @@ LCDDeck::LCDDeck(Adafruit_GFX *display) : m_frameList(LinkedList())
 {
     m_display = display;
     m_frameCount = 0;
-    m_index = 0;
+    m_index = -1;
     m_height = display->height();
     m_width = display->width();
 }
 
 void LCDDeck::resetIndex(uint8_t index)
 {
-    m_index = index;
-    formatFrame(m_index);
+    m_index = (int8_t)index;
+    formatFrame(index);
 }
 
 void LCDDeck::formatFrame(uint8_t index)
@@ -246,7 +246,7 @@ void LCDDeck::displayFrame(void)
     m_display->display();
 }
 
-uint8_t LCDDeck::nextIndex(void)
+int8_t LCDDeck::nextIndex(void)
 {
     return (m_index + 1) % m_frameCount;
 }

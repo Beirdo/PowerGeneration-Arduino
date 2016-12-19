@@ -3,35 +3,38 @@
 #include <avr/sleep.h>
 #include <string.h>
 #include <stdlib.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 #include "nokialcd.h"
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"
 #include "pwm.h"
-#include "bufprint.h"
 #include "cbormap.h"
 #include "serialcli.h"
+#include "lcdscreen.h"
 
 // in ms
 #define LOOP_CADENCE 10
 #define SWAP_TIME 2000
 #define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
-#define RF_CE_PIN 8
-#define RF_CS_PIN 20
-#define RF_IRQ_PIN 7
+uint16_t lcdTicks;
+int8_t lcdIndex;
 
-#define LIGHT_ADC_PIN 7
+#define RF_CE_PIN 25
+#define RF_CS_PIN 4
+#define RF_IRQ_PIN 2
 
+#define OLED_RESET -1
+
+#if (SSD1306_LCDHEIGHT != 64)
+#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#endif
 
 const uint8_t EEMEM rf_link_id = 0;
 uint8_t rf_id;
-
-static const char temp_string[] = "Temp";
-static const char *line_string[4] = {
-    "+3V3", "+18V", "IN", "MPPT""
-};
 
 #define TEST_3V3  0
 #define TEST_18V  1
@@ -42,7 +45,6 @@ PowerMonitor *monitors[4];
 uint32_t voltages[4];
 uint32_t currents[4];
 uint32_t powers[4];
-uint16_t light;
 
 uint32_t prev_v_in = 0;
 uint32_t prev_i_in = 0;
@@ -51,6 +53,9 @@ uint8_t enabled = 1;
 
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
+
+Adafruit_SSD1306 LCD(OLED_RESET);
+LCDDeck lcdDeck(&LCD);
 
 #define MPPT_INTERVAL 1
 #define MPPT_INCREMENT(x)  ((x) > (0xFF - MPPT_INTERVAL) ? 0xFF : (x) + MPPT_INTERVAL)
@@ -103,53 +108,6 @@ void regulateOutput(void)
         pwm_conv2 = (uint8_t)value;
     }
     PWMUpdateConverter(2, pwm_conv2);
-}
-
-void updateScreenStrings(void)
-{
-    if (sleepTimer.count() >= SWAP_COUNT) {
-        show_temperature = 1 - show_temperature;
-        sleepTimer.setCount(0);
-    }
-
-    for (int i = 0; i < 6; i++) {
-        memset(screen_lines[i], 0x00, COL_COUNT);
-    }
-
-    if (show_temperature) {
-        strcpy(screen_lines[0], temp_string);
-        printTemperature(core_temperature, &screen_lines[0][5], 5);
-        screen_lines[0][10] = 0x7F;  // °
-        screen_lines[0][11] = 'C';
-    } else {
-        strcpy(screen_lines[0], line_string[0]);
-        printValue(powers[TEST_3V3], 2, &screen_lines[0][6], 5);
-        screen_lines[0][11] = 'W';
-    }
-
-    strcpy(screen_lines[1], line_string[1]);
-    printValue(powers[TEST_VIN], 2, &screen_lines[1][6], 5);
-    screen_lines[1][11] = 'W';
-
-    printValue(voltages[TEST_VIN], 1, screen_lines[2], 5);
-    screen_lines[2][5] = 'V';
-
-    printValue(currents[TEST_VIN], 2, &screen_lines[2][7], 4);
-    screen_lines[2][11] = 'A';
-
-    strcpy(screen_lines[3], line_string[2]);
-    printValue(powers[TEST_MPPT], 2, &screen_lines[3][6], 5);
-    screen_lines[3][11] = 'W';
-
-    printValue(voltages[TEST_MPPT], 1, screen_lines[4], 5);
-    screen_lines[4][5] = 'V';
-
-    printValue(currents[TEST_MPPT], 2, &screen_lines[4][7], 4);
-    screen_lines[4][11] = 'A';
-
-    strcpy(screen_lines[5], line_string[3]);
-    printValue(powers[TEST_18V], 1000000, &screen_lines[5][6], 5);
-    screen_lines[5][11] = 'W';
 }
 
 void CborMessageBuild(void);
@@ -215,16 +173,47 @@ void setup(void)
 
     cli.registerCommand(new EnableCLICommand());
     cli.registerCommand(new DisableCLICommand());
-
     cli.initialize();
 
     rf_id = EEPROM.read(rf_link_id);
     
-    LcdInitialize();
-    LcdClear();
-    ScreenInitialize();
-    ScreenRefresh();
-    PWMInitialize(OCR0A, OCR0B, OCR2B);
+    LCD.begin(SSD1306_SWITCHCAPVCC, 0x3D);
+    LCD.display();
+
+    lcdDeck.addFrame(new LCDScreen("Core Temp",
+                     (void *)&core_temperature, formatTemperature, "C"));
+
+    lcdDeck.addFrame(new LCDScreen("Vin", (void *)&voltages[TEST_VIN],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Iin", (void *)&currents[TEST_VIN],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pin", (void *)&powers[TEST_VIN],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vmppt", (void *)&voltages[TEST_MPPT],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Imppt", (void *)&currents[TEST_MPPT],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pmppt", (void *)&powers[TEST_MPPT],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vout", (void *)&voltages[TEST_18V],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Iout", (void *)&currents[TEST_18V],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pout", (void *)&powers[TEST_18V],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vcc", (void *)&voltages[TEST_3V3],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Icc", (void *)&currents[TEST_3V3],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pcc", (void *)&powers[TEST_3V3],
+                     formatAutoScale, "W");
+
+    lcdTicks = 0;
+
+    PWMInitialize(OCR0A, OCR0B, -1);
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 }
 
@@ -248,16 +237,22 @@ void loop(void)
             }
         }
 
-        light = analogRead(LIGHT_ADC_PIN);
-        PWMUpdateLed(light);
         mppt();
         regulateOutput();
-        updateScreenStrings();
-        ScreenRefresh();
-        CborMessageBuild();
-        CborMessageBuffer(&buffer, &len);
-        if (buffer && len) {
-            rflink->send(buffer, len);
+
+        lcdTicks++;
+        if (lcdTicks >= SWAP_TIME) {
+            lcdTicks -= SWAP_TIME;
+
+            lcdIndex = lcdDeck.nextIndex();
+            lcdDeck.formatFrame(lcdIndex);
+            lcdDeck.displayFrame();
+
+            CborMessageBuild();
+            CborMessageBuffer(&buffer, &len);
+            if (buffer && len) {
+                rflink->send(buffer, len);
+            }
         }
     }
 

@@ -1,35 +1,37 @@
 #include <avr/sleep.h>
 #include <SPI.h>
-
-#include <SdFat.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9340.h>
 
 #include "rflink.h"
-#include "rtclock.h"
 #include "sleeptimer.h"
 #include "adcread.h"
 #include "pwm.h"
 #include "cbormap.h"
-#include "sdlogging.h"
 #include "serialcli.h"
 #include "battery.h"
-
-#include <Adafruit_GFX.h>
-#include <gfxfont.h>
-
-#include <Adafruit_ILI9340.h>
+#include "lcdscreen.h"
 
 // in ms
 #define LOOP_CADENCE 100
+#define SWAP_TIME 2000
+#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
-SdFat sdcard;
+uint16_t lcdTicks;
+int8_t lcdIndex;
 
-#define RF_CS_PIN 4
 #define RF_CE_PIN 5
+#define RF_CS_PIN 4
 #define RF_IRQ_PIN 2
 
-#define SD_CS_PIN 20
+#define OLED_RESET -1
 
-#define LIGHT_ADC_PIN 7
+#if (SSD1306_LCDHEIGHT != 64)
+#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#endif
+
+const uint8_t EEMEM rf_link_id = 0;
+uint8_t rf_id;
 
 #define TEST_VIN   0
 #define TEST_BATT1 1
@@ -39,22 +41,19 @@ SdFat sdcard;
 #define TEST_5V    5
 
 PowerMonitor *monitors[6];
-uint16_t voltages[6];
+uint32_t voltages[6];
 uint32_t currents[6];
 uint32_t powers[6];
-uint16_t light;
-
-static const char temp_string[] = "Temp";
-static const char *line_string[6] = {
-    "IN", "BATT1", "BATT2", "LiIon", "+3V3", "+5V"
-};
 
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
-void CborMessageBuildLocal(void);
+Adafruit_SSD1306 LCD(OLED_RESET);
+LCDDeck lcdDeck(&LCD);
 
-void CborMessageBuildLocal(void)
+void CborMessageBuild(void);
+
+void CborMessageBuild(void)
 {
     DateTime now = RTClockGetTime();
     CborMessageInitialize();
@@ -187,18 +186,63 @@ void setup()
     cli.registerCommand(new BatteryCLICommand());
     cli.registerCommand(new DesulfateCLICommand());
     cli.registerCommand(new CapacityCLICommand());
+    cli.initialize();
+
+    rf_id = EEPROM.read(rf_link_id);
+
+    LCD.begin(SSD1306_SWITCHCAPVCC, 0x3D);
+    LCD.display();
+
+    lcdDeck.addFrame(new LCDScreen("Core Temp",
+                     (void *)&core_temperature, formatTemperature, "C"));
+
+    lcdDeck.addFrame(new LCDScreen("Vin", (void *)&voltages[TEST_VIN],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Iin", (void *)&currents[TEST_VIN],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pin", (void *)&powers[TEST_VIN],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vbatt1", (void *)&voltages[TEST_BATT1],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Ibatt1", (void *)&currents[TEST_BATT1],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pbatt1", (void *)&powers[TEST_BATT1],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vbatt2", (void *)&voltages[TEST_BATT2],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Ibatt2", (void *)&currents[TEST_BATT2],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pbatt2", (void *)&powers[TEST_BATT2],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vliion", (void *)&voltages[TEST_LIION],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Iliion", (void *)&currents[TEST_LIION],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pliion", (void *)&powers[TEST_LIION],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vcc", (void *)&voltages[TEST_3V3],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Icc", (void *)&currents[TEST_3V3],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pcc", (void *)&powers[TEST_3V3],
+                     formatAutoScale, "W");
+
+    lcdDeck.addFrame(new LCDScreen("Vdd", (void *)&voltages[TEST_5V],
+                     formatAutoScale, "V");
+    lcdDeck.addFrame(new LCDScreen("Idd", (void *)&currents[TEST_5V],
+                     formatAutoScale, "A");
+    lcdDeck.addFrame(new LCDScreen("Pdd", (void *)&powers[TEST_5V],
+                     formatAutoScale, "W");
+
+    lcdTicks = 0;
 
     BatteryChargerInitialize();
-    SDCardInitialize(SD_CS_PIN);
-    LcdInitialize();
-    LcdClear();
-    ScreenInitialize();
-    ScreenRefresh();
-    PWMInitialize(0, 0, OCR0A);
-    RTClockInitialize();
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, 0xFE);
-
-    cli.initialize();
+    PWMInitialize(0, 0, -1);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 }
 
 void loop() 
@@ -218,16 +262,20 @@ void loop()
     }
 
     updateAllIO();
-    light = analogRead(LIGHT_ADC_PIN);
-    PWMUpdateLed(light);
-    updateScreenStrings();
-    ScreenRefresh()
 
-    RTClockPoll();
-    CborMessageBuildLocal();
-    CborMessageBuffer(&buffer, &len);
-    if (buffer && len) {
-        SDCardWrite(buffer, len);
+    lcdTicks++;
+    if (lcdTicks >= SWAP_TIME) {
+        lcdTicks -= SWAP_TIME;
+
+        lcdIndex = lcdDeck.nextIndex();
+        lcdDeck.formatFrame(lcdIndex);
+        lcdDeck.displayFrame();
+
+        CborMessageBuild();
+        CborMessageBuffer(&buffer, &len);
+        if (buffer && len) {
+            rflink->send(buffer, len);
+        }
     }
 
     battery[0].updateState();

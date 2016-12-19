@@ -3,14 +3,14 @@ Arduino pins
 0  - PD0 - RXD (UART) - IN
 1  - PD1 - TXD (UART) - OUT
 2  - PD2 - /RF_IRQ (EXT INT0) - IN
-3  - PD3 - DESULFATE_PWM (OC2B) - OUT
+3  - PD3 - /LI_ION_IRQ (EXT INT1) - IN
 4  - PD4 - /RF_CS - OUT
 5  - PD5 - /RF_CE - OUT
-6  - PD6 - LED_PWM (OC0A) - OUT
-7  - PD7 - /LCD_RST - OUT
+6  - PD6 - DESULFATE_PWM (OC0A) - OU
+7  - PD7 - unused
 8  - PB0 - /GPIO_IRQ (PCINT0) - IN
-9  - PB1 - /LI_ION_IRQ (PCINT0) - IN
-10 - PB2 - /LCD_CS (SS) - OUT
+9  - PB1 - unused
+10 - PB2 - unused
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN
 13 - PB5 - SCK - OUT

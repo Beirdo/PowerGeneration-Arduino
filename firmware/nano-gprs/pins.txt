@@ -6,9 +6,9 @@ Arduino pins (on attached Nano module)
 3  - DTR - OUT
 4  - /GPRS_RST - OUT
 5  - GPRS_EN - OUT
-6  - unused
-7  - unused
-8  - unused
+6  - LCD_PWM (OC0A) - OUT
+7  - /LCD_RST - OUT
+8  - /LCD_CS - OUT
 9  - /RF_CE - OUT
 10 - /RF_CS (SS) - OUT
 11 - MOSI - OUT
@@ -16,8 +16,8 @@ Arduino pins (on attached Nano module)
 13 - SCK - OUT
 A0 - unused
 A1 - unused
-A2 - unused
-A3 - unused
+A2 - LCD_DC - OUT
+A3 - /SD_CS - OUT
 A4 - SDA (TWI)
 A5 - SCL (TWI)
 A6 - unused

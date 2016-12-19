@@ -3,14 +3,14 @@ Arduino pins
 0  - PD0 - RXD (UART) - IN
 1  - PD1 - TXD (UART) - OUT
 2  - PD2 - /RF_IRQ (EXT INT0) - IN
-3  - PD3 - PWM_LED (OC2B) - OUT
+3  - PD3 - /ADC_IRQ (EXT INT1) - IN
 4  - PD4 - /RF_CS - OUT
 5  - PD5 - PWM_CONV2 (OC0B) - OUT
 6  - PD6 - PWM_CONV1 (OC0A) - OUT
-7  - PD7 - /LCD_RST - OUT
-8  - PB0 - /RF_CE - OUT
-9  - PB1 - LCD_DC - OUT
-10 - PB2 - /LCD_CS (SS) - OUT
+7  - PD7 - unused
+8  - PB0 - unused
+9  - PB1 - unused
+10 - PB2 - unused
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN
 13 - PB5 - SCK - OUT
@@ -20,10 +20,10 @@ Arduino pins
 17 - PC3 - unused
 18 - PC4 - SDA (I2C) - IN/OUT
 19 - PC5 - SCL (I2C) - IN/OUT
-20 - PB6 - /ADC_IRQ (PCINT) - IN
+20 - PB6 - unused
 21 - PB7 - unused
 22 - PC6 - /RESET
 23 - PE2 - unused
 24 - PE3 - A7 - ADC_LIGHT - IN (A)
-25 - PE0 - unused
+25 - PE0 - /RF_CE - OUT
 26 - PE1 - unused

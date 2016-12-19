@@ -3,6 +3,7 @@ I2C Bus addresses:
 0x20 - PCF8574 - Charger I/O expander
 0x21 - PCF8574 - Desulfator I/O expander
 0x22 - PCF8574 - LiIon Charger I/O expander
+0x3D - SSD1306 - LCD Controller (or 3C)
 0x40 - INA219A - Monitoring - Vin
 0x41 - INA219A - Monitoring - Vbatt1
 0x42 - INA219A - Monitoring - Vbatt2

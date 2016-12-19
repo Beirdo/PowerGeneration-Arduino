@@ -26,6 +26,7 @@ void SDCardInitialize(uint8_t cs)
     if (BASE_NAME_SIZE > 6) {
         error("FILE_BASE_NAME too long");
     }
+
     while (sd.exists(fileName)) {
         if (fileName[BASE_NAME_SIZE + 3] != '9') {
             fileName[BASE_NAME_SIZE + 3]++;

@@ -37,3 +37,6 @@
 [submodule "libraries/Arduino-Adafruit-GFX"]
 	path = libraries/Arduino-Adafruit-GFX
 	url = git@github.com:Beirdo/Arduino-Adafruit-GFX.git
+[submodule "libraries/Adafruit_FRAM_SPI"]
+	path = libraries/Adafruit_FRAM_SPI
+	url = https://github.com/adafruit/Adafruit_FRAM_SPI.git

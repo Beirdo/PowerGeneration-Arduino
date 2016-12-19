@@ -8,7 +8,7 @@ Arduino pins (on attached Nano module)
 5  - unused
 6  - unused
 7  - unused
-8  - unused
+8  - /FRAM_CS - OUT
 9  - /RF_CE - OUT
 10 - /RF_CS (SS) - OUT
 11 - MOSI - OUT

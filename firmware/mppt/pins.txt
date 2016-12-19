@@ -7,7 +7,7 @@ Arduino pins
 4  - PD4 - /RF_CS - OUT
 5  - PD5 - PWM_CONV2 (OC0B) - OUT
 6  - PD6 - PWM_CONV1 (OC0A) - OUT
-7  - PD7 - unused
+7  - PD7 - /FRAM_CS - OUT
 8  - PB0 - unused
 9  - PB1 - unused
 10 - PB2 - unused

@@ -17,7 +17,7 @@ gjhnano.bootloader.lock_bits=0x0F
 gjhnano.build.f_cpu=16000000L
 gjhnano.build.board=AVR_NANO
 gjhnano.build.core=arduino:arduino
-gjhnano.build.variant=eightanaloginputs
+gjhnano.build.variant=arduino:eightanaloginputs
 
 ## Arduino Nano w/ ATmega328
 ## -------------------------

@@ -1,2 +1,4 @@
+name=Beirdo's Arduino Boards
+version=1.0.0
 compiler.c.extra_flags=-DSERIAL_TX_BUFFER_SIZE=16 -DSERIAL_RX_BUFFER_SIZE=16
 compiler.cpp.extra_flags=-DSERIAL_TX_BUFFER_SIZE=16 -DSERIAL_RX_BUFFER_SIZE=16

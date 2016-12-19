@@ -30,10 +30,10 @@ void SDCardInitialize(uint8_t cs)
     while (sd.exists(fileName)) {
         if (fileName[BASE_NAME_SIZE + 3] != '9') {
             fileName[BASE_NAME_SIZE + 3]++;
-        } else if (filename[BASE_NAME_SIZE + 2] != '9') {
+        } else if (fileName[BASE_NAME_SIZE + 2] != '9') {
             fileName[BASE_NAME_SIZE + 3] = '0';
             fileName[BASE_NAME_SIZE + 2]++;
-        } else if (filename[BASE_NAME_SIZE + 1] != '9') {
+        } else if (fileName[BASE_NAME_SIZE + 1] != '9') {
             fileName[BASE_NAME_SIZE + 3] = '0';
             fileName[BASE_NAME_SIZE + 2] = '0';
             fileName[BASE_NAME_SIZE + 1]++;

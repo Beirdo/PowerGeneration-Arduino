@@ -20,11 +20,11 @@ Arduino pins
 17 - PC3 - unused
 18 - PC4 - SDA (I2C) - IN/OUT
 19 - PC5 - SCL (I2C) - IN/OUT
-20 - PB6 - /SD_CS - OUT
-21 - PB7 - LCD_DC - OUT
+20 - PB6 - unused
+21 - PB7 - unused
 22 - PC6 - /RESET
 23 - PE2 - unused
-24 - PE3 - A7 - ADC_LIGHT - IN (A)
+24 - PE3 - unused
 25 - PE0 - unused
 26 - PE1 - unused
 

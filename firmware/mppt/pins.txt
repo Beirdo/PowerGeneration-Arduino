@@ -24,6 +24,6 @@ Arduino pins
 21 - PB7 - unused
 22 - PC6 - /RESET
 23 - PE2 - unused
-24 - PE3 - A7 - ADC_LIGHT - IN (A)
+24 - PE3 - unused
 25 - PE0 - /RF_CE - OUT
 26 - PE1 - unused

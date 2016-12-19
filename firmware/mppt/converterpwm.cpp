@@ -12,7 +12,7 @@ ConverterPWM::ConverterPWM(uint8_t *reg)
     }
 }
 
-void ConverterPWM::initializeTimer0(void)
+bool ConverterPWM::initializeTimer0(void)
 {
     // Set both outputs to 0
     OCR0A = 0x00;

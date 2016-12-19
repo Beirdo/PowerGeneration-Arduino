@@ -21,7 +21,7 @@ class CLICommand {
         uint8_t m_nargs;
 };
 
-#define SERIAL_BUFFER_SIZE 128
+#define SERIAL_BUFFER_SIZE 32
 
 class SerialCLI {
     public:

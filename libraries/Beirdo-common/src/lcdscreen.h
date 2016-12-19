@@ -36,7 +36,7 @@ class LCDDeck {
     protected:
         LCDScreen *getFrame(uint8_t index);
         void displayString(int16_t &y, int16_t &h, uint8_t *str);
-        void generateIndicator(void);
+        void displayIndicator(void);
 
         LinkedList m_frameList;
         Adafruit_GFX *m_display;
@@ -46,10 +46,9 @@ class LCDDeck {
         uint8_t m_frameCount;
         int8_t m_index;
         LCDScreen *m_currentFrame;
-        uint8_t m_data_buffer[64];
+        uint8_t m_data_buffer[16];
         uint8_t m_title_blank[1];
         uint8_t *m_title;
-        uint8_t m_indicator[64];
 };
 
 

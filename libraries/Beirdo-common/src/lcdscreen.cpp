@@ -186,7 +186,6 @@ void LCDDeck::formatFrame(uint8_t index)
     m_currentFrame->title_line(&m_title, (uint8_t)64);
     uint8_t *buffer = &m_data_buffer[0];
     m_currentFrame->data_line(&buffer, (uint8_t)64);
-    generateIndicator();
 }
 
 void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str)
@@ -203,16 +202,22 @@ void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str)
     }
 }
 
-void LCDDeck::generateIndicator(void)
+void LCDDeck::displayIndicator(void)
 {
-    uint8_t *ch = m_indicator;
+    int16_t x, y, w, h;
+
+    m_display->setTextSize(1);
+    y = m_height - 8;
+
+    m_display->getTextBounds((char *)"o", 0, y, &x, &y, &w, &h);
+    x += ((m_width - (w * (2 * m_frameCount - 1))) / 2);
+
+    m_display->setCursor(x, y);
 
     for (uint8_t i = 0; i < m_frameCount; i++) {
-        *(ch++) = (i == m_index ? 'o' : '.');
-        *(ch++) = ' ';
+        m_display->write(i == m_index ? 'o' : '.');
+        m_display->write(' ');
     }
-    ch--;   // Don't need the last ' '
-    *ch = '\0';
 }
 
 void LCDDeck::displayFrame(void)
@@ -237,9 +242,7 @@ void LCDDeck::displayFrame(void)
     displayString(y, h, m_data_buffer);
 
     // Put screen index indicator at bottom line, centered
-    m_display->setTextSize(1);
-    y = m_height - 8;
-    displayString(y, h, m_indicator);
+    displayIndicator();
 
 #ifdef LCD_TYPE_SSD1306
     m_display->stopscroll();

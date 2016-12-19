@@ -21,4 +21,4 @@ A3 - unused
 A4 - SDA (TWI)
 A5 - SCL (TWI)
 A6 - unused
-A7 - unused
+A7 - VBATT - IN

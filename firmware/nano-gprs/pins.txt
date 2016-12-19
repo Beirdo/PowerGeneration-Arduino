@@ -20,5 +20,5 @@ A2 - LCD_DC - OUT
 A3 - /SD_CS - OUT
 A4 - SDA (TWI)
 A5 - SCL (TWI)
-A6 - unused
-A7 - VBATT
+A6 - ADC_LIGHT - IN
+A7 - VBATT - IN

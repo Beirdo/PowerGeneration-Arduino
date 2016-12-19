@@ -31,13 +31,18 @@ int8_t lcdIndex;
 #define LCD_RST_PIN 7
 #define LCD_CS_PIN 8
 #define LCD_DC_PIN 16
-#define LCD_PWM OC0A
+#define LCD_PWM_PIN 6
 
 #define SD_CS_PIN 17
+
+#define VBATT_ADC_PIN 7
+#define LIGHT_ADC_PIN 6
 
 typedef uint8_t apn_t[MAX_APN_LEN];
 static const uint8_t EEMEM rf_link_id = 0;
 static const apn_t EEMEM ee_gprs_apn;
+
+uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
@@ -81,12 +86,16 @@ void setup()
     EEPROM.get(ee_gprs_apn, gprs_apn);
     gprs.setApn(gprs_apn);
 
+    analogReference(DEFAULT);
+
     LCD.begin();
     LCD.setRotation(1);     // use in landscape mode
     LCD.display();
 
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));
+    lcdDeck.addFrame(new LCDScreen("Battery",
+                     (void *)&battery_voltage, formatAutoScale, "V"));
 
     lcdTicks = 0;
 
@@ -104,8 +113,6 @@ void loop()
     noInterrupts();
     sleepTimer.enable();
 
-    core_temperature = readAvrTemperature();
-
     bool newDisabled = gprs.isDisabled();
     if (newDisabled != gprsDisabled) {
         gprsDisabled = newDisabled;
@@ -122,6 +129,13 @@ void loop()
         lcdTicks++;
         if (lcdTicks >= SWAP_TIME) {
             lcdTicks -= SWAP_TIME;
+
+            core_temperature = readAvrTemperature();
+            
+            analogReference(DEFAULT);
+            battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
+            int16_t ledValue = map(analogRead(LIGHT_ADC_PIN), 204, 819, 0, 255);
+            analogWrite(LED_PWM_PIN, (uint8_t)constrain(ledValue, 0, 255));
 
             lcdIndex = lcdDeck.nextIndex();
             lcdDeck.formatFrame(lcdIndex);

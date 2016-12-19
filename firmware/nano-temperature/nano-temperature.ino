@@ -23,6 +23,8 @@ int8_t lcdIndex;
 #define RF_CE_PIN 9
 #define RF_IRQ_PIN 2
 
+#define VBATT_ADC_PIN 7
+
 #define OLED_RESET -1
 
 #if (SSD1306_LCDHEIGHT != 64)
@@ -33,6 +35,8 @@ uint16_t temperatures[8];
 
 static const uint8_t EEMEM rf_link_id = 0;
 uint8_t rf_id;
+
+uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
@@ -67,6 +71,8 @@ void setup()
 
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));
+    lcdDeck.addFrame(new LCDScreen("Battery",
+                     (void *)&battery_voltage, formatAutoScale, "V"));
 
     lcdDeck.addFrame(new LCDScreen("Temp 1", (void *)&temperatures[0],
                      formatTemperature, "C");
@@ -99,12 +105,16 @@ void loop()
     noInterrupts();
     sleepTimer.enable();
 
-    core_temperature = readAvrTemperature();
-    TemperaturesPoll(temperatures, 8);
-
     lcdTicks++;
     if (lcdTicks >= SWAP_TIME) {
         lcdTicks -= SWAP_TIME;
+
+        core_temperature = readAvrTemperature();
+
+        analogReference(DEFAULT);
+        battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
+
+        TemperaturesPoll(temperatures, 8);
 
         lcdIndex = lcdDeck.nextIndex();
         lcdDeck.formatFrame(lcdIndex);

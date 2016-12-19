@@ -5,49 +5,49 @@ menu.speed=Speed
 
 ##############################################################
 
-gjhnano.name=Arduino Nano (Beirdo's version)
+nano.name=Arduino Nano (Beirdo's version)
 
-gjhnano.upload.tool=avrdude
-gjhnano.upload.protocol=arduino
+nano.upload.tool=avrdude
+nano.upload.protocol=arduino
 
-gjhnano.bootloader.tool=avrdude
-gjhnano.bootloader.unlock_bits=0x3F
-gjhnano.bootloader.lock_bits=0x0F
+nano.bootloader.tool=avrdude
+nano.bootloader.unlock_bits=0x3F
+nano.bootloader.lock_bits=0x0F
 
-gjhnano.build.f_cpu=16000000L
-gjhnano.build.board=AVR_NANO
-gjhnano.build.core=arduino:arduino
-gjhnano.build.variant=arduino:eightanaloginputs
+nano.build.f_cpu=16000000L
+nano.build.board=AVR_NANO
+nano.build.core=arduino:arduino
+nano.build.variant=arduino:eightanaloginputs
 
 ## Arduino Nano w/ ATmega328
 ## -------------------------
-gjhnano.menu.cpu.atmega328=ATmega328
+nano.menu.cpu.atmega328=ATmega328
 
-gjhnano.menu.cpu.atmega328.upload.maximum_size=30720
-gjhnano.menu.cpu.atmega328.upload.maximum_data_size=2048
-gjhnano.menu.cpu.atmega328.upload.speed=57600
+nano.menu.cpu.atmega328.upload.maximum_size=30720
+nano.menu.cpu.atmega328.upload.maximum_data_size=2048
+nano.menu.cpu.atmega328.upload.speed=57600
 
-gjhnano.menu.cpu.atmega328.bootloader.low_fuses=0xFF
-gjhnano.menu.cpu.atmega328.bootloader.high_fuses=0xDA
-gjhnano.menu.cpu.atmega328.bootloader.extended_fuses=0x05
-gjhnano.menu.cpu.atmega328.bootloader.file=atmega/ATmegaBOOT_168_atmega328.hex
+nano.menu.cpu.atmega328.bootloader.low_fuses=0xFF
+nano.menu.cpu.atmega328.bootloader.high_fuses=0xDA
+nano.menu.cpu.atmega328.bootloader.extended_fuses=0x05
+nano.menu.cpu.atmega328.bootloader.file=atmega/ATmegaBOOT_168_atmega328.hex
 
-gjhnano.menu.cpu.atmega328.build.mcu=atmega328p
+nano.menu.cpu.atmega328.build.mcu=atmega328p
 
 ## Arduino Nano w/ ATmega168
 ## -------------------------
-gjhnano.menu.cpu.atmega168=ATmega168
+nano.menu.cpu.atmega168=ATmega168
 
-gjhnano.menu.cpu.atmega168.upload.maximum_size=14336
-gjhnano.menu.cpu.atmega168.upload.maximum_data_size=1024
-gjhnano.menu.cpu.atmega168.upload.speed=19200
+nano.menu.cpu.atmega168.upload.maximum_size=14336
+nano.menu.cpu.atmega168.upload.maximum_data_size=1024
+nano.menu.cpu.atmega168.upload.speed=19200
 
-gjhnano.menu.cpu.atmega168.bootloader.low_fuses=0xff
-gjhnano.menu.cpu.atmega168.bootloader.high_fuses=0xdd
-gjhnano.menu.cpu.atmega168.bootloader.extended_fuses=0x00
-gjhnano.menu.cpu.atmega168.bootloader.file=atmega/ATmegaBOOT_168_diecimila.hex
+nano.menu.cpu.atmega168.bootloader.low_fuses=0xff
+nano.menu.cpu.atmega168.bootloader.high_fuses=0xdd
+nano.menu.cpu.atmega168.bootloader.extended_fuses=0x00
+nano.menu.cpu.atmega168.bootloader.file=atmega/ATmegaBOOT_168_diecimila.hex
 
-gjhnano.menu.cpu.atmega168.build.mcu=atmega168
+nano.menu.cpu.atmega168.build.mcu=atmega168
 
 
 atmega328pbcc.name=Atmel ATmega328PB Crystal Clock

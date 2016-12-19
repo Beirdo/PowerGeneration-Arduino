@@ -1,6 +1,8 @@
 #include <PCF8574.h>
 #include "battery.h"
 
+#define DESULFATOR_PWM_PIN 6
+
 Desulfator desulfator;
 Battery battery[2] = { Battery(0), Battery(1) };
 PCF8574 pcf8574[3];
@@ -272,7 +274,11 @@ Desulfator::set(uint8_t battery, uint8_t enable)
 
 Desulfator::setPWM(uint8_t enable)
 {
-    // TODO: implement. - on OC3B
+    if (enable) {
+        analogWrite(DESULFATOR_PWM_PIN, 128);
+    } else
+        analogWrite(DESULFATOR_PWM_PIN, 0);
+    }
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

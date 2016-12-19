@@ -6,7 +6,7 @@ Arduino pins
 3  - PD3 - /LI_ION_IRQ (EXT INT1) - IN
 4  - PD4 - /RF_CS - OUT
 5  - PD5 - /RF_CE - OUT
-6  - PD6 - DESULFATE_PWM (OC0A) - OU
+6  - PD6 - DESULFATE_PWM (OC0A) - OUT
 7  - PD7 - unused
 8  - PB0 - /GPIO_IRQ (PCINT0) - IN
 9  - PB1 - unused

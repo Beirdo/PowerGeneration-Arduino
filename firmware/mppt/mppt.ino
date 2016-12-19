@@ -6,7 +6,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#include "nokialcd.h"
 #include "rflink.h"
 #include "sleeptimer.h"
 #include "adcread.h"

@@ -184,36 +184,35 @@ void setup(void)
                      (void *)&core_temperature, formatTemperature, "C"));
 
     lcdDeck.addFrame(new LCDScreen("Vin", (void *)&voltages[TEST_VIN],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Iin", (void *)&currents[TEST_VIN],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pin", (void *)&powers[TEST_VIN],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vmppt", (void *)&voltages[TEST_MPPT],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Imppt", (void *)&currents[TEST_MPPT],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pmppt", (void *)&powers[TEST_MPPT],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vout", (void *)&voltages[TEST_18V],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Iout", (void *)&currents[TEST_18V],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pout", (void *)&powers[TEST_18V],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vcc", (void *)&voltages[TEST_3V3],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Icc", (void *)&currents[TEST_3V3],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pcc", (void *)&powers[TEST_3V3],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdTicks = 0;
 
-    PWMInitialize(OCR0A, OCR0B, -1);
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 }
 
@@ -229,11 +228,11 @@ void loop(void)
         prev_v_in = voltages[TEST_VIN];
         prev_i_in = currents[TEST_VIN];
 
-        for (i = 0; i < 4; i++) {
-            if (monitor[i]->readMonitor()) {
-                voltages[i] = monitor[i]->voltage();
-                currents[i] = monitor[i]->current();
-                powers[i]   = monitor[i]->power();
+        for (uint8_t i = 0; i < 4; i++) {
+            if (monitors[i]->readMonitor()) {
+                voltages[i] = monitors[i]->voltage();
+                currents[i] = monitors[i]->current();
+                powers[i]   = monitors[i]->power();
             }
         }
 

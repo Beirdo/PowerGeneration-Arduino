@@ -132,7 +132,7 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
     }
 }
 
-LCDScreen::LCDScreen(char *title, void *variable, formatter_t *formatter, 
+LCDScreen::LCDScreen(char *title, void *variable, formatter_t formatter, 
                      char *units)
 {
     m_title = (uint8_t *)title;
@@ -167,6 +167,7 @@ LCDDeck::LCDDeck(Adafruit_GFX *display) : m_frameList(LinkedList())
     m_index = -1;
     m_height = display->height();
     m_width = display->width();
+    m_title_blank[0] = '\0';
 }
 
 void LCDDeck::resetIndex(uint8_t index)
@@ -181,9 +182,10 @@ void LCDDeck::formatFrame(uint8_t index)
         return;
     }
 
-    m_title = &m_title_empty[0];
-    m_currentFrame->title_line(&m_title, 64);
-    m_currentFrame->data_line(&m_data_buffer, 64);
+    m_title = &m_title_blank[0];
+    m_currentFrame->title_line(&m_title, (uint8_t)64);
+    uint8_t *buffer = &m_data_buffer[0];
+    m_currentFrame->data_line(&buffer, (uint8_t)64);
     generateIndicator();
 }
 
@@ -206,7 +208,7 @@ void LCDDeck::generateIndicator(void)
     uint8_t *ch = m_indicator;
 
     for (uint8_t i = 0; i < m_frameCount; i++) {
-        *(ch++) = (i == index ? 'o' : '.');
+        *(ch++) = (i == m_index ? 'o' : '.');
         *(ch++) = ' ';
     }
     ch--;   // Don't need the last ' '

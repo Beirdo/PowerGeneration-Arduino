@@ -10,6 +10,7 @@
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
+#include "lcdscreen.h"
 #include "eeprom.h"
 
 // in ms

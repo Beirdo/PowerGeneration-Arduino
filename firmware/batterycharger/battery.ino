@@ -56,7 +56,7 @@ void BatteryChargerInitialize(void)
     io_t *io;
 
     for (int i = 0; i < count; i++) {
-        io = &input[i];
+        io = &inputs[i];
         pcf8574[io->dev].pinMode(io->pin, INPUT_PULLUP, false);
         switch (io->dev) {
             case 0:
@@ -108,7 +108,7 @@ void BatteryChargerInitialize(void)
 
     count = sizeof(outputs);
     for (int i = 0; i < count; i++) {
-        io = &output[i];
+        io = &outputs[i];
         *io->variable = 0;
         pcf8574[io->dev].pinMode(io->pin, OUTPUT, false);
 
@@ -128,7 +128,7 @@ void BatteryChargerInitialize(void)
             case 1:
                 switch (io->pin) {
                     case 0:
-                        io->variable = battery[0].desulatePtr();
+                        io->variable = battery[0].desulfatePtr();
                         break;
                     case 1:
                         io->variable = battery[0].capacity9AhPtr();
@@ -137,7 +137,7 @@ void BatteryChargerInitialize(void)
                         io->variable = battery[0].capacity20AhPtr();
                         break;
                     case 4:
-                        io->variable = battery[0].desulatePtr();
+                        io->variable = battery[0].desulfatePtr();
                         break;
                     case 5:
                         io->variable = battery[0].capacity9AhPtr();
@@ -154,7 +154,7 @@ void BatteryChargerInitialize(void)
                     case 0:
                         // {2, 0, &liIonEn},
                         break;
-                    default;
+                    default:
                         break;
                 }
                 break;
@@ -169,24 +169,25 @@ void BatteryChargerInitialize(void)
 void updateAllIO(void)
 {
     uint8_t values[3] = {0, 0, 0};
+    io_t *io;
 
     uint8_t count = sizeof(outputs);
     for (int i = 0; i < count; i++) {
-        io = &output[i];
+        io = &outputs[i];
         if (*io->variable) {
-            value[i] |= 1 << io->pin;
+            values[i] |= 1 << io->pin;
         }
     }
 
     for (int i = 0; i < 3; i++) {
-        pcf8574[i].write(value[i]);
+        pcf8574[i].write(values[i]);
         values[i] = pcf8574[i].read();
     }
 
     count = sizeof(inputs);
     for (int i = 0; i < count; i++) {
-        io = &input[i];
-        if (value[i] & (1 << io->pin)) {
+        io = &inputs[i];
+        if (values[i] & (1 << io->pin)) {
             *io->variable = 1;
         } else {
             *io->variable = 0;
@@ -196,27 +197,9 @@ void updateAllIO(void)
 
 Battery::Battery(uint8_t num)
 {
-    m_state = 0;
     m_powergood = 0;
 
     m_num = num;
-    if (num == 0) {
-        m_enable_mask = _BV(3);
-        m_status_mask = _BV(1) | _BV(0);
-        m_status_shift = 0;
-        m_powergood_mask = _BV(2);
-        m_desulfate_mask = _BV(0);
-        m_9ah_mask = _BV(1);
-        m_20ah_mask = _BV(2);
-    } else {
-        m_enable_mask = _BV(7);
-        m_status_mask = _BV(5) | _BV(4);
-        m_status_shift = 4;
-        m_powergood_mask = _BV(6);
-        m_desulfate_mask = _BV(4);
-        m_9ah_mask = _BV(5);
-        m_20ah_mask = _BV(6);
-    }
 
     setEnabled(0);
     setDesulfate(0);
@@ -230,9 +213,6 @@ void Battery::setCapacity(uint8_t capacity)
     }
 
     m_capacity = capacity;
-
-    uint8_t mask = m_9ah_mask | m_20ah_mask;
-    uint8_t value;
 
     m_capacity9Ah  = (capacity == 9);
     m_capacity20Ah = (capacity == 20);
@@ -250,14 +230,15 @@ void Battery::setEnabled(uint8_t enabled)
 
 Desulfator::Desulfator(void)
 {
-    m_enabled = 0;
+    m_enabled[0] = 0;
+    m_enabled[1] = 0;
 
     setPWM(0);
     set(0, 0);
     set(1, 0);
 }
 
-Desulfator::set(uint8_t battery, uint8_t enable)
+void Desulfator::set(uint8_t battery, uint8_t enable)
 {
     bool oldEnabled = (m_enabled[0] || m_enabled[1]);
     m_enabled[battery] = enable;
@@ -272,11 +253,11 @@ Desulfator::set(uint8_t battery, uint8_t enable)
     }
 }
 
-Desulfator::setPWM(uint8_t enable)
+void Desulfator::setPWM(uint8_t enable)
 {
     if (enable) {
         analogWrite(DESULFATOR_PWM_PIN, 128);
-    } else
+    } else {
         analogWrite(DESULFATOR_PWM_PIN, 0);
     }
 }

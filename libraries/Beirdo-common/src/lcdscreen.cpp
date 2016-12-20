@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 #include "lcdscreen.h"
 #include "linkedlist.h"
@@ -163,6 +164,7 @@ void LCDScreen::data_line(uint8_t **buffer, uint8_t maxlen)
 LCDDeck::LCDDeck(Adafruit_GFX *display) : m_frameList(LinkedList())
 {
     m_display = display;
+    m_is_ssd1306 = (typeid(*display) == typeid(Adafruit_SSD1306));
     m_frameCount = 0;
     m_index = -1;
     m_height = display->height();
@@ -222,11 +224,11 @@ void LCDDeck::displayIndicator(void)
 
 void LCDDeck::displayFrame(void)
 {
-    m_display->clearDisplay();
-
-#ifdef LCD_TYPE_SSD1306
-    m_display->startscrollleft(0x00, 0x0F);
-#endif
+    if (m_is_ssd1306) {
+        m_display->clearDisplay();
+    } else {
+        m_display->fillScreen(BLACK);
+    }
 
     m_display->setTextSize(3);
 
@@ -244,11 +246,9 @@ void LCDDeck::displayFrame(void)
     // Put screen index indicator at bottom line, centered
     displayIndicator();
 
-#ifdef LCD_TYPE_SSD1306
-    m_display->stopscroll();
-#endif
-
-    m_display->display();
+    if (m_is_ssd1306) {
+        m_display->display();
+    }
 }
 
 int8_t LCDDeck::nextIndex(void)

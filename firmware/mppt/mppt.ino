@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_FRAM_SPI.h>
 
 #include "rflink.h"
 #include "sleeptimer.h"
@@ -25,6 +26,8 @@ int8_t lcdIndex;
 #define RF_CE_PIN 25
 #define RF_CS_PIN 4
 #define RF_IRQ_PIN 2
+
+#define FRAM_CS_PIN 7
 
 #define CONV1_PWM OCR0A
 #define CONV2_PWM OCR0B
@@ -56,8 +59,9 @@ uint8_t enabled = 1;
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
-Adafruit_SSD1306 LCD(OLED_RESET);
-LCDDeck lcdDeck(&LCD);
+Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
+Adafruit_SSD1306 oled();
+LCDDeck lcdDeck(&oled);
 ConverterPWM mpptConverter(&CONV1_PWM);
 ConverterPWM outConverter(&CONV2_PWM);
 
@@ -151,6 +155,20 @@ class DisableCLICommand : public CLICommand
             };
 };
 
+class InitializeLogoCLICommand : public CLICommand
+{
+    public:
+        InitializeLogoCLICommand(void) : CLICommand("initlogo", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            { 
+                Serial.println("Writing logo to FRAM");
+                oled.initializeLogo();
+                Serial.println("Done");
+                return 1;
+            };
+};
+
+
 void setup(void)
 {
     // Setup sleep mode to idle mode
@@ -173,12 +191,21 @@ void setup(void)
 
     cli.registerCommand(new EnableCLICommand());
     cli.registerCommand(new DisableCLICommand());
+    cli.registerCommand(new InitializeLogoCLICommand());
     cli.initialize();
 
     rf_id = EEPROM.read(rf_link_id);
+
+    bool framInit = fram.begin();
+    if (!framInit) {
+        Serial.println("Can't find attached FRAM");
+    }
     
-    LCD.begin(SSD1306_SWITCHCAPVCC, 0x3D);
-    LCD.display();
+    oled.begin(SSD1306_SWITCHCAPVCC);
+    if (framInit) {
+        oled.attachRAM(&fram, 0x0000, 0x04000);
+    }
+    oled.display();
 
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));

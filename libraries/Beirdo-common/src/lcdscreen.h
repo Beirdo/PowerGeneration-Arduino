@@ -40,6 +40,7 @@ class LCDDeck {
 
         LinkedList m_frameList;
         Adafruit_GFX *m_display;
+        bool m_is_ssd1306;
         int16_t m_height;
         int16_t m_width;
 

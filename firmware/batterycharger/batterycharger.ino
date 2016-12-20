@@ -48,6 +48,7 @@ uint32_t powers[6];
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
+Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 Adafruit_SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);
 
@@ -55,11 +56,8 @@ void CborMessageBuild(void);
 
 void CborMessageBuild(void)
 {
-    DateTime now = RTClockGetTime();
     CborMessageInitialize();
-    CborMessageAddMap(7);
-    CborMapAddTimestamp(now.year(), now.month(), now.day(), now.hour(),
-                        now.minute(), now.second());
+    CborMessageAddMap(6);
     CborMapAddInteger(CBOR_KEY_SOURCE, CBOR_SOURCE_CHARGER);
     CborMapAddInteger(CBOR_KEY_RF_ID, 0xFE);
     CborMapAddArray(CBOR_KEY_VOLTAGE_ARRAY, voltages, 6);
@@ -220,51 +218,50 @@ void setup()
                      (void *)&core_temperature, formatTemperature, "C"));
 
     lcdDeck.addFrame(new LCDScreen("Vin", (void *)&voltages[TEST_VIN],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Iin", (void *)&currents[TEST_VIN],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pin", (void *)&powers[TEST_VIN],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vbatt1", (void *)&voltages[TEST_BATT1],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Ibatt1", (void *)&currents[TEST_BATT1],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pbatt1", (void *)&powers[TEST_BATT1],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vbatt2", (void *)&voltages[TEST_BATT2],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Ibatt2", (void *)&currents[TEST_BATT2],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pbatt2", (void *)&powers[TEST_BATT2],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vliion", (void *)&voltages[TEST_LIION],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Iliion", (void *)&currents[TEST_LIION],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pliion", (void *)&powers[TEST_LIION],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vcc", (void *)&voltages[TEST_3V3],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Icc", (void *)&currents[TEST_3V3],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pcc", (void *)&powers[TEST_3V3],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdDeck.addFrame(new LCDScreen("Vdd", (void *)&voltages[TEST_5V],
-                     formatAutoScale, "V");
+                     formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Idd", (void *)&currents[TEST_5V],
-                     formatAutoScale, "A");
+                     formatAutoScale, "A"));
     lcdDeck.addFrame(new LCDScreen("Pdd", (void *)&powers[TEST_5V],
-                     formatAutoScale, "W");
+                     formatAutoScale, "W"));
 
     lcdTicks = 0;
 
     BatteryChargerInitialize();
-    PWMInitialize(0, 0, -1);
     rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
 }
 
@@ -276,11 +273,11 @@ void loop()
     noInterrupts();
     sleepTimer.enable();
 
-    for (i = 0; i < 6; i++) {
-        if (monitor[i]->readMonitor()) {
-            voltages[i] = monitor[i]->voltage();
-            currents[i] = monitor[i]->current();
-            powers[i]   = monitor[i]->power();
+    for (uint8_t i = 0; i < 6; i++) {
+        if (monitors[i]->readMonitor()) {
+            voltages[i] = monitors[i]->voltage();
+            currents[i] = monitors[i]->current();
+            powers[i]   = monitors[i]->power();
         }
     }
 
@@ -301,8 +298,6 @@ void loop()
         }
     }
 
-    battery[0].updateState();
-    battery[1].updateState();
     cli.handleInput();
 
     // Go to sleep, get woken up by the timer

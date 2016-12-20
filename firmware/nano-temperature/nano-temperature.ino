@@ -41,6 +41,7 @@ uint32_t battery_voltage;
 RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
+Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 Adafruit_SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);
 
@@ -100,21 +101,21 @@ void setup()
                      (void *)&battery_voltage, formatAutoScale, "V"));
 
     lcdDeck.addFrame(new LCDScreen("Temp 1", (void *)&temperatures[0],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 2", (void *)&temperatures[1],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 3", (void *)&temperatures[2],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 4", (void *)&temperatures[3],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 5", (void *)&temperatures[4],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 6", (void *)&temperatures[5],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 7", (void *)&temperatures[6],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Temp 8", (void *)&temperatures[7],
-                     formatTemperature, "C");
+                     formatTemperature, "C"));
 
     lcdTicks = 0;
 

@@ -1,7 +1,7 @@
 #ifndef BATTERY_H__
 #define BATTERY_H__
 
-void BatteryChargerInitialize(uint8_t addr0, uint8_t addr1, uint8_t addr2);
+void BatteryChargerInitialize(void);
 void updateAllIO(void);
 
 class Desulfator {

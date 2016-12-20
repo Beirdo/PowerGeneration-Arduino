@@ -46,7 +46,7 @@ io_t outputs[] {
 };
 
 
-void BatteryChargerInitialize(uint8_t addr0, uint8_t addr1, uint8_t addr2)
+void BatteryChargerInitialize(void)
 {
     pcf8574[0].begin(0x20);
     pcf8574[1].begin(0x21);

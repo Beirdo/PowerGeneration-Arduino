@@ -9,6 +9,7 @@
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
+#include "lcdscreen.h"
 #include "sha204.h"
 #include "gprs.h"
 

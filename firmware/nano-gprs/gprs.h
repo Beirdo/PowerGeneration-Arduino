@@ -1,11 +1,13 @@
 #ifndef GPRS_H__
 #define GPRS_H__
 
+#include <SIM800.h>
 #include <inttypes.h>
 
 #define MAX_APN_LEN 64
 #define MAX_URL_LEN 128
 #define MAX_ERROR_LEN 40
+#define MAX_BUFFER_LEN 64
 
 typedef enum {
     GPRS_DISABLED,

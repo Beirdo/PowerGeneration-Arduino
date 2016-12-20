@@ -13,8 +13,8 @@ GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
     m_enable_pin = enable_pin;
     m_dtr_pin = dtr_pin;
     m_state = GPRS_DISABLED;
-    m_apn = DEFAULT_APN;
-    m_url = DEFAULT_URL;
+    strcpy(m_apn, DEFAULT_APN);
+    strcpy(m_url, DEFAULT_URL);
     m_buflen = 0;
     memset(&m_location, 0x00, sizeof(GSM_LOCATION));
     m_epochTime = 0;
@@ -70,7 +70,7 @@ void GPRS::stateMachine(void)
                 next_state = GPRS_HTTPS_READY;
             } else {
                 strncpy(m_error, m_gprs->buffer(), MAX_ERROR_LEN);
-                m_gprs->httpsUninit();
+                m_gprs->httpUninit();
                 delay(1000);
             }
             break;
@@ -83,15 +83,15 @@ void GPRS::stateMachine(void)
             }
             break;
         case GPRS_HTTPS_CONNECT:
-            m_error = "";
+            m_error[0] = '\0';
             m_gprs->httpPOST(m_url, m_buffer, m_buflen, "application/cbor");
             m_counter = 0;
             next_state = GPRS_HTTPS_CONNECT_WAIT;
             break;
         case GPRS_HTTPS_CONNECT_WAIT:
-            if (m_gprs->httpsIsConnected() != 0) {
+            if (m_gprs->httpIsConnected() != 0) {
                 if (m_gprs->httpState() == HTTP_ERROR) {
-                    m_error = "Connect error";
+                    strcpy(m_error, "Connect error");
                 }
                 next_state = GPRS_HTTPS_DONE;
             } else {
@@ -99,7 +99,7 @@ void GPRS::stateMachine(void)
                 if (!m_gprs->available()) {
                     next_state = GPRS_RESET;
                 } else if (m_counter > 25) {
-                    m_error = "Timeout.";
+                    strcpy(m_error, "Timeout");
                     next_state = GPRS_HTTPS_DONE;
                 }
                 m_gprs->purgeSerial();
@@ -138,6 +138,7 @@ int8_t GPRS::getRssi(void)
 {
     if (isDisabled()) {
         return -128;
+    }
 
     return m_gprs->getSignalQuality();
 }
@@ -179,14 +180,14 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
         CborMapAddLocation(m_location.lat, m_location.lon);
         m_lastEpochTime = m_epochTime;
     }
-    CborMapAddTimestamp(m_location.year + 2000, m_location..month,
+    CborMapAddTimestamp(m_location.year + 2000, m_location.month,
                         m_location.day, m_location.hour,
                         m_location.minute, m_location.second);
     CborMapAddInteger(CBOR_KEY_SOURCE, source);
     CborMapAddCborPayload(payload, len);
 
     uint8_t *buffer = &m_nextBuffer[m_nextBuflen];
-    uint8_t len = MAX_BUFFER_LEN - m_nextBuflen;
+    len = MAX_BUFFER_LEN - m_nextBuflen;
 
     bool buffFit = CborMessageBuffer(&buffer, &len);
     if (buffFit) {

@@ -45,12 +45,11 @@ void RFLink::send(const void *buf, uint8_t len)
     m_rf.write(buf, len);
 }
 
-uint8_t RFLink::receive(void *buf, uint8_t maxlen)
+uint8_t RFLink::receive(void *buf, uint8_t maxlen, uint8_t *pipeNum)
 {
-    uint8_t pipeNum;
     uint8_t pktlen;
 
-    if (!m_valid || !m_rf.available(&pipeNum)) {
+    if (!m_valid || !m_rf.available(pipeNum)) {
         return 0;
     }
 

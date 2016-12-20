@@ -33,7 +33,7 @@ int8_t lcdIndex;
 #define LCD_RST_PIN 7
 #define LCD_CS_PIN 8
 #define LCD_DC_PIN 16
-#define LCD_PWM_PIN 6
+#define LED_PWM_PIN 6
 
 #define SD_CS_PIN 17
 
@@ -67,6 +67,36 @@ void CborMessageBuild(void)
     CborMapAddInteger(CBOR_KEY_GPRS_RSSI, gprs.getRssi());
 }
 
+
+class GetRFIDCLICommand : public CLICommand
+{
+    public:
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+                Serial.print("Current RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+class SetRFIDCLICommand : public CLICommand
+{
+    public:
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
+                Serial.print("New RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+
+
 // TODO:  CLI commands for:
 //            get/set APN
 //            get/set URL (from SHA204)
@@ -77,8 +107,12 @@ void setup()
     // Setup sleep to idle mode
     SMCR = 0x00;
 
+    cli.registerCommand(new GetRFIDCLICommand());
+    cli.registerCommand(new SetRFIDCLICommand());
+
     if (gprs.isDisabled()) {
         Serial.begin(115200);
+
         cli.initialize();
     }
 
@@ -148,7 +182,7 @@ void loop()
         }
 
         uint8_t source;
-        len = rflink.receive(rf_rx_buffer, RF_RX_BUFFER_SIZE, &source);
+        len = rflink->receive(rf_rx_buffer, RF_RX_BUFFER_SIZE, &source);
         if (len) {
             gprs.sendCborPacket(source, rf_rx_buffer, len);
         }

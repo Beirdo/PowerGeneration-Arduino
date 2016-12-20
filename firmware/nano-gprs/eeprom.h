@@ -4,16 +4,14 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
 #include <inttypes.h>
+#include <eeprom_common.h>
 
 typedef uint8_t apn_t[MAX_APN_LEN];
 
-typedef struct {
+struct _eeprom_t {
     uint8_t rf_link_id;
     apn_t gprs_apn;
-} __attribute__((packed, aligned(1))) eeprom_t;
-
-#define EEPROM_OFFSET(x)  (OFFSETOF(eeprom_t, (x)))
-#define OFFSET(s, x)      ((uint16_t)(&((s *)NULL)->(x)))
+};
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

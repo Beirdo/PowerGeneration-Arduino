@@ -8,7 +8,7 @@ class RFLink {
     public:
         RFLink(uint8_t ce, uint8_t cs, uint8_t irq, uint8_t nodeNum);
         void send(const void *buf, uint8_t len);
-        uint8_t receive(void *buf, uint8_t maxlen);
+        uint8_t receive(void *buf, uint8_t maxlen, uint8_t *pipeNum);
     protected:
         uint8_t m_nodeNum;
         uint8_t m_irq;

@@ -27,7 +27,7 @@ class LCDScreen {
 
 class LCDDeck {
     public:
-        LCDDeck(Adafruit_GFX *display);
+        LCDDeck(Adafruit_GFX *display, bool is_ssd1306 = false);
         void resetIndex(uint8_t index);
         void formatFrame(uint8_t index);
         void displayFrame(void);

@@ -32,8 +32,6 @@ int8_t lcdIndex;
 #define CONV1_PWM OCR0A
 #define CONV2_PWM OCR0B
 
-#define OLED_RESET -1
-
 #if (SSD1306_LCDHEIGHT != 64)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
@@ -60,8 +58,8 @@ RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
-Adafruit_SSD1306 oled();
-LCDDeck lcdDeck(&oled);
+Adafruit_SSD1306 oled;
+LCDDeck lcdDeck(&oled, true);
 ConverterPWM mpptConverter(&CONV1_PWM);
 ConverterPWM outConverter(&CONV2_PWM);
 

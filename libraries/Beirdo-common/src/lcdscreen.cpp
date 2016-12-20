@@ -161,10 +161,11 @@ void LCDScreen::data_line(uint8_t **buffer, uint8_t maxlen)
     m_formatter(m_variable, *buffer, maxlen, m_units);
 }
 
-LCDDeck::LCDDeck(Adafruit_GFX *display) : m_frameList(LinkedList())
+LCDDeck::LCDDeck(Adafruit_GFX *display, bool is_ssd1306) :
+        m_frameList(LinkedList())
 {
     m_display = display;
-    m_is_ssd1306 = (typeid(*display) == typeid(Adafruit_SSD1306));
+    m_is_ssd1306 = is_ssd1306;
     m_frameCount = 0;
     m_index = -1;
     m_height = display->height();

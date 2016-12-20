@@ -34,15 +34,15 @@ io_t inputs[] {
 uint8_t liIonEn;
 
 io_t outputs[] {
-    {0, 3, &enable1},
-    {0, 7, &enable2},
-    {1, 0, &desulfate1},
-    {1, 1, &batt9ah1},
-    {1, 2, &batt20ah1},
-    {1, 4, &desulfate2},
-    {1, 5, &batt9ah2},
-    {1, 6, &batt20ah2},
-    {2, 0, &liIonEn},
+    {0, 3, NULL},
+    {0, 7, NULL},
+    {1, 0, NULL},
+    {1, 1, NULL},
+    {1, 2, NULL},
+    {1, 4, NULL},
+    {1, 5, NULL},
+    {1, 6, NULL},
+    {2, 0, NULL},
 };
 
 

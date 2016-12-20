@@ -51,7 +51,7 @@ apn_t gprs_apn;
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
 
 Adafruit_ILI9340 LCD(LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN);
-LCDDeck lcdDeck(&LCD);
+LCDDeck lcdDeck(&LCD, false);
 
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];
@@ -90,7 +90,6 @@ void setup()
 
     LCD.begin();
     LCD.setRotation(1);     // use in landscape mode
-    LCD.display();
 
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));

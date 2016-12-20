@@ -12,6 +12,7 @@
 #include "lcdscreen.h"
 #include "sha204.h"
 #include "gprs.h"
+#include "eeprom.h"
 
 // in ms
 #define LOOP_CADENCE 1000
@@ -39,9 +40,7 @@ int8_t lcdIndex;
 #define VBATT_ADC_PIN 7
 #define LIGHT_ADC_PIN 6
 
-typedef uint8_t apn_t[MAX_APN_LEN];
-static const uint8_t EEMEM rf_link_id = 0;
-static const apn_t EEMEM ee_gprs_apn;
+static const eeprom_t EEMEM eeprom_contents = { 0, "" };
 
 uint32_t battery_voltage;
 
@@ -83,8 +82,8 @@ void setup()
         cli.initialize();
     }
 
-    uint8_t rf_id = EEPROM.read(rf_link_id);
-    EEPROM.get(ee_gprs_apn, gprs_apn);
+    uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+    EEPROM.get(EEPROM_OFFSET(gprs_apn), gprs_apn);
     gprs.setApn(gprs_apn);
 
     analogReference(DEFAULT);

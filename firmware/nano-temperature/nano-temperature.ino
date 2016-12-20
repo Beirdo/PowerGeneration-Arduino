@@ -10,6 +10,7 @@
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
+#include "eeprom.h"
 
 // in ms
 #define LOOP_CADENCE 1000
@@ -33,7 +34,7 @@ int8_t lcdIndex;
 
 uint16_t temperatures[8];
 
-static const uint8_t EEMEM rf_link_id = 0;
+static const eeprom_t EEMEM eeprom_contents = { 0 };
 uint8_t rf_id;
 
 uint32_t battery_voltage;
@@ -72,6 +73,34 @@ class InitializeLogoCLICommand : public CLICommand
 
 
 
+class GetRFIDCLICommand : public CLICommand
+{
+    public:
+        GetRFIDCLICommand(void) : CLICommand("get_rf_link", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+                Serial.print("Current RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+class SetRFIDCLICommand : public CLICommand
+{
+    public:
+        SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
+                Serial.print("New RF ID = ");
+                Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+
 void setup() 
 {
     // Setup sleep to idle mode
@@ -79,10 +108,12 @@ void setup()
     
     Serial.begin(115200);
 
+    cli.registerCommand(new GetRFIDCLICommand());
+    cli.registerCommand(new SetRFIDCLICommand());
     cli.registerCommand(new InitializeLogoCLICommand());
     cli.initialize();
 
-    rf_id = EEPROM.read(rf_link_id);
+    rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
 
     bool framInit = fram.begin();
     if (!framInit) {

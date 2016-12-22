@@ -14,6 +14,8 @@
 #define LCD_DC 5
 #define LCD_RST 7
 
+#define LED_PWM_PIN 6
+
 const uint8_t EEMEM rf_link_id = 0;
 
 SleepTimer sleepTimer(LOOP_CADENCE);
@@ -26,6 +28,7 @@ void setup()
     
     Serial.begin(115200);
 
+    analogWrite(LED_PWM_PIN, 128);
     tft.begin();
     tft.fillScreen(ILI9340_BLACK);
     tft.fillScreen(ILI9340_RED);

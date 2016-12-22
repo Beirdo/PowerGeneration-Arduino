@@ -16,7 +16,6 @@ BSD license, check license.txt for more information
 All text above, and the splash screen must be included in any redistribution
 *********************************************************************/
 
-#include <avr/sleep.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>

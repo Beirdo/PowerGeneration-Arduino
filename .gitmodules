@@ -43,3 +43,6 @@
 [submodule "libraries/Arduino-Low-Power"]
 	path = libraries/Arduino-Low-Power
 	url = https://github.com/rocketscream/Low-Power.git
+[submodule "libraries/Adafruit_ILI9341"]
+	path = libraries/Adafruit_ILI9341
+	url = https://github.com/adafruit/Adafruit_ILI9341.git

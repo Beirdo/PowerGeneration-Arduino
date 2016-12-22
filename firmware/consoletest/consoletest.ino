@@ -1,14 +1,12 @@
-#include <avr/sleep.h>
-
-#include "sleeptimer.h"
 #include "serialcli.h"
 
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9340.h>
+#include <Adafruit_ILI9341.h>
+#include <LowPower.h>
 
 // in ms
-#define LOOP_CADENCE 100
+#define LOOP_CADENCE 120
 
 #define LCD_CS 10
 #define LCD_DC 5
@@ -18,8 +16,7 @@
 
 const uint8_t EEMEM rf_link_id = 0;
 
-SleepTimer sleepTimer(LOOP_CADENCE);
-Adafruit_ILI9340 tft = Adafruit_ILI9340(LCD_CS, LCD_DC, LCD_RST);
+Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_DC, LCD_RST);
 
 class SetLEDCLICommand : public CLICommand
 {
@@ -37,9 +34,6 @@ class SetLEDCLICommand : public CLICommand
 
 void setup() 
 {
-    // Setup sleep to idle mode
-    SMCR = 0x00;
-    
     Serial.begin(115200);
 
     cli.registerCommand(new SetLEDCLICommand());
@@ -47,26 +41,20 @@ void setup()
 
     analogWrite(LED_PWM_PIN, 5);
     tft.begin();
-    //tft.fillScreen(ILI9340_BLACK);
-    //tft.fillScreen(ILI9340_RED);
-    //tft.fillScreen(ILI9340_GREEN);
-    tft.fillScreen(ILI9340_BLUE);
-    //tft.fillScreen(ILI9340_BLACK);
+    //tft.fillScreen(ILI9341_BLACK);
+    //tft.fillScreen(ILI9341_RED);
+    //tft.fillScreen(ILI9341_GREEN);
+    tft.fillScreen(ILI9341_BLUE);
+    //tft.fillScreen(ILI9341_BLACK);
 
 }
 
 void loop() 
 {
-    noInterrupts();
-    sleepTimer.enable();
-
     cli.handleInput();
+    delay(LOOP_CADENCE);
+    //LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_ON, TWI_OFF);
 
-    // Go to sleep, get woken up by the timer
-    sleep_enable();
-    interrupts();
-    sleep_cpu();
-    sleep_disable();
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

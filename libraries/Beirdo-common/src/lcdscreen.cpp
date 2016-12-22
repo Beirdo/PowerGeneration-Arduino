@@ -39,7 +39,7 @@ void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
 {
     int32_t value = *(int32_t *)valptr;
 
-    if (value == 0) {
+    if (value <= 0) {
         buffer[0] = '0';
         strcpy(&buffer[1], units);
         return;
@@ -62,11 +62,12 @@ void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
             break;
     }
 
-    char precision = 3;
+    char precision = 4;
     char digits = digitcount % 3;
     digits = (digits ? digits : 3);
 
-    char decimals = (precision > digits ? precision - digits : 0);
+    char decimals = (precision > digits && subUnit != 'm' ?
+                     precision - digits : 0);
     digits += decimals;
 
     long scale;
@@ -193,7 +194,7 @@ void LCDDeck::formatFrame(uint8_t index)
 
 void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str)
 {
-    int16_t x, w;
+    int16_t x = 0, w = 0;
 
     // Put the string, horizontally centered.
     m_display->getTextBounds((char *)str, 0, y, &x, &y, &w, &h);
@@ -201,7 +202,7 @@ void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str)
     m_display->setCursor(x, y);
 
     for (uint8_t *ch = str; *ch; ch++) {
-        m_display->write(ch);
+        m_display->write(*ch);
     }
 }
 
@@ -231,10 +232,11 @@ void LCDDeck::displayFrame(void)
         m_display->fillScreen(BLACK);
     }
 
-    m_display->setTextSize(3);
+    m_display->setTextColor(WHITE);
+    m_display->setTextSize(2);
 
     // Put the title, centered.  Leave 8 pixels above for RSSI, etc
-    int16_t y = 8;
+    int16_t y = 16;
     int16_t h;
 
     displayString(y, h, m_title);

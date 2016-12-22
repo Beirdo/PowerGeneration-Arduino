@@ -40,3 +40,6 @@
 [submodule "libraries/Adafruit_FRAM_SPI"]
 	path = libraries/Adafruit_FRAM_SPI
 	url = https://github.com/adafruit/Adafruit_FRAM_SPI.git
+[submodule "libraries/Arduino-Low-Power"]
+	path = libraries/Arduino-Low-Power
+	url = https://github.com/rocketscream/Low-Power.git

@@ -3,24 +3,36 @@
 
 int16_t core_temperature;	///< in 1/10 degree C
 
+inline int16_t readAdc(void);
+
 int16_t readAvrTemperature(void)
 {
   // set the reference to 1.1V and the measurement to the internal temperature sensor
   ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
+  ADCSRA |= _BV(ADEN); // Enable ADC
 
-  delay(2); // Wait for Vref to settle
+  delay(20); // Wait for Vref to settle
+  readAdc(); // Toss the first reading
+
+  int32_t avgTemp = 0;
+
+  for (uint16_t i = 0; i < 1000; i++) {
+    avgTemp += readAdc();
+  }
+
+  avgTemp -= 335200;  // offset of 335.2
+  int16_t result = (int16_t)((float)avgTemp / 106.154);
+
+  return result;
+}
+
+inline int16_t readAdc(void)
+{
   ADCSRA |= _BV(ADSC); // Start conversion
   while (bit_is_set(ADCSRA, ADSC)); // measuring
 
-  uint8_t low  = ADCL; // must read ADCL first - it then locks ADCH
-  uint8_t high = ADCH; // unlocks both
-
-  int32_t result = (high << 8) | low;
-
-  // 242mV (225 measured) = -45C, 380mV (353 measured) = 85C
-  // use linear regression to convert from measured value to celcius * 10
-  result = map(result, 225, 353, -450, 850);
-  return (int16_t)result;
+  int32_t result = (int32_t)ADCW;
+  return result;
 }
 
 

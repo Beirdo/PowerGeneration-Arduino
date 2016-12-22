@@ -21,6 +21,20 @@ const uint8_t EEMEM rf_link_id = 0;
 SleepTimer sleepTimer(LOOP_CADENCE);
 Adafruit_ILI9340 tft = Adafruit_ILI9340(LCD_CS, LCD_DC, LCD_RST);
 
+class SetLEDCLICommand : public CLICommand
+{
+    public:
+        SetLEDCLICommand(void) : CLICommand("set_led", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t value = (uint8_t)atoi(args[0]);
+                Serial.print("LED value = ");
+                Serial.println(value, DEC);
+                analogWrite(LED_PWM_PIN, value);
+                return 1;
+            };
+};
+
 void setup() 
 {
     // Setup sleep to idle mode
@@ -28,15 +42,17 @@ void setup()
     
     Serial.begin(115200);
 
-    analogWrite(LED_PWM_PIN, 128);
-    tft.begin();
-    tft.fillScreen(ILI9340_BLACK);
-    tft.fillScreen(ILI9340_RED);
-    tft.fillScreen(ILI9340_GREEN);
-    tft.fillScreen(ILI9340_BLUE);
-    tft.fillScreen(ILI9340_BLACK);
-
+    cli.registerCommand(new SetLEDCLICommand());
     cli.initialize();
+
+    analogWrite(LED_PWM_PIN, 5);
+    tft.begin();
+    //tft.fillScreen(ILI9340_BLACK);
+    //tft.fillScreen(ILI9340_RED);
+    //tft.fillScreen(ILI9340_GREEN);
+    tft.fillScreen(ILI9340_BLUE);
+    //tft.fillScreen(ILI9340_BLACK);
+
 }
 
 void loop() 

@@ -82,14 +82,14 @@ void loop() {
     start = micros();
     lcdDeck.formatFrame(lcdIndex);
     now = micros();
-    Serial.print((char *)"F ");
+    Serial.print("F ");
     Serial.print(now - start, DEC);
     Serial.println("us");
     
     start = now;
     lcdDeck.displayFrame();
     now = micros();
-    Serial.print((char *)"D ");
+    Serial.print("D ");
     Serial.print(now - start, DEC);
     Serial.println("us");
   }

@@ -108,6 +108,9 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
     int16_t value = *(int16_t *)valptr;
     bool negative;
     uint8_t digitcount = digitCount(value, negative);
+    if (digitcount < 2) {
+        digitcount = 2;
+    }
     int8_t index = digitcount + 1 + (negative ? 1 : 0) - 1;
     uint8_t unitIndex = index + 1;
 
@@ -124,7 +127,8 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
     buffer[index--] = digit(part);
     buffer[index--] = '.';
 
-    for (char i = 0; index >= 0 && (value != 0 || i == 0); i++) {
+    for (char i = 0; index >= 0 && (value != 0 || index >= (char)negative);
+         i++) {
         split_value(value, part, 10);
         buffer[index--] = digit(part);
     }

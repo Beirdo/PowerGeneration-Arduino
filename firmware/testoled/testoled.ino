@@ -63,13 +63,27 @@ void loop() {
   core_temperature = readAvrTemperature();
   a7 = ((uint32_t)(analogRead(7)) * 5000 / 1024);
 
+  uint32_t start;
+  uint32_t now;
+
   lcdTicks++;
   if (lcdTicks >= SWAP_COUNT) {
     lcdTicks -= SWAP_COUNT;
 
     lcdIndex = lcdDeck.nextIndex();
+    start = micros();
     lcdDeck.formatFrame(lcdIndex);
+    now = micros();
+    Serial.print("Format frame ");
+    Serial.print(now - start, DEC);
+    Serial.println("us");
+    
+    start = now;
     lcdDeck.displayFrame();
+    now = micros();
+    Serial.print("Display frame ");
+    Serial.print(now - start, DEC);
+    Serial.println("us");
   }
 
   LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_OFF, TWI_OFF);

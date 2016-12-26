@@ -1,6 +1,7 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
+#include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 

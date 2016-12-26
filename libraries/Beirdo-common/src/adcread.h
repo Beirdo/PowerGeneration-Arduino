@@ -7,6 +7,7 @@
 extern int16_t core_temperature;	///< in 1/10 degree C
 
 int16_t readAvrTemperature(void);
+uint16_t readVcc(void);
 
 class PowerMonitor {
     public:

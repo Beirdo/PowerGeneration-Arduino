@@ -5,6 +5,26 @@ int16_t core_temperature;	///< in 1/10 degree C
 
 inline int16_t readAdc(void);
 
+uint16_t readVcc(void)
+{
+  // Read 1.1V reference against AVcc
+  // set the reference to Vcc and the measurement to the internal 1.1V reference
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  ADCSRA |= _BV(ADEN); // Enable ADC
+
+  delay(20); // Wait for Vref to settle
+  readAdc(); // Toss the first reading
+
+  uint32_t result = (uint32_t)readAdc();
+
+  // result = (1100mV / Vcc) * 1024
+  // we want Vcc
+  // Vcc = 1100mV * 1024 / result
+  // Vcc = 1126400mV / result
+  result = 1126400L / result;
+  return (uint16_t)result; // Vcc in millivolts
+}
+
 int16_t readAvrTemperature(void)
 {
   // set the reference to 1.1V and the measurement to the internal temperature sensor

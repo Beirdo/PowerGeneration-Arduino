@@ -46,3 +46,6 @@
 [submodule "libraries/Adafruit_ILI9341"]
 	path = libraries/Adafruit_ILI9341
 	url = https://github.com/adafruit/Adafruit_ILI9341.git
+[submodule "libraries/Arduino-FRAM-Cache"]
+	path = libraries/Arduino-FRAM-Cache
+	url = git@github.com:Beirdo/Arduino-FRAM-Cache.git

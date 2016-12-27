@@ -1,11 +1,10 @@
-#include <avr/sleep.h>
 #include <SPI.h>
+#include <LowPower.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_FRAM_SPI.h>
 
 #include "rflink.h"
-#include "sleeptimer.h"
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
@@ -14,7 +13,7 @@
 #include "eeprom.h"
 
 // in ms
-#define LOOP_CADENCE 100
+#define LOOP_CADENCE 120
 #define SWAP_TIME 2000
 #define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
@@ -47,7 +46,6 @@ uint32_t currents[6];
 uint32_t powers[6];
 
 RFLink *rflink = NULL;
-SleepTimer sleepTimer(LOOP_CADENCE);
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 Adafruit_SSD1306 oled;
@@ -212,9 +210,6 @@ class SetRFIDCLICommand : public CLICommand
 
 void setup() 
 {
-    // Setup sleep to idle mode
-    SMCR = 0x00;
-
     monitors[0] = new INA219PowerMonitor(0x40, 18, 100, 10, 40.0);
     monitors[1] = new INA219PowerMonitor(0x41, 16, 100, 10, 5.0);
     monitors[2] = new INA219PowerMonitor(0x42, 16, 100, 10, 5.0);
@@ -301,9 +296,6 @@ void loop()
     uint8_t *buffer;
     uint8_t len;
 
-    noInterrupts();
-    sleepTimer.enable();
-
     for (uint8_t i = 0; i < 6; i++) {
         if (monitors[i]->readMonitor()) {
             voltages[i] = monitors[i]->voltage();
@@ -315,8 +307,8 @@ void loop()
     updateAllIO();
 
     lcdTicks++;
-    if (lcdTicks >= SWAP_TIME) {
-        lcdTicks -= SWAP_TIME;
+    if (lcdTicks >= SWAP_COUNT) {
+        lcdTicks -= SWAP_COUNT;
 
         lcdIndex = lcdDeck.nextIndex();
         lcdDeck.formatFrame(lcdIndex);
@@ -331,11 +323,8 @@ void loop()
 
     cli.handleInput();
 
-    // Go to sleep, get woken up by the timer
-    sleep_enable();
-    interrupts();
-    sleep_cpu();
-    sleep_disable();
+    LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_ON,
+                  SPI_OFF, USART0_ON, TWI_OFF);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

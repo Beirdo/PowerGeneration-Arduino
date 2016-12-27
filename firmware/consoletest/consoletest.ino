@@ -7,6 +7,8 @@
 
 // in ms
 #define LOOP_CADENCE 120
+#define SWAP_TIME 2000
+#define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
 #define LCD_CS 10
 #define LCD_DC 5
@@ -52,8 +54,8 @@ void setup()
 void loop() 
 {
     cli.handleInput();
-    delay(LOOP_CADENCE);
-    //LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF, SPI_OFF, USART0_ON, TWI_OFF);
+    LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_ON,
+                  SPI_OFF, USART0_ON, TWI_OFF);
 
 }
 

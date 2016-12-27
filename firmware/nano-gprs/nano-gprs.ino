@@ -1,12 +1,11 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
-#include <avr/sleep.h>
+#include <LowPower.h>
 #include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9340.h>
 
 #include "rflink.h"
-#include "sleeptimer.h"
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
@@ -48,7 +47,6 @@ static const eeprom_t EEMEM eeprom_contents = { 0, "" };
 uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
-SleepTimer sleepTimer(LOOP_CADENCE);
 
 apn_t gprs_apn;
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
@@ -108,9 +106,6 @@ class SetRFIDCLICommand : public CLICommand
 
 void setup() 
 {
-    // Setup sleep to idle mode
-    SMCR = 0x00;
-
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
 
@@ -156,9 +151,6 @@ void loop()
     uint8_t len = 0;
     static bool gprsDisabled;
 
-    noInterrupts();
-    sleepTimer.enable();
-
     bool newDisabled = gprs.isDisabled();
     if (newDisabled != gprsDisabled) {
         gprsDisabled = newDisabled;
@@ -173,8 +165,8 @@ void loop()
         cli.handleInput();
     } else {
         lcdTicks++;
-        if (lcdTicks >= SWAP_TIME) {
-            lcdTicks -= SWAP_TIME;
+        if (lcdTicks >= SWAP_COUNT) {
+            lcdTicks -= SWAP_COUNT;
 
             core_temperature = readAvrTemperature();
             
@@ -203,11 +195,8 @@ void loop()
         gprs.stateMachine();
     }
 
-    // Go to sleep, get woken up by the timer
-    sleep_enable();
-    interrupts();
-    sleep_cpu();
-    sleep_disable();
+    LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
+                  SPI_OFF, USART0_ON, TWI_OFF);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

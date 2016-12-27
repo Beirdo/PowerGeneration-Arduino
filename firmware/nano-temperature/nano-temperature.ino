@@ -1,6 +1,6 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
-#include <avr/sleep.h>
+#include <LowPower.h>
 #include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -42,7 +42,6 @@ uint8_t rf_id;
 uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
-SleepTimer sleepTimer(LOOP_CADENCE);
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 Adafruit_SSD1306 oled;
@@ -105,9 +104,6 @@ class SetRFIDCLICommand : public CLICommand
 
 void setup() 
 {
-    // Setup sleep to idle mode
-    SMCR = 0x00;
-    
     Serial.begin(115200);
 
     cli.registerCommand(new GetRFIDCLICommand());
@@ -161,12 +157,9 @@ void loop()
     uint8_t *buffer;
     uint8_t len;
 
-    noInterrupts();
-    sleepTimer.enable();
-
     lcdTicks++;
-    if (lcdTicks >= SWAP_TIME) {
-        lcdTicks -= SWAP_TIME;
+    if (lcdTicks >= SWAP_COUNT) {
+        lcdTicks -= SWAP_COUNT;
 
         core_temperature = readAvrTemperature();
 
@@ -188,11 +181,8 @@ void loop()
 
     cli.handleInput();
 
-    // Go to sleep, get woken up by the timer
-    sleep_enable();
-    interrupts();
-    sleep_cpu();
-    sleep_disable();
+    LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
+                  SPI_OFF, USART0_ON, TWI_OFF);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

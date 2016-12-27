@@ -15,7 +15,7 @@ Arduino pins (on attached Nano module)
 12 - MISO - IN
 13 - SCK - OUT
 A0 - unused
-A1 - unused
+A1 - /FRAM_CS - OUT
 A2 - LCD_DC - OUT
 A3 - /SD_CS - OUT
 A4 - SDA (TWI)

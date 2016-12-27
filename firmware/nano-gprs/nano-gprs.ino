@@ -1,6 +1,7 @@
 #include <EEPROM.h>
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
+#include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9340.h>
 
@@ -37,6 +38,8 @@ int8_t lcdIndex;
 
 #define SD_CS_PIN 17
 
+#define FRAM_CS_PIN 15
+
 #define VBATT_ADC_PIN 7
 #define LIGHT_ADC_PIN 6
 
@@ -48,6 +51,7 @@ RFLink *rflink = NULL;
 SleepTimer sleepTimer(LOOP_CADENCE);
 
 apn_t gprs_apn;
+Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
 
 Adafruit_ILI9340 LCD(LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN);
@@ -118,6 +122,15 @@ void setup()
 
     uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
     EEPROM.get(EEPROM_OFFSET(gprs_apn), gprs_apn);
+
+    bool framInit = fram.begin();
+    if (!framInit) {
+        Serial.println("Can't find attached FRAM");
+    }
+    
+    if (framInit) {
+        gprs.attachRAM(&fram);
+    }
     gprs.setApn(gprs_apn);
 
     analogReference(DEFAULT);
@@ -186,6 +199,8 @@ void loop()
         if (len) {
             gprs.sendCborPacket(source, rf_rx_buffer, len);
         }
+
+        gprs.stateMachine();
     }
 
     // Go to sleep, get woken up by the timer

@@ -1,6 +1,7 @@
 #ifndef GPRS_H__
 #define GPRS_H__
 
+#include <Adafruit_FRAM_SPI.h>
 #include <SIM800.h>
 #include <inttypes.h>
 
@@ -26,6 +27,7 @@ class GPRS {
     public:
         GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin);
         void stateMachine(void);
+        void attachRAM(Adafruit_FRAM_SPI *fram); 
 
         bool isDisabled(void);
         void setApn(uint8_t *apn);
@@ -46,6 +48,9 @@ class GPRS {
         uint32_t m_epochTime;
         uint32_t m_lastEpochTime;
         gprs_state_t m_state;
+
+        Adafruit_FRAM_SPI *m_fram;
+
         uint8_t m_apn[MAX_APN_LEN];
         uint8_t m_url[MAX_URL_LEN];
         uint8_t m_error[MAX_ERROR_LEN];

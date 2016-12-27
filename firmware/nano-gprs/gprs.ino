@@ -19,6 +19,13 @@ GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
     memset(&m_location, 0x00, sizeof(GSM_LOCATION));
     m_epochTime = 0;
     m_lastEpochTime = 0;
+    m_fram = NULL;
+}
+
+void GPRS::attachRAM(Adafruit_FRAM_SPI *fram)
+{
+    m_fram = fram;
+    m_gprs->attachRAM(m_fram);
 }
 
 bool GPRS::isDisabled(void)

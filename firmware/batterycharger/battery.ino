@@ -2,6 +2,8 @@
 #include "battery.h"
 
 #define DESULFATOR_PWM_PIN 6
+#define LI_ION_IRQ_PIN 2
+#define GPIO_IRQ_PIN 8
 
 Desulfator desulfator;
 Battery battery[2] = { Battery(0), Battery(1) };
@@ -46,11 +48,51 @@ io_t outputs[] {
 };
 
 
+void updateIO0(void);
+void updateIO1(void);
+void updateIO2(void);
+void updateIO(uint8_t index);
+
+void isrWrap0(void);
+void isrWrap1(void);
+void isrWrap2(void);
+
+void isrWrap0(void)
+{
+    pcf8574[0].checkForInterrupt();
+}
+
+void isrWrap1(void)
+{
+    pcf8574[1].checkForInterrupt();
+}
+
+void isrWrap2(void)
+{
+    pcf8574[2].checkForInterrupt();
+}
+
 void BatteryChargerInitialize(void)
 {
     pcf8574[0].begin(0x20);
     pcf8574[1].begin(0x21);
     pcf8574[2].begin(0x22);
+
+    // This is on an IO
+    pcf8574[0].enableInterrupt(GPIO_IRQ_PIN, isrWrap0);
+    pcf8574[0].attachInterrupt(0, updateIO0, CHANGE);
+    pcf8574[0].attachInterrupt(1, updateIO0, CHANGE);
+    pcf8574[0].attachInterrupt(2, updateIO0, CHANGE);
+    pcf8574[0].attachInterrupt(4, updateIO0, CHANGE);
+    pcf8574[0].attachInterrupt(5, updateIO0, CHANGE);
+    pcf8574[0].attachInterrupt(6, updateIO0, CHANGE);
+
+    // This is on EXTINT1
+    attachInterrupt(digitalPinToInterrupt(LI_ION_IRQ_PIN), isrWrap2, FALLING);
+    pcf8574[2].attachInterrupt(1, updateIO2, CHANGE);
+    pcf8574[2].attachInterrupt(2, updateIO2, CHANGE);
+    pcf8574[2].attachInterrupt(3, updateIO2, CHANGE);
+    pcf8574[2].attachInterrupt(4, updateIO2, CHANGE);
 
     uint8_t count = sizeof(inputs);
     io_t *io;
@@ -168,26 +210,50 @@ void BatteryChargerInitialize(void)
 
 void updateAllIO(void)
 {
-    uint8_t values[3] = {0, 0, 0};
+    for (int i = 0; i < 3; i++) {
+        updateIO(i);
+    }
+}
+
+void updateIO0(void)
+{
+    updateIO(0);
+}
+
+void updateIO1(void)
+{
+    updateIO(1);
+}
+
+void updateIO2(void)
+{
+    updateIO(2);
+}
+
+void updateIO(uint8_t index)
+{
+    if (index > 3) {
+        return;
+    }
+    
+    uint8_t values = 0;
     io_t *io;
 
     uint8_t count = sizeof(outputs);
     for (int i = 0; i < count; i++) {
         io = &outputs[i];
-        if (*io->variable) {
-            values[i] |= 1 << io->pin;
+        if (io->dev == index && *io->variable) {
+            values |= 1 << io->pin;
         }
     }
 
-    for (int i = 0; i < 3; i++) {
-        pcf8574[i].write(values[i]);
-        values[i] = pcf8574[i].read();
-    }
+    pcf8574[index].write(values);
+    values = pcf8574[index].read();
 
     count = sizeof(inputs);
     for (int i = 0; i < count; i++) {
         io = &inputs[i];
-        if (values[i] & (1 << io->pin)) {
+        if (io->dev == index && values & (1 << io->pin)) {
             *io->variable = 1;
         } else {
             *io->variable = 0;

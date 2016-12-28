@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <LowPower.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <SSD1306.h>
 #include <Adafruit_FRAM_SPI.h>
 
 #include "rflink.h"
@@ -48,7 +48,7 @@ uint32_t powers[6];
 RFLink *rflink = NULL;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
-Adafruit_SSD1306 oled;
+SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);
 
 void CborMessageBuild(void);

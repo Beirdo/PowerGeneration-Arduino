@@ -3,16 +3,16 @@
 #include <LowPower.h>
 #include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <SSD1306.h>
 
 #include "rflink.h"
 #include "temperatures.h"
-#include "sleeptimer.h"
 #include "adcread.h"
 #include "cbormap.h"
 #include "serialcli.h"
 #include "lcdscreen.h"
 #include "eeprom.h"
+#include "utils.h"
 
 // in ms
 #define LOOP_CADENCE 1000
@@ -36,15 +36,16 @@ int8_t lcdIndex;
 
 uint16_t temperatures[8];
 
-static const eeprom_t EEMEM eeprom_contents = { 0 };
+static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
 uint8_t rf_id;
+uint8_t rf_upstream;
 
 uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
-Adafruit_SSD1306 oled;
+SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);
 
 void CborMessageBuild(void);
@@ -93,10 +94,37 @@ class SetRFIDCLICommand : public CLICommand
         SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
-                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
                 Serial.print("New RF ID = ");
                 Serial.println(rf_id, HEX);
+                return 1;
+            };
+};
+
+class GetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        GetRFUpstreamCLICommand(void) : CLICommand("get_rf_upstream", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
+                Serial.print("Current RF Upstream = ");
+                Serial.println(rf_up, HEX);
+                return 1;
+            };
+};
+
+class SetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        SetRFUpstreamCLICommand(void) : CLICommand("set_rf_upstream", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = atou8(args[0]);
+                EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
+                Serial.print("New RF Upstream = ");
+                Serial.println(rf_up, HEX);
                 return 1;
             };
 };
@@ -108,10 +136,13 @@ void setup()
 
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
+    cli.registerCommand(new GetRFUpstreamCLICommand());
+    cli.registerCommand(new SetRFUpstreamCLICommand());
     cli.registerCommand(new InitializeLogoCLICommand());
     cli.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+    rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
 
     bool framInit = fram.begin();
     if (!framInit) {
@@ -120,7 +151,7 @@ void setup()
     
     oled.begin(SSD1306_SWITCHCAPVCC);
     if (framInit) {
-        oled.attachRAM(&fram, 0x0000, 0x04000);
+        oled.attachRAM(&fram, 0x0000, 0x0400);
     }
     oled.display();
 
@@ -149,7 +180,7 @@ void setup()
     lcdTicks = 0;
 
     TemperaturesInitialize();
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id, rf_upstream);
 }
 
 void loop() 

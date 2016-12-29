@@ -11,6 +11,7 @@
 #include "battery.h"
 #include "lcdscreen.h"
 #include "eeprom.h"
+#include "utils.h"
 
 // in ms
 #define LOOP_CADENCE 120
@@ -200,7 +201,7 @@ class SetRFIDCLICommand : public CLICommand
         SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
-                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
                 Serial.print("New RF ID = ");
                 Serial.println(rf_id, HEX);
@@ -228,7 +229,7 @@ class SetRFUpstreamCLICommand : public CLICommand
         SetRFUpstreamCLICommand(void) : CLICommand("set_rf_upstream", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
-                uint8_t rf_up = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                uint8_t rf_up = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
                 Serial.print("New RF Upstream = ");
                 Serial.println(rf_up, HEX);
@@ -268,7 +269,7 @@ void setup()
 
     oled.begin(SSD1306_SWITCHCAPVCC);
     if (framInit) {
-        oled.attachRAM(&fram, 0x0000, 0x04000);
+        oled.attachRAM(&fram, 0x0000, 0x0400);
     }
     oled.display();
 

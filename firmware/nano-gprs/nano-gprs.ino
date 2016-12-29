@@ -13,6 +13,7 @@
 #include "sha204.h"
 #include "gprs.h"
 #include "eeprom.h"
+#include "utils.h"
 
 // in ms
 #define LOOP_CADENCE 1000

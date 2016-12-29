@@ -73,7 +73,14 @@ uint8_t RFLink::receive(void *buf, uint8_t maxlen, uint8_t *pipeNum)
     if (m_valid && m_rf.available(pipeNum)) {
         pktlen = m_rf.getDynamicPayloadSize();
         if (pktlen != 0) {
-            m_rf.read(buf, min(pktlen, maxlen));
+            pktlen = min(pktlen, maxlen);
+            m_rf.read(buf, pktlen);
+
+            // Send the message on to the next hop
+            if (m_nextHop != 0xFF && m_nextHop != 0xFE) {
+                send(buf, pktlen);
+                pktlen = 0;
+            }
         }
     }
     return pktlen;

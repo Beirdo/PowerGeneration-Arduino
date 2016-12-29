@@ -42,13 +42,14 @@ int8_t lcdIndex;
 #define VBATT_ADC_PIN 7
 #define LIGHT_ADC_PIN 6
 
-static const eeprom_t EEMEM eeprom_contents = { 0, "" };
+static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
+uint8_t rf_id;
+uint8_t rf_upstream;
 
 uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
-apn_t gprs_apn;
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
 
@@ -58,6 +59,7 @@ LCDDeck lcdDeck(&LCD, false);
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];
 
+uint8_t atou8(uint8_t *str);
 void CborMessageBuild(void);
 
 void CborMessageBuild(void)
@@ -89,7 +91,7 @@ class SetRFIDCLICommand : public CLICommand
         SetRFIDCLICommand(void) : CLICommand("set_rf_link", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
-                uint8_t rf_id = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
                 Serial.print("New RF ID = ");
                 Serial.println(rf_id, HEX);
@@ -97,6 +99,32 @@ class SetRFIDCLICommand : public CLICommand
             };
 };
 
+class GetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        GetRFUpstreamCLICommand(void) : CLICommand("get_rf_upstream", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
+                Serial.print("Current RF Upstream = ");
+                Serial.println(rf_up, HEX);
+                return 1;
+            };
+};
+
+class SetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        SetRFUpstreamCLICommand(void) : CLICommand("set_rf_upstream", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = atou8(args[0]);
+                EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
+                Serial.print("New RF Upstream = ");
+                Serial.println(rf_up, HEX);
+                return 1;
+            };
+};
 
 
 // TODO:  CLI commands for:
@@ -108,6 +136,8 @@ void setup()
 {
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
+    cli.registerCommand(new GetRFUpstreamCLICommand());
+    cli.registerCommand(new SetRFUpstreamCLICommand());
 
     if (gprs.isDisabled()) {
         Serial.begin(115200);
@@ -115,8 +145,8 @@ void setup()
         cli.initialize();
     }
 
-    uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
-    EEPROM.get(EEPROM_OFFSET(gprs_apn), gprs_apn);
+    rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+    rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
 
     bool framInit = fram.begin();
     if (!framInit) {
@@ -126,7 +156,6 @@ void setup()
     if (framInit) {
         gprs.attachRAM(&fram);
     }
-    gprs.setApn(gprs_apn);
 
     analogReference(DEFAULT);
 
@@ -140,7 +169,7 @@ void setup()
 
     lcdTicks = 0;
 
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id, rf_upstream);
 
     Sha204Initialize();
 }
@@ -198,5 +227,34 @@ void loop()
     LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
                   SPI_OFF, USART0_ON, TWI_OFF);
 }
+
+uint8_t atou8(uint8_t *str)
+{
+    uint8_t value = 0;
+    bool valid;
+    uint8_t ch;
+
+    do {
+        ch = *str;
+        valid = true;
+        if (ch >= '0' && ch <= '9') {
+            ch -= '0';
+        } else if (ch >= 'a' && ch <= 'f') {
+            ch -= 'W';  // 'a' - 10
+        } else if (ch >= 'A' && ch <= 'F') {
+            ch -= '7';  // 'A' - 10
+        } else {
+            valid = false;
+        }
+
+        if (valid) {
+            value <<= 4;
+            value += ch;
+        }
+    } while(valid);
+
+    return value;
+}
+
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

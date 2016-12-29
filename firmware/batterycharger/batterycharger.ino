@@ -30,8 +30,9 @@ int8_t lcdIndex;
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
-static const eeprom_t EEMEM eeprom_contents = { 0 };
+static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
 uint8_t rf_id;
+uint8_t rf_upstream;
 
 #define TEST_VIN   0
 #define TEST_BATT1 1
@@ -208,6 +209,34 @@ class SetRFIDCLICommand : public CLICommand
 };
 
 
+class GetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        GetRFUpstreamCLICommand(void) : CLICommand("get_rf_upstream", 0) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
+                Serial.print("Current RF Upstream = ");
+                Serial.println(rf_up, HEX);
+                return 1;
+            };
+};
+
+class SetRFUpstreamCLICommand : public CLICommand
+{
+    public:
+        SetRFUpstreamCLICommand(void) : CLICommand("set_rf_upstream", 1) {};
+        uint8_t run(uint8_t nargs, uint8_t **args)
+            {
+                uint8_t rf_up = (uint8_t)(strtoul(args[0], 0, 16) & 0xFF);
+                EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
+                Serial.print("New RF Upstream = ");
+                Serial.println(rf_up, HEX);
+                return 1;
+            };
+};
+
+
 void setup() 
 {
     monitors[0] = new INA219PowerMonitor(0x40, 18, 100, 10, 40.0);
@@ -221,6 +250,8 @@ void setup()
 
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
+    cli.registerCommand(new GetRFUpstreamCLICommand());
+    cli.registerCommand(new SetRFUpstreamCLICommand());
     cli.registerCommand(new BatteryCLICommand());
     cli.registerCommand(new DesulfateCLICommand());
     cli.registerCommand(new CapacityCLICommand());
@@ -228,6 +259,7 @@ void setup()
     cli.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
+    rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
 
     bool framInit = fram.begin();
     if (!framInit) {
@@ -288,7 +320,7 @@ void setup()
     lcdTicks = 0;
 
     BatteryChargerInitialize();
-    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id);
+    rflink = new RFLink(RF_CE_PIN, RF_CS_PIN, RF_IRQ_PIN, rf_id, rf_upstream);
 }
 
 void loop() 

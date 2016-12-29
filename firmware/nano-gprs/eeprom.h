@@ -6,11 +6,9 @@
 #include <inttypes.h>
 #include <eeprom_common.h>
 
-typedef uint8_t apn_t[MAX_APN_LEN];
-
 struct _eeprom_t {
     uint8_t rf_link_id;
-    apn_t gprs_apn;
+    uint8_t rf_link_upstream;
 };
 
 #endif

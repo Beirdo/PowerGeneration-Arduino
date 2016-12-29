@@ -7,8 +7,8 @@
 
 #define MAX_APN_LEN 64
 #define MAX_URL_LEN 128
-#define MAX_ERROR_LEN 40
-#define MAX_BUFFER_LEN 64
+#define MAX_ERROR_LEN 32
+#define MAX_BUFFER_LEN 32
 
 typedef enum {
     GPRS_DISABLED,
@@ -30,15 +30,19 @@ class GPRS {
         void attachRAM(Adafruit_FRAM_SPI *fram); 
 
         bool isDisabled(void);
-        void setApn(uint8_t *apn);
-        void setUrl(uint8_t *url);
         int8_t getRssi(void);
         uint8_t *getNetworkName(void);
         GSM_LOCATION *getLocation(void);
         bool sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len);
         gprs_state_t getState(void) { return m_state; };
+        uint8_t *getError(void) { return m_error; };
+
+        void setUrl(const char *url, bool is_pgmspace);
+        void setAPN(const char *apn, bool is_pgmspace);
+        void setMime(const char *mime, bool is_pgmspace);
+
     protected:
-        void send_buffer(void);
+        void swap_buffers(void);
 
         int8_t m_reset_pin;
         int8_t m_enable_pin;
@@ -50,14 +54,13 @@ class GPRS {
         gprs_state_t m_state;
 
         Adafruit_FRAM_SPI *m_fram;
+        Cache_Segment *m_apn_cache;
+        Cache_Segment *m_url_cache;
+        Cache_Segment *m_mime_cache;
+        volatile Cache_Segment *m_tx_cache;
+        volatile Cache_Segment *m_tx2_cache;
 
-        uint8_t m_apn[MAX_APN_LEN];
-        uint8_t m_url[MAX_URL_LEN];
         uint8_t m_error[MAX_ERROR_LEN];
-        uint8_t m_buffer[MAX_BUFFER_LEN];
-        uint8_t m_nextBuffer[MAX_BUFFER_LEN];
-        uint8_t m_buflen;
-        uint8_t m_nextBuflen;
         uint8_t m_counter;
 };
 

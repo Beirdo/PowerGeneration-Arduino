@@ -8,6 +8,7 @@
 
 struct _eeprom_t {
     uint8_t rf_link_id;
+    uint8_t rf_link_upstream;
 };
 
 #endif

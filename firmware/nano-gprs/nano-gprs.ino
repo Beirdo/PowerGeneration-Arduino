@@ -50,7 +50,7 @@ RFLink *rflink = NULL;
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
-LCDDeck lcdDeck(&LCD, false);
+LCDDeck lcdDeck(&oled, true);
 
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];
@@ -149,7 +149,7 @@ void setup()
         Serial.println("Can't find attached FRAM");
     }
     
-    oled.begin(SSD_SWITCHCAPVCC);
+    oled.begin(SSD1306_SWITCHCAPVCC);
     if (framInit) {
         oled.attachRAM(&fram, 0x0000, 0x0400);
         gprs.attachRAM(&fram);
@@ -195,8 +195,6 @@ void loop()
             
             analogReference(DEFAULT);
             battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
-            int16_t ledValue = map(analogRead(LIGHT_ADC_PIN), 204, 819, 0, 255);
-            analogWrite(LED_PWM_PIN, (uint8_t)constrain(ledValue, 0, 255));
 
             lcdIndex = lcdDeck.nextIndex();
             lcdDeck.formatFrame(lcdIndex);

@@ -32,7 +32,7 @@ class GPRS {
         bool isDisabled(void);
         int8_t getRssi(void);
         uint8_t *getNetworkName(void);
-        uint_t *getLocation(void);
+        uint8_t *getLocation(void);
         bool sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len);
         gprs_state_t getState(void) { return m_state; };
         uint8_t *getError(void) { return m_error; };

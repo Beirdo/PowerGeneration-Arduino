@@ -256,7 +256,7 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
     getLocation();
     // m_location has: -73.993149,40.729370,2015/03/07,19:01:08
 
-    bool sendLocation = (packetCount++ & 127) == 0;
+    bool sendLocation = (m_packetCount++ & 127) == 0;
     char *p = (char *)m_location;
 
     CborMessageInitialize();

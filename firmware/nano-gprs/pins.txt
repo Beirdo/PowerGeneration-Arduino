@@ -1,24 +1,26 @@
-Arduino pins (on attached Nano module)
+Arduino pins (on attached SparkFun SAMD21 mini module)
 
-0  - RXD (UART) - IN
-1  - TXD (UART) - OUT
+0  - GPRS_RXD (UART) - IN  (sercom0, Serial1)
+1  - GPRS_TXD (UART) - OUT (sercom0, Serial1)
 2  - /RF_IRQ (EXT INT0) - IN
-3  - DTR - OUT
+3  - GPRS_DTR - OUT
 4  - /GPRS_RST - OUT
-5  - GPRS_EN - OUT
-6  - unused
-7  - unused
-8  - unused
+5  - unused
+6  - /FRAM_CS - OUT
+7  - /SD_CS - OUT
+8  - /SD_CD - IN
 9  - /RF_CE - OUT
 10 - /RF_CS (SS) - OUT
-11 - MOSI - OUT
-12 - MISO - IN
-13 - SCK - OUT
-A0 - unused
-A1 - /FRAM_CS - OUT
-A2 - /SD_CD - IN
-A3 - /SD_CS - OUT
-A4 - SDA (TWI)
-A5 - SCL (TWI)
-A6 - unused
-A7 - VBATT - IN
+11 - MOSI - OUT	(sercom1)
+12 - MISO - IN (sercom1)
+13 - SCK - OUT (sercom1)
+14 / A0 / DAC0 - VBATT - IN
+15 / A1 - unused
+16 / A2 - unused
+17 / A3 - unused
+18 / A4 - unused (not connected)
+19 / A5 - unused (not connected)
+20 - SDA (TWI) (sercom3)
+21 - SCL (TWI) (sercom3)
+25 - RX_LED
+26 - TX_LED

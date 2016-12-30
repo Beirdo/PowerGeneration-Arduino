@@ -1,0 +1,4 @@
+I2C Bus addresses:
+
+0x64 - ATSHA204 - SHA256 controller
+0x3C - SSD1306 - LCD Controller (or 3D)

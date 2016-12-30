@@ -35,7 +35,7 @@ class LCDDeck {
         void addFrame(LCDScreen *frame);
     protected:
         LCDScreen *getFrame(uint8_t index);
-        void displayString(int16_t &y, int16_t &h, uint8_t *str);
+        void displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size);
         void displayIndicator(void);
 
         LinkedList m_frameList;

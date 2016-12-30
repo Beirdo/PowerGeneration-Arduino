@@ -196,13 +196,14 @@ void LCDDeck::formatFrame(uint8_t index)
     m_currentFrame->data_line(&buffer, (uint8_t)64);
 }
 
-void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str)
+void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size)
 {
     int16_t x = 0, w = 0;
 
     // Put the string, horizontally centered.
-    m_display->getTextBounds((char *)str, 0, y, &x, &y, &w, &h);
-    x += ((m_width - w) / 2);
+    // m_display->getTextBounds((char *)str, 0, y, &x, &y, &w, &h);
+    w = strlen(str) * size * 6;
+    x += (m_width - w) / 2;
     m_display->setCursor(x, y);
 
     for (uint8_t *ch = str; *ch; ch++) {
@@ -217,8 +218,10 @@ void LCDDeck::displayIndicator(void)
     m_display->setTextSize(1);
     y = m_height - 8;
 
-    m_display->getTextBounds((char *)"o", 0, y, &x, &y, &w, &h);
-    x += ((m_width - (w * (2 * m_frameCount - 1))) / 2);
+    // m_display->getTextBounds((char *)"o", 0, y, &x, &y, &w, &h);
+    // x += ((m_width - (w * (2 * m_frameCount - 1))) / 2);
+    w = (2 * m_frameCount - 1) * 6;
+    x += (m_width - w) / 2;
 
     m_display->setCursor(x, y);
 
@@ -243,12 +246,12 @@ void LCDDeck::displayFrame(void)
     int16_t y = 16;
     int16_t h;
 
-    displayString(y, h, m_title);
+    displayString(y, h, m_title, 2);
 
     // Leave 4 pixels extra, put value, centered
     m_display->setTextSize(2);
     y += h + 4;
-    displayString(y, h, m_data_buffer);
+    displayString(y, h, m_data_buffer, 2);
 
     // Put screen index indicator at bottom line, centered
     displayIndicator();

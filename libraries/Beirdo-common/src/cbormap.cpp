@@ -41,16 +41,13 @@ void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount)
     switch (keyType) {
         case CBOR_KEY_VOLTAGE_ARRAY:        // uint32_t containing millivolts
         case CBOR_KEY_POWER_ARRAY:          // uint32_t containing milliwatts
+        case CBOR_KEY_CURRENT_ARRAY:        // uint32_t containing microamps
             tag = 4;                        // decimal fraction
             exponent = -3;
             break;
-        case CBOR_KEY_CURRENT_ARRAY:        // uint32_t containing microamps
+        case CBOR_KEY_TEMPERATURE_ARRAY:    // uint16_t containing 1/10 * degC
             tag = 4;                        // decimal fraction
-            exponent = -6;
-            break;
-        case CBOR_KEY_TEMPERATURE_ARRAY:    // uint16_t containing 1/128 * degC
-            tag = 5;                        // bigfloat (binary fraction)
-            exponent = -7;
+            exponent = -1;
             break;
         default:
             return;
@@ -94,7 +91,7 @@ void CborMapAddInteger(cborKey_t key, int value)
     cbor_writer->writeInt(value);
 }
 
-void CborMapAddLocation(float lat, float lon)
+void CborMapAddLocation(int32_t lat, int32_t lon)
 {
     if (!cbor_writer) {
         return;
@@ -102,12 +99,18 @@ void CborMapAddLocation(float lat, float lon)
 
     // map key
     cbor_writer->writeInt(CBOR_KEY_GPRS_LOCATION);
-    // Map value is an array of two floats
+    // Map value is an array of two decimal fractions
     cbor_writer->writeArray(2);
-    cbor_writer->writeSpecial(26);  // 32-bit float
-    cbor_writer->writeBytes((uint8_t *)&lat, 4);
-    cbor_writer->writeSpecial(26);  // 32-bit float
-    cbor_writer->writeBytes((uint8_t *)&lon, 4);
+
+    cbor_writer->writeTag(4);
+    cbor_writer->writeArray(2);
+    cbor_writer->writeInt(-6);
+    cbor_writer->writeInt(lat);
+
+    cbor_writer->writeTag(4);
+    cbor_writer->writeArray(2);
+    cbor_writer->writeInt(-6);
+    cbor_writer->writeInt(lon);
 }
 
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len)
@@ -123,8 +126,6 @@ void CborMapAddCborPayload(uint8_t *buffer, uint8_t len)
     cbor_writer->writeBytes(buffer, len);
 }
 
-uint8_t timestamp[21];
-
 void CborMapAddTimestamp(char *timestr)
 {
     if (!cbor_writer) {
@@ -135,18 +136,17 @@ void CborMapAddTimestamp(char *timestr)
     //                2003/12/13,18:30:02
     //                012345678901234567890
     // Output format: 2003-12-13T18:30:02Z  (rfc4287#section-3.3)
-    strncpy(timestamp, timestr, 21);
-    timestamp[4] = '-';
-    timestamp[7] = '-';
-    timestamp[10] = 'T';
-    timestamp[19] = 'Z';
-    timestamp[20] = '\0';
+    timestr[4]  = '-';
+    timestr[7]  = '-';
+    timestr[10] = 'T';
+    timestr[19] = 'Z';
+    timestr[20] = '\0';
 
     // map key
     cbor_writer->writeInt(CBOR_KEY_TIMESTAMP);
     // map value
     cbor_writer->writeTag(0);           // timestamp string
-    cbor_writer->writeString(timestamp, 20);
+    cbor_writer->writeString(timestr, 20);
 }
 
 bool CborMessageBuffer(uint8_t **buffer, uint8_t *len)
@@ -160,14 +160,15 @@ bool CborMessageBuffer(uint8_t **buffer, uint8_t *len)
     uint8_t *outBuf = *buffer;
     uint8_t maxLen = *len;
     
-    uint8_t *cborBuf = cbor_output->getData();
     uint8_t cborLen = cbor_output->getSize();
+    uint8_t *cborBuf = NULL;
 
     if (outBuf) {
         if (cborLen > maxLen) {
             return false;
         }
 
+        cborBuf = cbor_output->getData();
         memcpy(outBuf, cborBuf, cborLen);
         *len = cborLen;
         return true;

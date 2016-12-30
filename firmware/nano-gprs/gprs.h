@@ -48,7 +48,11 @@ class GPRS {
         int8_t m_enable_pin;
         int8_t m_dtr_pin;
         CGPRS_SIM800 *m_gprs;
-        uint8_t m_location[48];
+
+        // 0         1         2         3         4
+        // 012345678901234567890123456789012345678901
+        // -89.999999,-179.999999,2015/05/23,19:02:34
+        uint8_t m_location[42];
         uint32_t m_packetCount;
         gprs_state_t m_state;
 

@@ -30,7 +30,7 @@ void CborMessageAddMap(uint8_t size);
 void CborMapAddArray(cborKey_t keyType, void *array, uint8_t itemCount);
 void CborMapAddInteger(cborKey_t key, int value);
 void CborMapAddCborPayload(uint8_t *buffer, uint8_t len);
-void CborMapAddLocation(float lat, float lon);
+void CborMapAddLocation(int32_t lat, int32_t lon);
 void CborMapAddTimestamp(char *timestr);
 bool CborMessageBuffer(uint8_t **buffer, uint8_t *len);
 

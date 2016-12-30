@@ -15,7 +15,7 @@ GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
     m_enable_pin = enable_pin;
     m_dtr_pin = dtr_pin;
     m_state = GPRS_DISABLED;
-    memset(&m_location, 0x00, 48);
+    memset(&m_location, 0x00, 42);
     m_packetCount = 0;
     m_fram = NULL;
     m_url_cache = NULL;
@@ -246,7 +246,7 @@ uint8_t *GPRS::getNetworkName(void)
 
 uint8_t *GPRS::getLocation(void)
 {
-    m_gprs->getLocation((char *)m_location, 48);
+    m_gprs->getLocation((char *)m_location, 42);
 
     return m_location;
 }
@@ -261,41 +261,40 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
 
     CborMessageInitialize();
     CborMessageAddMap(sendLocation ? 4 : 3);
+
+    int32_t lat;
+    int32_t lon;
     if (sendLocation) {
-        float lat = (float)atoi(p);
+        lat = atoi(p) * 1000000;
+
         while (*p && p != '.') {
             p++;
         }
-        lat += ((float)atoi(++p) * 1e-6);
+        lat += atoi(++p);
+    }
 
-        while (*p && p != ',') {
-            p++;
-        }
-
-        float lon = (float)atoi(++p);
-        while (*p && p != '.') {
-            p++;
-        }
-        lon += ((float)atoi(++p) * 1e-6);
-
-        while (*p && p != ',') {
-            p++;
-        }
-        p++;
-
-        CborMapAddLocation(lat, lon);
-    } else {
-        // skip lat/lon
-        while (*p && p != ',') {
-            p++;
-        }
-        p++;
-
-        while (*p && p != ',') {
-            p++;
-        }
+    while (*p && p != ',') {
         p++;
     }
+
+    if (sendLocation) {
+        lon = atoi(++p) * 1000000;
+        
+        while (*p && p != '.') {
+            p++;
+        }
+        lon += atoi(++p);
+    }
+
+    while (*p && p != ',') {
+        p++;
+    }
+    p++;
+
+    if (sendLocation) {
+        CborMapAddLocation(lat, lon);
+    }
+    
     CborMapAddTimestamp((char *)p);
     CborMapAddInteger(CBOR_KEY_SOURCE, source);
     CborMapAddCborPayload(payload, len);

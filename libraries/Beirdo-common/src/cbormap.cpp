@@ -124,41 +124,21 @@ void CborMapAddCborPayload(uint8_t *buffer, uint8_t len)
 }
 
 uint8_t timestamp[21];
-void sprintInt(uint8_t *buffer, uint16_t value, uint8_t digits);
 
-void sprintInt(uint8_t *buffer, uint16_t value, uint8_t digits)
-{
-    if (!buffer) {
-        return;
-    }
-
-    for (buffer += digits - 1; digits; digits--, buffer--)
-    {
-        *buffer = 0x30 + (value % 10);
-        value /= 10;
-    }
-}
-
-void CborMapAddTimestamp(uint16_t years, uint8_t months, uint8_t days,
-                         uint8_t hours, uint8_t minutes, uint8_t seconds)
+void CborMapAddTimestamp(char *timestr)
 {
     if (!cbor_writer) {
         return;
     }
 
+    // Input format (from SIM800):
+    //                2003/12/13,18:30:02
     //                012345678901234567890
     // Output format: 2003-12-13T18:30:02Z  (rfc4287#section-3.3)
-    sprintInt(&timestamp[0], years, 4);
+    strncpy(timestamp, timestr, 21);
     timestamp[4] = '-';
-    sprintInt(&timestamp[5], months, 2);
     timestamp[7] = '-';
-    sprintInt(&timestamp[8], days, 2);
     timestamp[10] = 'T';
-    sprintInt(&timestamp[11], hours, 2);
-    timestamp[13] = ':';
-    sprintInt(&timestamp[14], minutes, 2);
-    timestamp[16] = ':';
-    sprintInt(&timestamp[17], seconds, 2);
     timestamp[19] = 'Z';
     timestamp[20] = '\0';
 

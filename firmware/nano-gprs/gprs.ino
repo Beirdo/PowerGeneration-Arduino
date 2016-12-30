@@ -15,9 +15,8 @@ GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
     m_enable_pin = enable_pin;
     m_dtr_pin = dtr_pin;
     m_state = GPRS_DISABLED;
-    memset(&m_location, 0x00, sizeof(GSM_LOCATION));
-    m_epochTime = 0;
-    m_lastEpochTime = 0;
+    memset(&m_location, 0x00, 48);
+    m_packetCount = 0;
     m_fram = NULL;
     m_url_cache = NULL;
     m_apn_cache = NULL;
@@ -245,40 +244,59 @@ uint8_t *GPRS::getNetworkName(void)
     return m_gprs->buffer();
 }
 
-GSM_LOCATION *GPRS::getLocation(void)
+uint8_t *GPRS::getLocation(void)
 {
-    m_gprs->getLocation(&m_location);
+    m_gprs->getLocation((char *)m_location, 48);
 
-    uint32_t m = m_location.month;
-    uint32_t y = m_location.year + 2000 - (m <= 2 ? 1 : 0);
-    uint32_t era = y / 400;
-    uint32_t yoe = y - (era * 400);
-    uint32_t doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + m_location.day - 1;
-    uint32_t doe = yoe * 365 + yoe / 4 - yoe / 10 + doy;
-    uint32_t civil = era * 146097 + doe - 719468;
-
-    m_epochTime = ((civil * 24 + m_location.hour) * 60 + m_location.minute) *
-                  60 + m_location.second;
-
-    return &m_location;
+    return m_location;
 }
 
 bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
 {
-    getLocation();    
+    getLocation();
+    // m_location has: -73.993149,40.729370,2015/03/07,19:01:08
 
-    uint32_t timeDiff = m_epochTime - m_lastEpochTime;
-    bool sendLocation = (timeDiff >= 3600);
+    bool sendLocation = (packetCount++ & 127) == 0;
+    char *p = (char *)m_location;
 
     CborMessageInitialize();
     CborMessageAddMap(sendLocation ? 4 : 3);
     if (sendLocation) {
-        CborMapAddLocation(m_location.lat, m_location.lon);
-        m_lastEpochTime = m_epochTime;
+        float lat = (float)atoi(p);
+        while (*p && p != '.') {
+            p++;
+        }
+        lat += ((float)atoi(++p) * 1e-6);
+
+        while (*p && p != ',') {
+            p++;
+        }
+
+        float lon = (float)atoi(++p);
+        while (*p && p != '.') {
+            p++;
+        }
+        lon += ((float)atoi(++p) * 1e-6);
+
+        while (*p && p != ',') {
+            p++;
+        }
+        p++;
+
+        CborMapAddLocation(lat, lon);
+    } else {
+        // skip lat/lon
+        while (*p && p != ',') {
+            p++;
+        }
+        p++;
+
+        while (*p && p != ',') {
+            p++;
+        }
+        p++;
     }
-    CborMapAddTimestamp(m_location.year + 2000, m_location.month,
-                        m_location.day, m_location.hour,
-                        m_location.minute, m_location.second);
+    CborMapAddTimestamp((char *)p);
     CborMapAddInteger(CBOR_KEY_SOURCE, source);
     CborMapAddCborPayload(payload, len);
 

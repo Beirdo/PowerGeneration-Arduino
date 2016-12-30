@@ -32,7 +32,7 @@ class GPRS {
         bool isDisabled(void);
         int8_t getRssi(void);
         uint8_t *getNetworkName(void);
-        GSM_LOCATION *getLocation(void);
+        uint_t *getLocation(void);
         bool sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len);
         gprs_state_t getState(void) { return m_state; };
         uint8_t *getError(void) { return m_error; };
@@ -48,9 +48,8 @@ class GPRS {
         int8_t m_enable_pin;
         int8_t m_dtr_pin;
         CGPRS_SIM800 *m_gprs;
-        GSM_LOCATION m_location;
-        uint32_t m_epochTime;
-        uint32_t m_lastEpochTime;
+        uint8_t m_location[48];
+        uint32_t m_packetCount;
         gprs_state_t m_state;
 
         Adafruit_FRAM_SPI *m_fram;

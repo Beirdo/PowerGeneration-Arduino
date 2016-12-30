@@ -259,7 +259,7 @@ void setup(void)
     
     oled.begin(SSD1306_SWITCHCAPVCC);
     if (framInit) {
-        oled.attachRAM(&fram, 0x0000, 0x04000);
+        oled.attachRAM(&fram, 0x0000, 0x0400);
     }
     oled.display();
 

@@ -3,7 +3,7 @@
 #include <LowPower.h>
 #include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9340.h>
+#include <SSD1306.h>
 
 #include "rflink.h"
 #include "adcread.h"
@@ -31,12 +31,8 @@ int8_t lcdIndex;
 #define GPRS_EN_PIN 5
 #define GPRS_DTR_PIN 3
 
-#define LCD_RST_PIN 7
-#define LCD_CS_PIN 8
-#define LCD_DC_PIN 16
-#define LED_PWM_PIN 6
-
 #define SD_CS_PIN 17
+#define SD_CD_PIN 16
 
 #define FRAM_CS_PIN 15
 
@@ -51,10 +47,9 @@ uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
-Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
-
-Adafruit_ILI9340 LCD(LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN);
+Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
+SSD1306 oled;
 LCDDeck lcdDeck(&LCD, false);
 
 #define RF_RX_BUFFER_SIZE 64
@@ -154,14 +149,12 @@ void setup()
         Serial.println("Can't find attached FRAM");
     }
     
+    oled.begin(SSD_SWITCHCAPVCC);
     if (framInit) {
+        oled.attachRAM(&fram, 0x0000, 0x0400);
         gprs.attachRAM(&fram);
     }
-
-    analogReference(DEFAULT);
-
-    LCD.begin();
-    LCD.setRotation(1);     // use in landscape mode
+    oled.display();
 
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));

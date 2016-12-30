@@ -16,9 +16,6 @@
 [submodule "libraries/Arduino-SD-FAT"]
 	path = libraries/Arduino-SD-FAT
 	url = git@github.com:Beirdo/Arduino-SD-FAT.git
-[submodule "libraries/Adafruit_ILI9340"]
-	path = libraries/Adafruit_ILI9340
-	url = https://github.com/adafruit/Adafruit_ILI9340.git
 [submodule "libraries/Arduino-SIM800"]
 	path = libraries/Arduino-SIM800
 	url = git@github.com:Beirdo/Arduino-SIM800.git
@@ -43,9 +40,6 @@
 [submodule "libraries/Arduino-Low-Power"]
 	path = libraries/Arduino-Low-Power
 	url = https://github.com/rocketscream/Low-Power.git
-[submodule "libraries/Adafruit_ILI9341"]
-	path = libraries/Adafruit_ILI9341
-	url = https://github.com/adafruit/Adafruit_ILI9341.git
 [submodule "libraries/Arduino-FRAM-Cache"]
 	path = libraries/Arduino-FRAM-Cache
 	url = git@github.com:Beirdo/Arduino-FRAM-Cache.git

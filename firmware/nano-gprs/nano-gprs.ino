@@ -1,5 +1,3 @@
-#include <EEPROM.h>
-#include <avr/eeprom.h>
 #include <LowPower.h>
 #include <Adafruit_FRAM_SPI.h>
 #include <Adafruit_GFX.h>
@@ -14,6 +12,7 @@
 #include "gprs.h"
 #include "eeprom.h"
 #include "utils.h"
+#include "sdlogging.h"
 
 // in ms
 #define LOOP_CADENCE 1000
@@ -40,6 +39,10 @@ int8_t lcdIndex;
 #define LIGHT_ADC_PIN 6
 
 static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
+#ifdef __arm__
+SimulatedEEPROM EEPROM(&eeprom_contents, sizeof(eeprom_contents));
+#endif
+
 uint8_t rf_id;
 uint8_t rf_upstream;
 
@@ -47,7 +50,8 @@ uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
-GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN);
+SDLogging logging(SD_CS_PIN, SD_CD_PIN);
+GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN, &logging);
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);
@@ -191,9 +195,7 @@ void loop()
         if (lcdTicks >= SWAP_COUNT) {
             lcdTicks -= SWAP_COUNT;
 
-            core_temperature = readAvrTemperature();
-            
-            analogReference(DEFAULT);
+            core_temperature = readCoreTemperature();
             battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
 
             lcdIndex = lcdDeck.nextIndex();
@@ -216,8 +218,9 @@ void loop()
         gprs.stateMachine();
     }
 
-    LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
-                  SPI_OFF, USART0_ON, TWI_OFF);
+//    LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
+//                  SPI_OFF, USART0_ON, TWI_OFF);
+      delay(LOOP_CADENCE);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

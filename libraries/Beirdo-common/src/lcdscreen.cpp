@@ -41,7 +41,7 @@ void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
 
     if (value <= 0) {
         buffer[0] = '0';
-        strcpy(&buffer[1], units);
+        strcpy((char *)&buffer[1], (const char *)units);
         return;
     }
 
@@ -84,7 +84,7 @@ void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
     }
 
     if (units) {
-        strcpy(&buffer[unitIndex], units);
+        strcpy((char *)&buffer[unitIndex], (const char *)units);
     } else {
         buffer[unitIndex] = '\0';
     }
@@ -115,7 +115,7 @@ void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
     uint8_t unitIndex = index + 1;
 
     if (units) {
-        strcpy(&buffer[unitIndex], units);
+        strcpy((char *)&buffer[unitIndex], (const char *)units);
     } else {
         buffer[unitIndex] = '\0';
     }
@@ -202,7 +202,7 @@ void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size)
 
     // Put the string, horizontally centered.
     // m_display->getTextBounds((char *)str, 0, y, &x, &y, &w, &h);
-    w = strlen(str) * size * 6;
+    w = strlen((const char *)str) * size * 6;
     x += (m_width - w) / 2;
     m_display->setCursor(x, y);
 
@@ -277,8 +277,9 @@ LCDScreen *LCDDeck::getFrame(uint8_t index)
     LCDScreen *frame;
     uint8_t i;
 
-    for (i = 0, frame = m_frameList.head(); frame && i < index; i++) {
-        frame = m_frameList.next();
+    for (i = 0, frame = (LCDScreen *)m_frameList.head(); frame && i < index;
+         i++) {
+        frame = (LCDScreen *)m_frameList.next();
     }
 
     if (frame) {

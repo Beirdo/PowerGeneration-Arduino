@@ -1,17 +1,15 @@
 #include <Arduino.h>
-#include <EEPROM.h>
-#include <avr/eeprom.h>
 #include <string.h>
 #include "serialcli.h"
 
-CLICommand::CLICommand(uint8_t *command, uint8_t nargs)
+CLICommand::CLICommand(const char *command, uint8_t nargs)
 {
     m_command = command;
     m_len = strlen(command);
     m_nargs = nargs;
 }
 
-uint8_t CLICommand::compare(uint8_t *command)
+uint8_t CLICommand::compare(const char *command)
 {
     uint8_t len = strlen(command);
     if (len > m_len) {
@@ -47,10 +45,10 @@ void SerialCLI::registerCommand(CLICommand *command)
 
 void SerialCLI::parseBuffer(void)
 {
-    uint8_t *ch;
-    uint8_t *command;
+    char *ch;
+    char *command;
     uint8_t nargs = 0;
-    uint8_t *args[8];   // support a max of 8 args
+    char *args[8];   // support a max of 8 args
     CLICommand *cmd;
 
     // Strip leading whitespace
@@ -96,7 +94,8 @@ void SerialCLI::parseBuffer(void)
     }
 
     // Find the matching command
-    for (cmd = m_commands.head(); cmd; cmd = m_commands.next()) {
+    for (cmd = (CLICommand *)m_commands.head(); cmd;
+         cmd = (CLICommand *)m_commands.next()) {
         if (cmd->compare(command)) {
             break;
         }
@@ -110,7 +109,7 @@ void SerialCLI::parseBuffer(void)
             Serial.print(" requires ");
             Serial.print(cmd->nargs());
             Serial.println(" arguments");
-        } else if (!cmd->run(nargs, args)) {
+        } else if (!cmd->run(nargs, (uint8_t **)args)) {
             Serial.println("ERROR: Command failed");
         } else {
             Serial.println("SUCCESS");
@@ -125,14 +124,25 @@ class HelpCLICommand : public CLICommand {
     public:
         HelpCLICommand(void) : CLICommand("help", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
-          { cli.listCommands();  return(1); };
+        {
+            cli.listCommands();
+            return(1);
+        }
 };
 
 class ResetCLICommand : public CLICommand {
     public:
         ResetCLICommand(void) : CLICommand("reset", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
-          { Serial.println("Resetting...");  delay(1000); asm volatile ("jmp 0"); };
+        { 
+            Serial.println("Resetting...");
+            delay(1000);
+#ifndef __arm__
+            asm volatile ("jmp 0");
+#else
+            // TODO:  add ARM equivalent
+#endif
+        }
 };
 
 
@@ -148,8 +158,9 @@ void SerialCLI::listCommands(void)
     CLICommand *cmd;
 
     Serial.println("Commands (nargs)");
-    for (cmd = m_commands.head(); cmd; cmd = m_commands.next()) {
-        Serial.print((char *)cmd->command());
+    for (cmd = (CLICommand *)m_commands.head(); cmd;
+         cmd = (CLICommand *)m_commands.next()) {
+        Serial.print(cmd->command());
         Serial.print(" (");
         Serial.print(cmd->nargs());
         Serial.println(")");

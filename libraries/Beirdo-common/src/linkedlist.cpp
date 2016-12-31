@@ -55,7 +55,7 @@ void *LinkedList::next(void)
         return 0;
     }
 
-    m_curr = m_curr->next();
+    m_curr = (LinkedListItem *)m_curr->next();
     return currentItem();
 }
 

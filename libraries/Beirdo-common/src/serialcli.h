@@ -1,22 +1,20 @@
 #ifndef SERIALCLI_H__
 #define SERIALCLI_H__
 
-#include <EEPROM.h>
-#include <avr/eeprom.h>
 #include "linkedlist.h"
 
 class CLICommand {
     public:
-        CLICommand(uint8_t *command, uint8_t nargs);
-        uint8_t compare(uint8_t *command);
+        CLICommand(const char *command, uint8_t nargs);
+        uint8_t compare(const char *command);
         virtual uint8_t run(uint8_t nargs, uint8_t **args) = 0;
         uint8_t pre_run(uint8_t nargs);
         uint8_t nargs(void) { return m_nargs; };
-        uint8_t *command(void) { return m_command; };
+        const char *command(void) { return m_command; };
 
     protected:
 
-        uint8_t *m_command;
+        const char *m_command;
         uint8_t m_len;
         uint8_t m_nargs;
 };
@@ -37,11 +35,10 @@ class SerialCLI {
         void prompt(void) { Serial.print("> "); };
         LinkedList m_commands;
         uint8_t m_index;
-        uint8_t m_buffer[SERIAL_BUFFER_SIZE];
+        char m_buffer[SERIAL_BUFFER_SIZE];
 };
 
 extern SerialCLI cli;
-extern const uint8_t EEMEM rf_link_id;
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

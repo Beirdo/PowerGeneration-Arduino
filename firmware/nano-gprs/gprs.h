@@ -4,6 +4,7 @@
 #include <Adafruit_FRAM_SPI.h>
 #include <SIM800.h>
 #include <inttypes.h>
+#include <sdlogging.h>
 
 #define MAX_APN_LEN 64
 #define MAX_URL_LEN 128
@@ -25,7 +26,7 @@ typedef enum {
 
 class GPRS {
     public:
-        GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin);
+        GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin, SDLogging *logging);
         void stateMachine(void);
         void attachRAM(Adafruit_FRAM_SPI *fram); 
 
@@ -35,7 +36,7 @@ class GPRS {
         uint8_t *getLocation(void);
         bool sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len);
         gprs_state_t getState(void) { return m_state; };
-        uint8_t *getError(void) { return m_error; };
+        uint8_t *getError(void) { return (uint8_t *)m_error; };
 
         void setUrl(const char *url, bool is_pgmspace);
         void setAPN(const char *apn, bool is_pgmspace);
@@ -60,11 +61,13 @@ class GPRS {
         Cache_Segment *m_apn_cache;
         Cache_Segment *m_url_cache;
         Cache_Segment *m_mime_cache;
-        volatile Cache_Segment *m_tx_cache;
-        volatile Cache_Segment *m_tx2_cache;
+        Cache_Segment *m_tx_cache;
+        Cache_Segment *m_tx2_cache;
 
-        uint8_t m_error[MAX_ERROR_LEN];
+        char m_error[MAX_ERROR_LEN];
         uint8_t m_counter;
+
+        SDLogging *m_logging;
 };
 
 #endif

@@ -2,13 +2,14 @@
 #include <string.h>
 #include <SIM800.h>
 #include "cbormap.h"
+#include "sdlogging.h"
 
 // Ting's default
 static const PROGMEM char default_apn[] = "wholesale";
 static const PROGMEM char default_url[] = "https://apigatewayurl/method";
 static const PROGMEM char default_mime[] = "application/cbor";
 
-GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
+GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin, SDLogging *logging)
 {
     m_gprs = new CGPRS_SIM800(&Serial, reset_pin, enable_pin, dtr_pin);
     m_reset_pin = reset_pin;
@@ -22,6 +23,7 @@ GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin)
     m_apn_cache = NULL;
     m_tx_cache = NULL;
     m_tx2_cache = NULL;
+    m_logging = logging;
 }
 
 void GPRS::attachRAM(Adafruit_FRAM_SPI *fram)
@@ -161,7 +163,7 @@ void GPRS::stateMachine(void)
             if (m_gprs->setup(m_apn_cache) == 0) {
                 next_state = GPRS_READY;
             } else {
-                strncpy(m_error, m_gprs->buffer(), MAX_ERROR_LEN);
+                strncpy(m_error, (const char *)m_gprs->buffer(), MAX_ERROR_LEN);
                 next_state = GPRS_DISABLED;
             }
             break;
@@ -174,7 +176,7 @@ void GPRS::stateMachine(void)
                 delay(3000);
                 next_state = GPRS_HTTPS_READY;
             } else {
-                strncpy(m_error, m_gprs->buffer(), MAX_ERROR_LEN);
+                strncpy(m_error, (const char *)m_gprs->buffer(), MAX_ERROR_LEN);
                 m_gprs->httpUninit();
                 delay(1000);
             }
@@ -267,26 +269,26 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
     if (sendLocation) {
         lat = atoi(p) * 1000000;
 
-        while (*p && p != '.') {
+        while (*p && *p != '.') {
             p++;
         }
         lat += atoi(++p);
     }
 
-    while (*p && p != ',') {
+    while (*p && *p != ',') {
         p++;
     }
 
     if (sendLocation) {
         lon = atoi(++p) * 1000000;
         
-        while (*p && p != '.') {
+        while (*p && *p != '.') {
             p++;
         }
         lon += atoi(++p);
     }
 
-    while (*p && p != ',') {
+    while (*p && *p != ',') {
         p++;
     }
     p++;
@@ -299,16 +301,18 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
     CborMapAddInteger(CBOR_KEY_SOURCE, source);
     CborMapAddCborPayload(payload, len);
 
-    uint8_t *buffer = m_error;
+    uint8_t *buffer = (uint8_t *)m_error;
     len = min(m_tx2_cache->circularWriteAvailable(), MAX_BUFFER_LEN);
 
     bool buffFit = CborMessageBuffer(&buffer, &len);
     if (buffFit) {
+        m_logging->write(buffer, len);
+
         m_tx2_cache->circularWrite(buffer, len);
         if (m_tx2_cache->circularWriteAvailable() < MAX_BUFFER_LEN) {
             swap_buffers();
         }
-        return;
+        return true;
     }
 
     if (m_state == GPRS_HTTPS_READY && !m_tx_cache->circularReadAvailable()) {
@@ -316,9 +320,13 @@ bool GPRS::sendCborPacket(uint8_t source, uint8_t *payload, uint8_t len)
 
         if (!buffFit) {
             CborMessageBuffer(&buffer, &len);
+            m_logging->write(buffer, len);
+
             m_tx2_cache->circularWrite(buffer, len);
+            return true;
         }
     }
+    return false;
 }
 
 void GPRS::swap_buffers(void)

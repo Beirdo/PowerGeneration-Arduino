@@ -1,8 +1,10 @@
 #ifndef EEPROM_H__
 #define EEPROM_H__
 
+#ifndef __arm__
 #include <EEPROM.h>
 #include <avr/eeprom.h>
+#endif
 #include <inttypes.h>
 #include <eeprom_common.h>
 

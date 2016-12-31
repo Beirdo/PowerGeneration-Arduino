@@ -5,6 +5,7 @@ int16_t core_temperature;	///< in 1/10 degree C
 
 inline int16_t readAdc(void);
 
+#ifndef __arm__
 uint16_t readVcc(void)
 {
   // Read 1.1V reference against AVcc
@@ -25,7 +26,7 @@ uint16_t readVcc(void)
   return (uint16_t)result; // Vcc in millivolts
 }
 
-int16_t readAvrTemperature(void)
+int16_t readCoreTemperature(void)
 {
   // set the reference to 1.1V and the measurement to the internal temperature sensor
   ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
@@ -43,6 +44,8 @@ int16_t readAvrTemperature(void)
   avgTemp -= 335200;  // offset of 335.2
   int16_t result = (int16_t)((float)avgTemp / 106.154);
 
+  analogReference(DEFAULT);
+
   return result;
 }
 
@@ -54,6 +57,24 @@ inline int16_t readAdc(void)
   int32_t result = (int32_t)ADCW;
   return result;
 }
+#else
+// TODO:  Add ARM equivalents
+uint16_t readVcc(void)
+{
+    return 0;
+}
+
+int16_t readCoreTemperature(void)
+{
+    return 0;
+}
+
+inline int16_t readAdc(void)
+{
+    return 0;
+}
+
+#endif
 
 
 PowerMonitor::PowerMonitor(void)

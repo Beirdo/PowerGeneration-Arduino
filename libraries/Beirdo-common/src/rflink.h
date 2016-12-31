@@ -3,6 +3,7 @@
 
 #include <RF24.h>
 #include <inttypes.h>
+#include "eeprom_common.h"
 
 class RFLink {
     public:
@@ -18,6 +19,9 @@ class RFLink {
         bool m_listening;
         bool m_valid;
 };
+
+extern const uint8_t EEMEM rf_link_id;
+extern const uint8_t EEMEM rf_link_upstream;
 
 #endif
 // vim:ts=4:sw=4:ai:et:si:sts=4

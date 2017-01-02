@@ -51,7 +51,7 @@ RFLink *rflink = NULL;
 ADCRead adcread;
 int16_t core_temperature;
 SDLogging logging(SD_CS_PIN, SD_CD_PIN);
-GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN, &logging);
+GPRS gprs(GPRS_RST_PIN, GPRS_DTR_PIN, &logging);
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
 LCDDeck lcdDeck(&oled, true);

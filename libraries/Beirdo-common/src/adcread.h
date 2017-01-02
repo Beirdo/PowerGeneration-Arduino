@@ -9,7 +9,7 @@ class ADCReadBase {
         ADCReadBase() {};
         virtual int16_t readCoreTemperature(void) = 0;  ///< in 1/0 degree C
         virtual uint16_t readVcc(void) = 0;             ///< in mV
-        virtual int32_t readPin(uint8_t pin, int32_t low, int32_t high) = 0;
+        virtual int32_t mapPin(uint8_t pin, int32_t low, int32_t high) = 0;
     protected:
         virtual inline int16_t readAdc(void) = 0;
 };
@@ -20,7 +20,7 @@ class ADCReadAVR : public ADCReadBase {
         ADCReadAVR();
         virtual int16_t readCoreTemperature(void);  ///< in 1/0 degree C
         virtual uint16_t readVcc(void);             ///< in mV
-        virtual int32_t readPin(uint8_t pin, int32_t low, int32_t high);
+        virtual int32_t mapPin(uint8_t pin, int32_t low, int32_t high);
     protected:
         virtual inline int16_t readAdc(void);
 };
@@ -37,6 +37,7 @@ class ADCReadARM : public ADCReadBase {
     protected:
         virtual inline int16_t readAdc(void);
         uint16_t readCorrectedVRef(int16_t *rawTemp = NULL);
+        inline void syncADC(void);
         int16_t tempR;      ///< in 1/10 deg C
         int16_t tempH;      ///< in 1/10 deg C
         uint16_t int1VR;    ///< in mV

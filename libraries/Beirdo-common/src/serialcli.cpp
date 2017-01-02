@@ -144,7 +144,7 @@ class ResetCLICommand : public CLICommand {
 
 #ifdef __arm__
             // Trigger a system reset request
-            AIRCR = 0x05FA0004;
+            SCB->AIRCR = 0x05FA0004;
 #endif
         }
 };

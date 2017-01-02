@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include "adcread.h"
 
-int16_t core_temperature;	///< in 1/10 degree C
-
 #ifdef __AVR__
 ADCReadAVR::ADCReadAVR() : ADCReadBase()
 {
@@ -53,7 +51,7 @@ int16_t ADCReadAVR::readCoreTemperature(void)
     return result;
 }
 
-int32_t ADCReadAVR::mapPin(uint8_t pin, uint32_t low, uint32_t high)
+int32_t ADCReadAVR::mapPin(uint8_t pin, int32_t low, int32_t high)
 {
     analogReference(DEFAULT);
 
@@ -98,11 +96,11 @@ uint16_t ADCReadARM::readVcc(void)
     analogReference(AR_INTERNAL1V0);
     delay(20);
     syncADC();
-    ADC->INPUTCTL.bit.GAIN = 0x00;      // 1X gain
-    // ADC->INPUTCTL.bin.MUXNEG = 0x18;    // Internal GND
-    ADC->INPUTCTL.bit.MUXNEG = 0x19;    // Internal I/O GND
-    // ADC->INPUTCTL.bit.MUXPOS = 0x1A;    // Internal Core VCC / 4
-    ADC->INPUTCTL.bit.MUXPOS = 0x1B;    // Internal I/O VCC / 4
+    ADC->INPUTCTRL.bit.GAIN = 0x00;      // 1X gain
+    // ADC->INPUTCTRL.bin.MUXNEG = 0x18;    // Internal GND
+    ADC->INPUTCTRL.bit.MUXNEG = 0x19;    // Internal I/O GND
+    // ADC->INPUTCTRL.bit.MUXPOS = 0x1A;    // Internal Core VCC / 4
+    ADC->INPUTCTRL.bit.MUXPOS = 0x1B;    // Internal I/O VCC / 4
     syncADC();
 
     valueRead = readAdc();
@@ -122,9 +120,9 @@ uint16_t ADCReadARM::readCorrectedVRef(int16_t *rawTemp)
     analogReference(AR_INTERNAL1V0);
     delay(20);
     syncADC();
-    ADC->INPUTCTL.bit.GAIN = 0x00;      // 1X gain
-    ADC->INPUTCTL.bit.MUXNEG = 0x18;    // Internal GND
-    ADC->INPUTCTL.bit.MUXPOS = 0x18;    // Temperature reference
+    ADC->INPUTCTRL.bit.GAIN = 0x00;      // 1X gain
+    ADC->INPUTCTRL.bit.MUXNEG = 0x18;    // Internal GND
+    ADC->INPUTCTRL.bit.MUXPOS = 0x18;    // Temperature reference
     syncADC();
 
     ADC->AVGCTRL.reg = ADC_AVGCTRL_ADJRES(2) | ADC_AVGCTRL_SAMPLENUM_4;
@@ -138,7 +136,7 @@ uint16_t ADCReadARM::readCorrectedVRef(int16_t *rawTemp)
                               (tempH - tempR) / 100;
 
     if (rawTemp) {
-        *rawTemp = raw;
+        *rawTemp = vadcM;
     }
 
     return int1VM;
@@ -188,12 +186,17 @@ inline int16_t ADCReadARM::readAdc(void)
     return (int16_t)valueRead;
 }
 
-int32_t ADCReadAVR::mapPin(uint8_t pin, uint32_t low, uint32_t high)
+int32_t ADCReadARM::mapPin(uint8_t pin, int32_t low, int32_t high)
 {
     analogReference(AR_DEFAULT);
 
     int32_t value = map(analogRead(pin), 0, 4095, low, high);
     return value;
+}
+
+inline void ADCReadARM::syncADC(void)
+{
+    while (ADC->STATUS.bit.SYNCBUSY == 1);
 }
 
 #endif

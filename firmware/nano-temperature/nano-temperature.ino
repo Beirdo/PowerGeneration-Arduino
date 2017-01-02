@@ -34,6 +34,8 @@ int8_t lcdIndex;
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
+ADCRead adcread;
+int16_t core_temperature;
 uint16_t temperatures[8];
 
 static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
@@ -192,10 +194,8 @@ void loop()
     if (lcdTicks >= SWAP_COUNT) {
         lcdTicks -= SWAP_COUNT;
 
-        core_temperature = readAvrTemperature();
-
-        analogReference(DEFAULT);
-        battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
+        core_temperature = adcread.readCoreTemperature();
+        battery_voltage = adcread.mapPin(VBATT_ADC_PIN, 0, 5000);
 
         TemperaturesPoll(temperatures, 8);
 

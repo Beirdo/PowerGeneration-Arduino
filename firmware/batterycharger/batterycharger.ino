@@ -42,6 +42,8 @@ uint8_t rf_upstream;
 #define TEST_3V3   4
 #define TEST_5V    5
 
+ADCRead adcread;
+int16_t core_temperature;
 PowerMonitor *monitors[6];
 uint32_t voltages[6];
 uint32_t currents[6];
@@ -343,6 +345,7 @@ void loop()
     if (lcdTicks >= SWAP_COUNT) {
         lcdTicks -= SWAP_COUNT;
 
+        core_temperature = adcread.readCoreTemperature();
         lcdIndex = lcdDeck.nextIndex();
         lcdDeck.formatFrame(lcdIndex);
         lcdDeck.displayFrame();

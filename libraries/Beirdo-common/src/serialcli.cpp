@@ -137,10 +137,14 @@ class ResetCLICommand : public CLICommand {
         { 
             Serial.println("Resetting...");
             delay(1000);
-#ifndef __arm__
+#ifdef __AVR__
+            // Jump to the reset vector
             asm volatile ("jmp 0");
-#else
-            // TODO:  add ARM equivalent
+#endif
+
+#ifdef __arm__
+            // Trigger a system reset request
+            AIRCR = 0x05FA0004;
 #endif
         }
 };

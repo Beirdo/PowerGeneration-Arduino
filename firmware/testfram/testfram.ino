@@ -35,6 +35,9 @@ LCDDeck lcdDeck(&display, true);
 #define SWAP_TIME 2000
 #define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
+ADCRead adcread;
+int16_t core_temperature;
+
 uint32_t a7;
 uint16_t lcdTicks;
 uint8_t lcdIndex;
@@ -74,8 +77,8 @@ void setup()   {
 
 
 void loop() {
-  core_temperature = readAvrTemperature();
-  a7 = ((uint32_t)(analogRead(7)) * 5000 / 1024);
+  core_temperature = adcread.readAvrTemperature();
+  a7 = adcread.mapPin(7, 0, 5000);
 
   uint8_t data[65];
 

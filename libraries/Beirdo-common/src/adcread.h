@@ -4,10 +4,48 @@
 #include <INA219.h>
 #include <ADS1115.h>
 
-extern int16_t core_temperature;	///< in 1/10 degree C
+class ADCReadBase {
+    public:
+        ADCReadBase() {};
+        virtual int16_t readCoreTemperature(void) = 0;  ///< in 1/0 degree C
+        virtual uint16_t readVcc(void) = 0;             ///< in mV
+        virtual int32_t readPin(uint8_t pin, int32_t low, int32_t high) = 0;
+    protected:
+        virtual inline int16_t readAdc(void) = 0;
+};
 
-int16_t readCoreTemperature(void);
-uint16_t readVcc(void);
+#ifdef __AVR__
+class ADCReadAVR : public ADCReadBase {
+    public:
+        ADCReadAVR();
+        virtual int16_t readCoreTemperature(void);  ///< in 1/0 degree C
+        virtual uint16_t readVcc(void);             ///< in mV
+        virtual int32_t readPin(uint8_t pin, int32_t low, int32_t high);
+    protected:
+        virtual inline int16_t readAdc(void);
+};
+#define ADCRead ADCReadAVR
+#endif
+
+#ifdef __arm__
+class ADCReadARM : public ADCReadBase {
+    public:
+        ADCReadARM();
+        virtual int16_t readCoreTemperature(void);  ///< in 1/10 deg C
+        virtual uint16_t readVcc(void);             ///< in mV
+        virtual int32_t mapPin(uint8_t pin, int32_t low, int32_t high);
+    protected:
+        virtual inline int16_t readAdc(void);
+        uint16_t readCorrectedVRef(int16_t *rawTemp = NULL);
+        int16_t tempR;      ///< in 1/10 deg C
+        int16_t tempH;      ///< in 1/10 deg C
+        uint16_t int1VR;    ///< in mV
+        uint16_t int1VH;    ///< in mV
+        uint32_t vadcR;     ///< 12-bit ADC reading
+        uint32_t vadcH;     ///< 12-bit ADC reading
+};
+#define ADCRead ADCReadARM
+#endif
 
 class PowerMonitor {
     public:

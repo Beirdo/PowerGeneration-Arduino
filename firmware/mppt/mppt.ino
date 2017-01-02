@@ -46,6 +46,8 @@ uint8_t rf_upstream;
 #define TEST_VIN  2
 #define TEST_MPPT 3
 
+ADCRead adcread;
+int16_t core_temperature;
 PowerMonitor *monitors[4];
 uint32_t voltages[4];
 uint32_t currents[4];
@@ -322,6 +324,8 @@ void loop(void)
         lcdTicks++;
         if (lcdTicks >= SWAP_COUNT) {
             lcdTicks -= SWAP_COUNT;
+
+            core_temperature = adcread.readCoreTemperature();
 
             lcdIndex = lcdDeck.nextIndex();
             lcdDeck.formatFrame(lcdIndex);

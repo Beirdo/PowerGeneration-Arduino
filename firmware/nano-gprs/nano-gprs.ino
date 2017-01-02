@@ -50,6 +50,8 @@ uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
+ADCRead adcread;
+int16_t core_temperature;
 SDLogging logging(SD_CS_PIN, SD_CD_PIN);
 GPRS gprs(GPRS_RST_PIN, GPRS_EN_PIN, GPRS_DTR_PIN, &logging);
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
@@ -195,8 +197,13 @@ void loop()
         if (lcdTicks >= SWAP_COUNT) {
             lcdTicks -= SWAP_COUNT;
 
-            core_temperature = readCoreTemperature();
-            battery_voltage = map(analogRead(VBATT_ADC_PIN), 0, 1023, 0, 5000);
+            core_temperature = adcread.readCoreTemperature();
+            // Note:  actual max voltage is 3.3V - 0.6V = 2.7V
+            // We have an external divider to take 3.7V -> 1.85V, the default
+            // reference includes a gain of /2, so a full battery reading
+            // should end up at 0.925V when measured, an ADC reading of 2296
+            // (0x8F8)
+            battery_voltage = adcread.mapPin(VBATT_ADC_PIN, 0, 6600);
 
             lcdIndex = lcdDeck.nextIndex();
             lcdDeck.formatFrame(lcdIndex);

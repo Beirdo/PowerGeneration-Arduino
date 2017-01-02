@@ -3,75 +3,197 @@
 
 int16_t core_temperature;	///< in 1/10 degree C
 
-inline int16_t readAdc(void);
-
-#ifndef __arm__
-uint16_t readVcc(void)
+#ifdef __AVR__
+ADCReadAVR::ADCReadAVR() : ADCReadBase()
 {
-  // Read 1.1V reference against AVcc
-  // set the reference to Vcc and the measurement to the internal 1.1V reference
-  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-  ADCSRA |= _BV(ADEN); // Enable ADC
-
-  delay(20); // Wait for Vref to settle
-  readAdc(); // Toss the first reading
-
-  uint32_t result = (uint32_t)readAdc();
-
-  // result = (1100mV / Vcc) * 1024
-  // we want Vcc
-  // Vcc = 1100mV * 1024 / result
-  // Vcc = 1126400mV / result
-  result = 1126400L / result;
-  return (uint16_t)result; // Vcc in millivolts
 }
 
-int16_t readCoreTemperature(void)
+uint16_t ADCReadAVR::readVcc(void)
 {
-  // set the reference to 1.1V and the measurement to the internal temperature sensor
-  ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
-  ADCSRA |= _BV(ADEN); // Enable ADC
+    // Read 1.1V reference against AVcc
+    // set the reference to Vcc and the measurement to the internal 1.1V
+    // reference
+    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+    ADCSRA |= _BV(ADEN); // Enable ADC
 
-  delay(20); // Wait for Vref to settle
-  readAdc(); // Toss the first reading
+    delay(20); // Wait for Vref to settle
+    readAdc(); // Toss the first reading
 
-  int32_t avgTemp = 0;
+    uint32_t result = (uint32_t)readAdc();
 
-  for (uint16_t i = 0; i < 1000; i++) {
-    avgTemp += readAdc();
-  }
-
-  avgTemp -= 335200;  // offset of 335.2
-  int16_t result = (int16_t)((float)avgTemp / 106.154);
-
-  analogReference(DEFAULT);
-
-  return result;
+    // result = (1100mV / Vcc) * 1024
+    // we want Vcc
+    // Vcc = 1100mV * 1024 / result
+    // Vcc = 1126400mV / result
+    result = 1126400L / result;
+    return (uint16_t)result; // Vcc in millivolts
 }
 
-inline int16_t readAdc(void)
+int16_t ADCReadAVR::readCoreTemperature(void)
 {
-  ADCSRA |= _BV(ADSC); // Start conversion
-  while (bit_is_set(ADCSRA, ADSC)); // measuring
+    // set the reference to 1.1V and the measurement to the internal
+    // temperature sensor
+    ADMUX = _BV(REFS1) | _BV(REFS0) | _BV(MUX3);
+    ADCSRA |= _BV(ADEN); // Enable ADC
 
-  int32_t result = (int32_t)ADCW;
-  return result;
-}
-#else
-// TODO:  Add ARM equivalents
-uint16_t readVcc(void)
-{
-    return 0;
+    delay(20); // Wait for Vref to settle
+    readAdc(); // Toss the first reading
+
+    int32_t avgTemp = 0;
+
+    for (uint16_t i = 0; i < 1000; i++) {
+        avgTemp += readAdc();
+    }
+
+    avgTemp -= 335200;  // offset of 335.2
+    int16_t result = (int16_t)((float)avgTemp / 106.154);
+
+    analogReference(DEFAULT);
+
+    return result;
 }
 
-int16_t readCoreTemperature(void)
+int32_t ADCReadAVR::mapPin(uint8_t pin, uint32_t low, uint32_t high)
 {
-    return 0;
+    analogReference(DEFAULT);
+
+    int32_t value = map(analogRead(pin), 0, 1023, low, high);
+    return value;
 }
 
-inline int16_t readAdc(void)
+inline int16_t ADCReadAVR::readAdc(void)
 {
-    return 0;
+    ADCSRA |= _BV(ADSC); // Start conversion
+    while (bit_is_set(ADCSRA, ADSC)); // measuring
+
+    int32_t result = (int32_t)ADCW;
+    return result;
+}
+#endif
+
+#ifdef __arm__
+
+#define GET_FUSE_VAL(base, x) ((*(base) & FUSES_##x##_Msk) >> FUSES_##x##_Pos)
+
+ADCReadARM::ADCReadARM() : ADCReadBase()
+{
+    uint32_t *word1 = (uint32_t *)(NVMCTRL_TEMP_LOG);
+    uint32_t *word2 = (uint32_t *)(NVMCTRL_TEMP_LOG + 4);
+
+    tempR = GET_FUSE_VAL(word1, ROOM_TEMP_VAL_INT) * 10 +
+            GET_FUSE_VAL(word1, ROOM_TEMP_VAL_DEC);
+    tempH = GET_FUSE_VAL(word1, HOT_TEMP_VAL_INT) * 10 +
+            GET_FUSE_VAL(word1, HOT_TEMP_VAL_DEC);
+    int1VR = 1000 - (int8_t)GET_FUSE_VAL(word1, ROOM_INT1V_VAL);
+    int1VH = 1000 - (int8_t)GET_FUSE_VAL(word2, HOT_INT1V_VAL);
+    vadcR = GET_FUSE_VAL(word2, ROOM_ADC_VAL);
+    vadcH = GET_FUSE_VAL(word2, HOT_ADC_VAL);
+}
+
+uint16_t ADCReadARM::readVcc(void)
+{
+    uint32_t valueRead = 0;
+
+    // We will read VCC / 4 (0.825V for 3.3V) using the internal 1.0V reference
+    analogReference(AR_INTERNAL1V0);
+    delay(20);
+    syncADC();
+    ADC->INPUTCTL.bit.GAIN = 0x00;      // 1X gain
+    // ADC->INPUTCTL.bin.MUXNEG = 0x18;    // Internal GND
+    ADC->INPUTCTL.bit.MUXNEG = 0x19;    // Internal I/O GND
+    // ADC->INPUTCTL.bit.MUXPOS = 0x1A;    // Internal Core VCC / 4
+    ADC->INPUTCTL.bit.MUXPOS = 0x1B;    // Internal I/O VCC / 4
+    syncADC();
+
+    valueRead = readAdc();
+
+    // Assuming 12-bit readings
+    // result = (Vcc [V] / 4) * 4096 / Vref [V]
+    // we want Vcc [mV]
+    // Vcc [V] = Vref [V] * result / 1024
+    // Vcc [mV] = Vref [mV] * result / 1024
+    valueRead *= readCorrectedVRef();
+    return (uint16_t)(valueRead >> 10); // Vcc in millivolts
+}
+
+uint16_t ADCReadARM::readCorrectedVRef(int16_t *rawTemp)
+{
+    // We will read VCC / 4 (0.825V for 3.3V) using the internal 1.0V reference
+    analogReference(AR_INTERNAL1V0);
+    delay(20);
+    syncADC();
+    ADC->INPUTCTL.bit.GAIN = 0x00;      // 1X gain
+    ADC->INPUTCTL.bit.MUXNEG = 0x18;    // Internal GND
+    ADC->INPUTCTL.bit.MUXPOS = 0x18;    // Temperature reference
+    syncADC();
+
+    ADC->AVGCTRL.reg = ADC_AVGCTRL_ADJRES(2) | ADC_AVGCTRL_SAMPLENUM_4;
+    syncADC();
+
+    // Read the temperature sensor (Vref is temperature dependent)
+    int16_t vadcM = readAdc();
+    int32_t coarse = 100 * tempR + 
+                     100 * (tempH - tempR) * (vadcM - vadcR) / (vadcH - vadcR);
+    int16_t int1VM = int1VR + (int1VH - int1VR) * (coarse - tempR) /
+                              (tempH - tempR) / 100;
+
+    if (rawTemp) {
+        *rawTemp = raw;
+    }
+
+    return int1VM;
+}
+
+int16_t ADCReadARM::readCoreTemperature(void)
+{
+    int16_t rawTemp;
+    int16_t vref = readCorrectedVRef(&rawTemp);
+
+    uint16_t vadcM = rawTemp * vref / 1000;
+    int16_t fine = 100 * tempR + 
+                   100 * (tempH - tempR) * (vadcM - vadcR) / (vadcH - vadcR);
+    return fine / 100;
+}
+
+inline int16_t ADCReadARM::readAdc(void)
+{
+    uint32_t valueRead = 0;
+
+    // Enable the ADC, but toss the first conversion
+    ADC->CTRLA.bit.ENABLE = 0x01;       // Enable ADC
+    syncADC();
+
+    // Start Conversion
+    ADC->SWTRIG.bit.START = 1;
+    syncADC();
+
+    // Clear Data Ready Flag
+    ADC->INTFLAG.reg = ADC_INTFLAG_RESRDY;
+
+    // Start the conversion again
+    syncADC();
+    ADC->SWTRIG.bit.START = 1;
+
+    // Waiting for conversion to complete
+    while (ADC->INTFLAG.bit.RESRDY == 0);
+
+    // Grab the value
+    valueRead = ADC->RESULT.reg;
+
+    // Disable ADC
+    syncADC();
+    ADC->CTRLA.bit.ENABLE = 0x00;
+    syncADC();
+    
+    return (int16_t)valueRead;
+}
+
+int32_t ADCReadAVR::mapPin(uint8_t pin, uint32_t low, uint32_t high)
+{
+    analogReference(AR_DEFAULT);
+
+    int32_t value = map(analogRead(pin), 0, 4095, low, high);
+    return value;
 }
 
 #endif
@@ -187,37 +309,37 @@ bool ADS1115PowerMonitor::readPower(uint32_t &value)
 
 uint32_t ADS1115PowerMonitor::convertVoltage(void)
 {
-  // reading is from 16-bit signed ADC
-  // gain value is the external gain
-  //  i.e. 120V -> 3.3V is a gain of 0.0275
-  uint32_t value = (uint32_t)(m_rawVoltage < 0 ? -m_rawVoltage : m_rawVoltage);
-  value *= m_device.getFullScale(m_voltageInput);
-  value >>= 15;
-  return (uint32_t)(float(value) / m_voltageGain);
+    // reading is from 16-bit signed ADC
+    // gain value is the external gain
+    //  i.e. 120V -> 3.3V is a gain of 0.0275
+    uint32_t value = (uint32_t)abs(m_rawVoltage);
+    value *= m_device.getFullScale(m_voltageInput);
+    value >>= 15;
+    return (uint32_t)(float(value) / m_voltageGain);
 }
 
 uint32_t ADS1115PowerMonitor::convertCurrent(void)
 {
-  // reading is from 16-bit signed ADC
-  // gain value is the external gain
-  //  i.e. 10A -> 100mV is a gain of 0.01
-  uint32_t value = (uint32_t)(m_rawCurrent < 0 ? -m_rawCurrent : m_rawCurrent);
-  value *= m_device.getFullScale(m_currentInput);
-  value >>= 15;
-  return (uint32_t)(float(value) / m_currentGain);
+    // reading is from 16-bit signed ADC
+    // gain value is the external gain
+    //  i.e. 10A -> 100mV is a gain of 0.01
+    uint32_t value = (uint32_t)abs(m_rawCurrent);
+    value *= m_device.getFullScale(m_currentInput);
+    value >>= 15;
+    return (uint32_t)(float(value) / m_currentGain);
 }
 
 uint32_t ADS1115PowerMonitor::calculatePower(void)
 {
-  // voltage in millivolts
-  // current in milliamps
-  // result in milliwatts
+    // voltage in millivolts
+    // current in milliamps
+    // result in milliwatts
 
-  // divide result (in microwatts) down to milliwatts
-  // - factor of 1e3 = (250 << 2)
-  uint32_t result = (m_lastVoltage >> 1) * (m_lastCurrent >> 1);
-  result /= 250;
-  return result;
+    // divide result (in microwatts) down to milliwatts
+    // - factor of 1e3 = (250 << 2)
+    uint32_t result = (m_lastVoltage >> 1) * (m_lastCurrent >> 1);
+    result /= 250;
+    return result;
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

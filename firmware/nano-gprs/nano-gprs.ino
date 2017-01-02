@@ -27,16 +27,14 @@ int8_t lcdIndex;
 #define RF_IRQ_PIN 2
 
 #define GPRS_RST_PIN 4
-#define GPRS_EN_PIN 5
 #define GPRS_DTR_PIN 3
 
-#define SD_CS_PIN 17
-#define SD_CD_PIN 16
+#define SD_CS_PIN 7
+#define SD_CD_PIN 8
 
-#define FRAM_CS_PIN 15
+#define FRAM_CS_PIN 6
 
-#define VBATT_ADC_PIN 7
-#define LIGHT_ADC_PIN 6
+#define VBATT_ADC_PIN 0
 
 static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
 #ifdef __arm__
@@ -61,7 +59,6 @@ LCDDeck lcdDeck(&oled, true);
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];
 
-uint8_t atou8(uint8_t *str);
 void CborMessageBuild(void);
 
 void CborMessageBuild(void)
@@ -133,6 +130,7 @@ class SetRFUpstreamCLICommand : public CLICommand
 //            get/set APN
 //            get/set URL (from SHA204)
 //            get/set AWS Creds (from SHA204)
+//            enable/disable GPRS
 
 void setup() 
 {
@@ -141,11 +139,9 @@ void setup()
     cli.registerCommand(new GetRFUpstreamCLICommand());
     cli.registerCommand(new SetRFUpstreamCLICommand());
 
-    if (gprs.isDisabled()) {
-        Serial.begin(115200);
+    Serial.begin(115200);
 
-        cli.initialize();
-    }
+    cli.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
     rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));

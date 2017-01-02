@@ -2,7 +2,7 @@ Arduino pins (on attached SparkFun SAMD21 mini module)
 
 0  - GPRS_RXD (UART) - IN  (sercom0, Serial1)
 1  - GPRS_TXD (UART) - OUT (sercom0, Serial1)
-2  - /RF_IRQ (EXT INT0) - IN
+2  - /RF_IRQ - IN
 3  - GPRS_DTR - OUT
 4  - /GPRS_RST - OUT
 5  - unused

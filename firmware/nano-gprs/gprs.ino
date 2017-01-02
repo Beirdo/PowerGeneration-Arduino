@@ -9,11 +9,10 @@ static const PROGMEM char default_apn[] = "wholesale";
 static const PROGMEM char default_url[] = "https://apigatewayurl/method";
 static const PROGMEM char default_mime[] = "application/cbor";
 
-GPRS::GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin, SDLogging *logging)
+GPRS::GPRS(int8_t reset_pin, int8_t dtr_pin, SDLogging *logging)
 {
-    m_gprs = new CGPRS_SIM800(&Serial, reset_pin, enable_pin, dtr_pin);
+    m_gprs = new CGPRS_SIM800(&Serial1, reset_pin, dtr_pin);
     m_reset_pin = reset_pin;
-    m_enable_pin = enable_pin;
     m_dtr_pin = dtr_pin;
     m_state = GPRS_DISABLED;
     memset(&m_location, 0x00, 42);
@@ -130,18 +129,7 @@ void GPRS::setMime(const char *mime, bool is_pgmspace)
 
 bool GPRS::isDisabled(void)
 {
-    if (m_state != GPRS_DISABLED && m_state != GPRS_HTTPS_DONE) {
-        return false;
-    }
-    if (m_enable_pin == -1) {
-        return false;
-    }
-
-    // if the enable jumper is removed, disabling the GPRS module, this will
-    // be high when read.  If the enable jumper is installed, allowing the
-    // GPRS module to be enabled, this will be low when read.
-    pinMode(m_enable_pin, INPUT);
-    return (digitalRead(m_enable_pin) == HIGH);
+    return m_state == GPRS_DISABLED;
 }
 
 void GPRS::stateMachine(void)

@@ -26,7 +26,7 @@ typedef enum {
 
 class GPRS {
     public:
-        GPRS(int8_t reset_pin, int8_t enable_pin, int8_t dtr_pin, SDLogging *logging);
+        GPRS(int8_t reset_pin, int8_t dtr_pin, SDLogging *logging);
         void stateMachine(void);
         void attachRAM(Adafruit_FRAM_SPI *fram); 
 
@@ -46,7 +46,6 @@ class GPRS {
         void swap_buffers(void);
 
         int8_t m_reset_pin;
-        int8_t m_enable_pin;
         int8_t m_dtr_pin;
         CGPRS_SIM800 *m_gprs;
 

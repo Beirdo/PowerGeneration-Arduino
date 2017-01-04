@@ -2,6 +2,7 @@
 #define LCDSCREEN_H__
 
 #include <Adafruit_GFX.h>
+#include <SSD1306.h>
 #include "linkedlist.h"
 
 typedef void (*formatter_t)(void *, uint8_t *, uint8_t, uint8_t *);
@@ -27,20 +28,25 @@ class LCDScreen {
 
 class LCDDeck {
     public:
-        LCDDeck(Adafruit_GFX *display, bool is_ssd1306 = false);
+        LCDDeck(SSD1306 *display);
         void resetIndex(uint8_t index);
         void formatFrame(uint8_t index);
         void displayFrame(void);
         int8_t nextIndex(void);
         void addFrame(LCDScreen *frame);
+        void setBatteryLevel(uint16_t vbatt, uint16_t minVbatt, uint16_t maxVbatt)
+        {
+            m_batteryLevel = (uint8_t)constrain(map(vbatt, minVbatt, maxVbatt, 0, 100), 0, 100);
+        };
+        void setBatteryLevel(uint8_t value) { m_batteryLevel = value; };
     protected:
         LCDScreen *getFrame(uint8_t index);
         void displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size);
         void displayIndicator(void);
+        void displayBatteryLevel(void);
 
         LinkedList m_frameList;
-        Adafruit_GFX *m_display;
-        bool m_is_ssd1306;
+        SSD1306 *m_display;
         int16_t m_height;
         int16_t m_width;
 
@@ -50,6 +56,7 @@ class LCDDeck {
         uint8_t m_data_buffer[16];
         uint8_t m_title_blank[1];
         uint8_t *m_title;
+        uint8_t m_batteryLevel;     ///< in %
 };
 
 

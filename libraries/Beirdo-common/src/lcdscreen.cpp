@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
+#include <SSD1306.h>
 #include "lcdscreen.h"
 #include "linkedlist.h"
 
@@ -166,16 +166,15 @@ void LCDScreen::data_line(uint8_t **buffer, uint8_t maxlen)
     m_formatter(m_variable, *buffer, maxlen, m_units);
 }
 
-LCDDeck::LCDDeck(Adafruit_GFX *display, bool is_ssd1306) :
-        m_frameList(LinkedList())
+LCDDeck::LCDDeck(SSD1306 *display) : m_frameList(LinkedList())
 {
     m_display = display;
-    m_is_ssd1306 = is_ssd1306;
     m_frameCount = 0;
     m_index = -1;
     m_height = display->height();
     m_width = display->width();
     m_title_blank[0] = '\0';
+    m_batteryLevel = 0;
 }
 
 void LCDDeck::resetIndex(uint8_t index)
@@ -233,12 +232,7 @@ void LCDDeck::displayIndicator(void)
 
 void LCDDeck::displayFrame(void)
 {
-    if (m_is_ssd1306) {
-        m_display->clearDisplay();
-    } else {
-        m_display->fillScreen(BLACK);
-    }
-
+    m_display->clearDisplay();
     m_display->setTextColor(WHITE);
     m_display->setTextSize(2);
 
@@ -256,9 +250,9 @@ void LCDDeck::displayFrame(void)
     // Put screen index indicator at bottom line, centered
     displayIndicator();
 
-    if (m_is_ssd1306) {
-        m_display->display();
-    }
+    displayBatteryLevel();
+
+    m_display->display();
 }
 
 int8_t LCDDeck::nextIndex(void)
@@ -287,6 +281,30 @@ LCDScreen *LCDDeck::getFrame(uint8_t index)
         m_index = index;
     }
     return frame;
+}
+
+#define BATTERY_X (m_width - 20)
+#define BATTERY_Y 0
+void LCDDeck::displayBatteryLevel(void)
+{
+    m_display->drawRect(3 + BATTERY_X, 0 + BATTERY_Y, 4, 2, WHITE);
+    m_display->drawRect(0 + BATTERY_X, 2 + BATTERY_Y, 10, 20, WHITE);
+    m_display->drawRect(2 + BATTERY_X, 4 + BATTERY_Y, 6, 16, BLACK);
+    if (m_batteryLevel > 85) {
+        m_display->drawRect(3 + BATTERY_X, 5 + BATTERY_Y, 4, 2, WHITE);
+    }
+    if (m_batteryLevel > 65) {
+        m_display->drawRect(3 + BATTERY_X, 8 + BATTERY_Y, 4, 2, WHITE);
+    }
+    if (m_batteryLevel > 45) {
+        m_display->drawRect(3 + BATTERY_X, 11 + BATTERY_Y, 4, 2, WHITE);
+    }
+    if (m_batteryLevel > 25) {
+        m_display->drawRect(3 + BATTERY_X, 14 + BATTERY_Y, 4, 2, WHITE);
+    }
+    if (m_batteryLevel > 5) {
+        m_display->drawRect(3 + BATTERY_X, 17 + BATTERY_Y, 4, 2, WHITE);
+    }
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

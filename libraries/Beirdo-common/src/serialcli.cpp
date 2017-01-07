@@ -36,10 +36,10 @@ uint8_t CLICommand::pre_run(uint8_t nargs)
 }
 
 #ifdef __AVR__
-SerialCLI::SerialCLI(HardwareSerial &serial = Serial, uint32_t baud = 115200)
+SerialCLI::SerialCLI(HardwareSerial &serial, uint32_t baud)
 #endif
 #ifdef __arm__
-SerialCLI::SerialCLI(Serial_ &serial = SerialUSB, uint32_t baud = 115200)
+SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud)
 #endif
 {
     m_commands = LinkedList();

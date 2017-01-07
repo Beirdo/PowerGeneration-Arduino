@@ -10,7 +10,7 @@
 
 #define LED_PWM_PIN PIN_LED_RXL
 
-SerialCLI cli(&SerialUSB);
+SerialCLI cli(SerialUSB);
 
 class SetLEDCLICommand : public CLICommand
 {

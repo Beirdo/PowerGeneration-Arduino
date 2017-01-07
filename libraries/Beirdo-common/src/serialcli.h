@@ -28,12 +28,17 @@ class CLICommand {
 
 class SerialCLI {
     public:
-        SerialCLI(Stream *serial = &Serial, uint32_t baud = 115200);
+#ifdef __AVR__
+        SerialCLI(HardwareSerial &serial = Serial, uint32_t baud = 115200);
+#endif
+#ifdef __arm__
+        SerialCLI(Serial_ &serial = SerialUSB, uint32_t baud = 115200);
+#endif
         void initialize(void);
         void registerCommand(CLICommand *command);
         void listCommands(void);
         void handleInput(void);
-        Stream *serial(void) { return m_serial; };
+        Stream *serial(void) { return &m_serial; };
 
     protected:
         void parseBuffer(void);
@@ -42,7 +47,7 @@ class SerialCLI {
         LinkedList m_commands;
         uint8_t m_index;
         char m_buffer[SERIAL_BUFFER_SIZE];
-        Stream *m_serial;
+        Stream &m_serial;
 };
 
 #endif

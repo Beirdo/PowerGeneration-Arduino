@@ -35,14 +35,17 @@ uint8_t CLICommand::pre_run(uint8_t nargs)
     return (nargs == m_nargs);
 }
 
-SerialCLI cli;
-
-SerialCLI::SerialCLI(Stream *serial, uint32_t baud)
+#ifdef __AVR__
+SerialCLI::SerialCLI(HardwareSerial &serial = Serial, uint32_t baud = 115200)
+#endif
+#ifdef __arm__
+SerialCLI::SerialCLI(Serial_ &serial = SerialUSB, uint32_t baud = 115200)
+#endif
 {
     m_commands = LinkedList();
     m_index = 0;
     m_serial = serial;
-    serial->begin(baud);
+    serial.begin(baud);
     registerCommonCommands();
 }
 

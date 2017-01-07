@@ -36,9 +36,15 @@ class LCDDeck {
         void addFrame(LCDScreen *frame);
         void setBatteryLevel(uint16_t vbatt, uint16_t minVbatt, uint16_t maxVbatt)
         {
-            m_batteryLevel = (uint8_t)constrain(map(vbatt, minVbatt, maxVbatt, 0, 100), 0, 100);
+            m_batteryLevel = (uint8_t)constrain(map(vbatt, minVbatt, maxVbatt,
+                                                    0, 100), 0, 100);
+            m_batterySet = true;
         };
-        void setBatteryLevel(uint8_t value) { m_batteryLevel = value; };
+        void setBatteryLevel(uint8_t value)
+        {
+            m_batteryLevel = constrain(value, 0, 100);
+            m_batterySet = true;
+        };
     protected:
         LCDScreen *getFrame(uint8_t index);
         void displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size);
@@ -57,6 +63,7 @@ class LCDDeck {
         uint8_t m_title_blank[1];
         uint8_t *m_title;
         uint8_t m_batteryLevel;     ///< in %
+        bool m_batterySet;
 };
 
 

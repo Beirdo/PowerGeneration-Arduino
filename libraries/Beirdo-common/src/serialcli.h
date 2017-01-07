@@ -29,10 +29,10 @@ class CLICommand {
 class SerialCLI {
     public:
 #ifdef __AVR__
-        SerialCLI(HardwareSerial &serial = Serial, uint32_t baud = 115200);
+        SerialCLI(HardwareSerial &serial, uint32_t baud = 115200);
 #endif
 #ifdef __arm__
-        SerialCLI(Serial_ &serial = SerialUSB, uint32_t baud = 115200);
+        SerialCLI(Serial_ &serial, uint32_t baud = 115200);
 #endif
         void initialize(void);
         void registerCommand(CLICommand *command);

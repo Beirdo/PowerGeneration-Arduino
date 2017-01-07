@@ -7,6 +7,12 @@ CLICommand::CLICommand(const char *command, uint8_t nargs)
     m_command = command;
     m_len = strlen(command);
     m_nargs = nargs;
+    m_cli = NULL;
+}
+
+void CLICommand::attach(SerialCLI *cli)
+{
+    m_cli = cli;
 }
 
 uint8_t CLICommand::compare(const char *command)
@@ -25,21 +31,24 @@ uint8_t CLICommand::pre_run(uint8_t nargs)
 
 SerialCLI cli;
 
-SerialCLI::SerialCLI(void)
+SerialCLI::SerialCLI(HardwareSerial *serial, uint32_t baud)
 {
     m_commands = LinkedList();
     m_index = 0;
+    m_serial = serial;
+    serial->begin(baud);
     registerCommonCommands();
 }
 
 void SerialCLI::initialize(void)
 {
-    Serial.println("CLI Ready");
+    m_serial->println("CLI Ready");
     prompt();
 }
 
 void SerialCLI::registerCommand(CLICommand *command)
 {
+    command->attach(self);
     m_commands.add((void *)command);
 }
 
@@ -104,18 +113,18 @@ void SerialCLI::parseBuffer(void)
     // Do it if we have a match
     if (cmd) {
         if (!cmd->pre_run(nargs)) {
-            Serial.print("ERROR: Command ");
-            Serial.print((char *)cmd->command());
-            Serial.print(" requires ");
-            Serial.print(cmd->nargs());
-            Serial.println(" arguments");
+            m_serial->print("ERROR: Command ");
+            m_serial->print((char *)cmd->command());
+            m_serial->print(" requires ");
+            m_serial->print(cmd->nargs());
+            m_serial->println(" arguments");
         } else if (!cmd->run(nargs, (uint8_t **)args)) {
-            Serial.println("ERROR: Command failed");
+            m_serial->println("ERROR: Command failed");
         } else {
-            Serial.println("SUCCESS");
+            m_serial->println("SUCCESS");
         }
     } else {
-        Serial.println("ERROR: Unknown command");
+        m_serial->println("ERROR: Unknown command");
     }
     prompt();
 }
@@ -125,7 +134,7 @@ class HelpCLICommand : public CLICommand {
         HelpCLICommand(void) : CLICommand("help", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
         {
-            cli.listCommands();
+            m_cli->listCommands();
             return(1);
         }
 };
@@ -135,7 +144,7 @@ class ResetCLICommand : public CLICommand {
         ResetCLICommand(void) : CLICommand("reset", 0) {};
         virtual uint8_t run(uint8_t nargs, uint8_t **args) 
         { 
-            Serial.println("Resetting...");
+            serial()->println("Resetting...");
             delay(1000);
 #ifdef __AVR__
             // Jump to the reset vector

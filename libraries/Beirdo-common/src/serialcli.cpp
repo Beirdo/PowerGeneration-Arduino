@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Stream.h>
 #include <string.h>
 #include "serialcli.h"
 
@@ -31,7 +32,7 @@ uint8_t CLICommand::pre_run(uint8_t nargs)
 
 SerialCLI cli;
 
-SerialCLI::SerialCLI(HardwareSerial *serial, uint32_t baud)
+SerialCLI::SerialCLI(Stream *serial, uint32_t baud)
 {
     m_commands = LinkedList();
     m_index = 0;

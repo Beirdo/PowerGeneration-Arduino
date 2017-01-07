@@ -11,6 +11,11 @@ CLICommand::CLICommand(const char *command, uint8_t nargs)
     m_cli = NULL;
 }
 
+Stream *CLICommand::serial(void)
+{
+    return m_cli->serial();
+}
+
 void CLICommand::attach(SerialCLI *cli)
 {
     m_cli = cli;

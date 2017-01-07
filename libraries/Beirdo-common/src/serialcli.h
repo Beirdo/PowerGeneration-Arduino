@@ -15,7 +15,7 @@ class CLICommand {
         uint8_t pre_run(uint8_t nargs);
         uint8_t nargs(void) { return m_nargs; };
         const char *command(void) { return m_command; };
-        Stream *serial(void) { return m_cli->serial(); };
+        Stream *serial(void);
 
     protected:
         SerialCLI *m_cli;

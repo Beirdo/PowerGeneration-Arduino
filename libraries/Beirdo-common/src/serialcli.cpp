@@ -54,7 +54,7 @@ void SerialCLI::initialize(void)
 
 void SerialCLI::registerCommand(CLICommand *command)
 {
-    command->attach(self);
+    command->attach(this);
     m_commands.add((void *)command);
 }
 

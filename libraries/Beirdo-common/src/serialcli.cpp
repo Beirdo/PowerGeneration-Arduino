@@ -51,7 +51,7 @@ SerialCLI::SerialCLI(Serial_ &serial = SerialUSB, uint32_t baud = 115200)
 
 void SerialCLI::initialize(void)
 {
-    m_serial->println("CLI Ready");
+    m_serial.println("CLI Ready");
     prompt();
 }
 
@@ -122,18 +122,18 @@ void SerialCLI::parseBuffer(void)
     // Do it if we have a match
     if (cmd) {
         if (!cmd->pre_run(nargs)) {
-            m_serial->print("ERROR: Command ");
-            m_serial->print((char *)cmd->command());
-            m_serial->print(" requires ");
-            m_serial->print(cmd->nargs());
-            m_serial->println(" arguments");
+            m_serial.print("ERROR: Command ");
+            m_serial.print((char *)cmd->command());
+            m_serial.print(" requires ");
+            m_serial.print(cmd->nargs());
+            m_serial.println(" arguments");
         } else if (!cmd->run(nargs, (uint8_t **)args)) {
-            m_serial->println("ERROR: Command failed");
+            m_serial.println("ERROR: Command failed");
         } else {
-            m_serial->println("SUCCESS");
+            m_serial.println("SUCCESS");
         }
     } else {
-        m_serial->println("ERROR: Unknown command");
+        m_serial.println("ERROR: Unknown command");
     }
     prompt();
 }

@@ -43,7 +43,7 @@ class SerialCLI {
     protected:
         void parseBuffer(void);
         void registerCommonCommands(void);
-        void prompt(void) { m_serial->print("> "); };
+        void prompt(void) { m_serial.print("> "); };
         LinkedList m_commands;
         uint8_t m_index;
         char m_buffer[SERIAL_BUFFER_SIZE];

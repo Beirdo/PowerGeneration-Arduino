@@ -38,7 +38,7 @@ class SerialCLI {
         void registerCommand(CLICommand *command);
         void listCommands(void);
         void handleInput(void);
-        Stream *serial(void) { return &m_serial; };
+        Stream *serial(void) { return (Stream *)&m_serial; };
 
     protected:
         void parseBuffer(void);
@@ -47,7 +47,13 @@ class SerialCLI {
         LinkedList m_commands;
         uint8_t m_index;
         char m_buffer[SERIAL_BUFFER_SIZE];
-        Stream &m_serial;
+#ifdef __AVR__
+        HardwareSerial &m_serial;
+#endif
+#ifdef __arm__
+        Serial_ &m_serial;
+#endif
+        uint32_t m_baud;
 };
 
 #endif

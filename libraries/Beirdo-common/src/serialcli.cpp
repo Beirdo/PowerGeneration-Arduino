@@ -45,12 +45,13 @@ SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud) :
 {
     m_commands = LinkedList();
     m_index = 0;
-    serial.begin(baud);
+    m_baud = baud;
     registerCommonCommands();
 }
 
 void SerialCLI::initialize(void)
 {
+    m_serial.begin(m_baud);
     m_serial.println("CLI Ready");
     prompt();
 }

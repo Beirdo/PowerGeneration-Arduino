@@ -36,15 +36,15 @@ uint8_t CLICommand::pre_run(uint8_t nargs)
 }
 
 #ifdef __AVR__
-SerialCLI::SerialCLI(HardwareSerial &serial, uint32_t baud)
+SerialCLI::SerialCLI(HardwareSerial &serial, uint32_t baud) :
 #endif
 #ifdef __arm__
-SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud)
+SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud) :
 #endif
+        m_serial(serial)
 {
     m_commands = LinkedList();
     m_index = 0;
-    m_serial = serial;
     serial.begin(baud);
     registerCommonCommands();
 }

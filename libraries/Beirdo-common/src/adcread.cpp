@@ -19,10 +19,10 @@ uint16_t ADCReadAVR::readVcc(void)
 
     uint32_t result = (uint32_t)readAdc();
 
-    // result = (1100mV / Vcc) * 1024
-    // we want Vcc
-    // Vcc = 1100mV * 1024 / result
-    // Vcc = 1126400mV / result
+    // result = (1100 [mV] / Vcc [mV]) * 1024
+    // we want Vcc [mV]
+    // Vcc = 1100 [mV] * 1024 / result
+    // Vcc = 1126400 [mV] / result
     result = 1126400L / result;
     return (uint16_t)result; // Vcc in millivolts
 }

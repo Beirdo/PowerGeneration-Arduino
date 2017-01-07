@@ -18,7 +18,7 @@ class SetLEDCLICommand : public CLICommand
         SetLEDCLICommand(void) : CLICommand("set_led", 1) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
-                uint8_t value = (uint8_t)atoi(args[0]);
+                uint8_t value = (uint8_t)atoi((const char *)args[0]);
                 serial()->print("LED value = ");
                 serial()->println(value, DEC);
                 analogWrite(LED_PWM_PIN, value);

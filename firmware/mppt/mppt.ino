@@ -64,7 +64,7 @@ RFLink *rflink = NULL;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
-LCDDeck lcdDeck(&oled, true);
+LCDDeck lcdDeck(&oled);
 ConverterPWM mpptConverter(&CONV1_PWM);
 ConverterPWM outConverter(&CONV2_PWM);
 

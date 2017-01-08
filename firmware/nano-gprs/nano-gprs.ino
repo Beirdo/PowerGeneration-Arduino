@@ -56,7 +56,7 @@ SDLogging logging(SD_CS_PIN, SD_CD_PIN);
 GPRS gprs(GPRS_RST_PIN, GPRS_DTR_PIN, &logging);
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
-LCDDeck lcdDeck(&oled, true);
+LCDDeck lcdDeck(&oled);
 
 #define RF_RX_BUFFER_SIZE 64
 uint8_t rf_rx_buffer[RF_RX_BUFFER_SIZE];

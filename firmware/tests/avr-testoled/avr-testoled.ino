@@ -16,17 +16,16 @@ BSD license, check license.txt for more information
 All text above, and the splash screen must be included in any redistribution
 *********************************************************************/
 
-#include <SPI.h>
-#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <SSD1306.h>
 #include <LowPower.h>
 #include "lcdscreen.h"
 #include "adcread.h"
 
 #define OLED_RESET -1
 Adafruit_SSD1306 display(OLED_RESET);
-LCDDeck lcdDeck(&display, true);
+LCDDeck lcdDeck((SSD1306 *)&display);
 
 #define LOOP_CADENCE 120
 #define SWAP_TIME 2000
@@ -63,7 +62,7 @@ void setup()   {
 
 void loop() {
   core_temperature = adcread.readCoreTemperature();
-  vcc = adcRead.readVcc();
+  vcc = adcread.readVcc();
 
   uint32_t start;
   uint32_t now;

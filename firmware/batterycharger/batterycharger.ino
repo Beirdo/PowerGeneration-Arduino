@@ -55,7 +55,7 @@ RFLink *rflink = NULL;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
-LCDDeck lcdDeck(&oled, true);
+LCDDeck lcdDeck(&oled);
 
 void CborMessageBuild(void);
 

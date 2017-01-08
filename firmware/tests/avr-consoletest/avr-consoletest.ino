@@ -1,6 +1,5 @@
 #include "serialcli.h"
 
-#include <SPI.h>
 #include <LowPower.h>
 
 // in ms

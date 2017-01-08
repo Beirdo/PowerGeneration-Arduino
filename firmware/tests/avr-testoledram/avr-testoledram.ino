@@ -1,5 +1,3 @@
-#include <SPI.h>
-#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <SSD1306.h>
 #include <Adafruit_FRAM_SPI.h>
@@ -11,7 +9,7 @@
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 display(0x3C);
-LCDDeck lcdDeck(&display, true);
+LCDDeck lcdDeck(&display);
 
 #define LOOP_CADENCE 120
 #define SWAP_TIME 2000

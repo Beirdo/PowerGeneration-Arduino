@@ -28,8 +28,10 @@ int8_t lcdIndex;
 #define FRAM_CS_PIN 7
 
 #if (SSD1306_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#error("Height incorrect, please fix SSD1306.h!");
 #endif
+
+SerialCLI cli(Serial);
 
 static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
 uint8_t rf_id;
@@ -77,27 +79,27 @@ class BatteryCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    Serial.print("Battery ");
-                    Serial.print((char *)args[0]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Battery ");
+                    cli.serial()->print((char *)args[0]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t chargerEnable = *args[1] - 0x31;
                 if (chargerEnable < 0 || chargerEnable > 1) {
-                    Serial.print("Enabled value ");
-                    Serial.print((char *)args[1]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Enabled value ");
+                    cli.serial()->print((char *)args[1]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
 
                 battery[batteryNum].setEnabled(chargerEnable);
 
-                Serial.print("Battery Charger ");
-                Serial.print(batteryNum);
+                cli.serial()->print("Battery Charger ");
+                cli.serial()->print(batteryNum);
                 if (chargerEnable) {
-                    Serial.println(" enabled");
+                    cli.serial()->println(" enabled");
                 } else {
-                    Serial.println(" disabled");
+                    cli.serial()->println(" disabled");
                 }
                 return 1;
             };
@@ -111,27 +113,27 @@ class DesulfateCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    Serial.print("Battery ");
-                    Serial.print((char *)args[0]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Battery ");
+                    cli.serial()->print((char *)args[0]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t desulfateEnable = *args[1] - 0x31;
                 if (desulfateEnable < 0 || desulfateEnable > 1) {
-                    Serial.print("Enabled value ");
-                    Serial.print((char *)args[1]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Enabled value ");
+                    cli.serial()->print((char *)args[1]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
 
                 battery[batteryNum].setDesulfate(desulfateEnable);
 
-                Serial.print("Desulfator for battery ");
-                Serial.print(batteryNum);
+                cli.serial()->print("Desulfator for battery ");
+                cli.serial()->print(batteryNum);
                 if (desulfateEnable) {
-                    Serial.println(" enabled");
+                    cli.serial()->println(" enabled");
                 } else {
-                    Serial.println(" disabled");
+                    cli.serial()->println(" disabled");
                 }
                 return 1;
             };
@@ -145,26 +147,26 @@ class CapacityCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    Serial.print("Battery ");
-                    Serial.print((char *)args[0]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Battery ");
+                    cli.serial()->print((char *)args[0]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t capacity = (int8_t)strtoul(args[1], 0, 10);
                 if (capacity != 9 && capacity != 20) {
-                    Serial.print("Enabled value ");
-                    Serial.print((char *)args[1]);
-                    Serial.println(" invalid");
+                    cli.serial()->print("Enabled value ");
+                    cli.serial()->print((char *)args[1]);
+                    cli.serial()->println(" invalid");
                     return 0;
                 }
                 
                 battery[batteryNum].setCapacity(capacity);
 
-                Serial.print("Capacity of battery ");
-                Serial.print(batteryNum);
-                Serial.print(" set to ");
-                Serial.print(capacity);
-                Serial.println(" Ah");
+                cli.serial()->print("Capacity of battery ");
+                cli.serial()->print(batteryNum);
+                cli.serial()->print(" set to ");
+                cli.serial()->print(capacity);
+                cli.serial()->println(" Ah");
                 return 1;
             };
 };
@@ -176,9 +178,9 @@ class InitializeLogoCLICommand : public CLICommand
         InitializeLogoCLICommand(void) : CLICommand("initlogo", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
-                Serial.println("Writing logo to FRAM");
+                cli.serial()->println("Writing logo to FRAM");
                 oled.initializeLogo();
-                Serial.println("Done");
+                cli.serial()->println("Done");
                 return 1;
             };
 };
@@ -191,8 +193,8 @@ class GetRFIDCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
-                Serial.print("Current RF ID = ");
-                Serial.println(rf_id, HEX);
+                cli.serial()->print("Current RF ID = ");
+                cli.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -205,8 +207,8 @@ class SetRFIDCLICommand : public CLICommand
             {
                 uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
-                Serial.print("New RF ID = ");
-                Serial.println(rf_id, HEX);
+                cli.serial()->print("New RF ID = ");
+                cli.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -219,8 +221,8 @@ class GetRFUpstreamCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
-                Serial.print("Current RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                cli.serial()->print("Current RF Upstream = ");
+                cli.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -233,8 +235,8 @@ class SetRFUpstreamCLICommand : public CLICommand
             {
                 uint8_t rf_up = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
-                Serial.print("New RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                cli.serial()->print("New RF Upstream = ");
+                cli.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -249,8 +251,6 @@ void setup()
     monitors[4] = new INA219PowerMonitor(0x44, 6, 10, 10, 0.5);
     monitors[5] = new INA219PowerMonitor(0x45, 6, 10, 10, 3.0);
     
-    Serial.begin(115200);
-
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
     cli.registerCommand(new GetRFUpstreamCLICommand());
@@ -266,7 +266,7 @@ void setup()
 
     bool framInit = fram.begin();
     if (!framInit) {
-        Serial.println("Can't find attached FRAM");
+        cli.serial()->println("Can't find attached FRAM");
     }
 
     oled.begin(SSD1306_SWITCHCAPVCC);

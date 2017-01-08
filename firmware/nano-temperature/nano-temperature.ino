@@ -31,8 +31,10 @@ int8_t lcdIndex;
 #define FRAM_CS_PIN 8
 
 #if (SSD1306_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#error("Height incorrect, please fix SSD1306.h!");
 #endif
+
+SerialCLI cli(Serial);
 
 ADCRead adcread;
 int16_t core_temperature;
@@ -68,9 +70,9 @@ class InitializeLogoCLICommand : public CLICommand
         InitializeLogoCLICommand(void) : CLICommand("initlogo", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
-                Serial.println("Writing logo to FRAM");
+                cli.serial()->println("Writing logo to FRAM");
                 oled.initializeLogo();
-                Serial.println("Done");
+                cli.serial()->println("Done");
                 return 1;
             };
 };
@@ -84,8 +86,8 @@ class GetRFIDCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
-                Serial.print("Current RF ID = ");
-                Serial.println(rf_id, HEX);
+                cli.serial()->print("Current RF ID = ");
+                cli.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -98,8 +100,8 @@ class SetRFIDCLICommand : public CLICommand
             {
                 uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
-                Serial.print("New RF ID = ");
-                Serial.println(rf_id, HEX);
+                cli.serial()->print("New RF ID = ");
+                cli.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -111,8 +113,8 @@ class GetRFUpstreamCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
-                Serial.print("Current RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                cli.serial()->print("Current RF Upstream = ");
+                cli.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -125,8 +127,8 @@ class SetRFUpstreamCLICommand : public CLICommand
             {
                 uint8_t rf_up = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
-                Serial.print("New RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                cli.serial()->print("New RF Upstream = ");
+                cli.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -134,8 +136,6 @@ class SetRFUpstreamCLICommand : public CLICommand
 
 void setup() 
 {
-    Serial.begin(115200);
-
     cli.registerCommand(new GetRFIDCLICommand());
     cli.registerCommand(new SetRFIDCLICommand());
     cli.registerCommand(new GetRFUpstreamCLICommand());
@@ -148,7 +148,7 @@ void setup()
 
     bool framInit = fram.begin();
     if (!framInit) {
-        Serial.println("Can't find attached FRAM");
+        cli.serial()->println("Can't find attached FRAM");
     }
     
     oled.begin(SSD1306_SWITCHCAPVCC);

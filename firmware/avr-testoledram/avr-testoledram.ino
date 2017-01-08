@@ -1,21 +1,3 @@
-/*********************************************************************
-This is an example for our Monochrome OLEDs based on SSD1306 drivers
-
-    Pick one up today in the adafruit shop!
-    ------> http://www.adafruit.com/category/63_98
-
-This example is for a 128x64 size display using I2C to communicate
-3 pins are required to interface (2 I2C and one reset)
-
-Adafruit invests time and resources providing this open source code, 
-please support Adafruit and open-source hardware by purchasing 
-products from Adafruit!
-
-Written by Limor Fried/Ladyada  for Adafruit Industries.  
-BSD license, check license.txt for more information
-All text above, and the splash screen must be included in any redistribution
-*********************************************************************/
-
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -42,10 +24,11 @@ uint16_t lcdTicks;
 uint8_t lcdIndex;
 
 #if (SSD1306_LCDHEIGHT != 64)
-#error("Height incorrect, please fix Adafruit_SSD1306.h!");
+#error("Height incorrect, please fix SSD1306.h!");
 #endif
 
-void setup()   {                
+void setup()   
+{                
     Serial.begin(115200);
 
     fram.begin();
@@ -74,7 +57,8 @@ void setup()   {
 }
 
 
-void loop() {
+void loop()
+{
     core_temperature = adcread.readCoreTemperature();
     vcc = adcread.readVcc();
     uint32_t start;

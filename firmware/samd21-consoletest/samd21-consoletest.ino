@@ -8,30 +8,12 @@
 #define SWAP_TIME 2000
 #define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
-#define LED_PWM_PIN PIN_LED_RXL
-
 SerialCLI cli(SerialUSB);
 
-class SetLEDCLICommand : public CLICommand
-{
-    public:
-        SetLEDCLICommand(void) : CLICommand("set_led", 1) {};
-        uint8_t run(uint8_t nargs, uint8_t **args)
-            {
-                uint8_t value = (uint8_t)atoi((const char *)args[0]);
-                serial()->print("LED value = ");
-                serial()->println(value, DEC);
-                analogWrite(LED_PWM_PIN, value);
-                return 1;
-            };
-};
 
 void setup() 
 {
-    cli.registerCommand(new SetLEDCLICommand());
     cli.initialize();
-
-    analogWrite(LED_PWM_PIN, 5);
 }
 
 void loop() 

@@ -88,6 +88,7 @@ void SerialCLI::parseBuffer(void)
 
     // Blank line
     if (!*ch) {
+        m_serial.println("");
         prompt();
         return;
     }

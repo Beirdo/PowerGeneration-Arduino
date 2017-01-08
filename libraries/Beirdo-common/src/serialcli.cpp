@@ -46,14 +46,25 @@ SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud) :
     m_commands = LinkedList();
     m_index = 0;
     m_baud = baud;
+    m_connected = false;
     registerCommonCommands();
 }
 
 void SerialCLI::initialize(void)
 {
-    // Wait for the serial port
-    while (!m_serial);
+    m_connected = false;
+}
+
+bool SerialCLI::connect(void)
+{
+    if (!m_serial) {
+        m_connected = false;
+        return false;
+    }
+
+    m_connected = true;
     m_serial.begin(m_baud);
+
     m_serial.println("CLI Ready");
     prompt();
 }
@@ -194,6 +205,17 @@ void SerialCLI::listCommands(void)
 
 void SerialCLI::handleInput(void)
 {
+    if (!m_connected) {
+        if (!connect()) {
+            return;
+        }
+    } else {
+        if (!m_serial) {
+            m_connected = false;
+            return;
+        }
+    }
+
     while (m_serial.available()) {
         uint8_t ch = m_serial.read();
         uint8_t done = 0;

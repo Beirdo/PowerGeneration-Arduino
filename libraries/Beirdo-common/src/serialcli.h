@@ -41,9 +41,11 @@ class SerialCLI {
         Stream *serial(void) { return (Stream *)&m_serial; };
 
     protected:
+        bool connect(void);
         void parseBuffer(void);
         void registerCommonCommands(void);
         void prompt(void) { m_serial.print("> "); };
+
         LinkedList m_commands;
         uint8_t m_index;
         char m_buffer[SERIAL_BUFFER_SIZE];
@@ -54,6 +56,7 @@ class SerialCLI {
         Serial_ &m_serial;
 #endif
         uint32_t m_baud;
+        bool m_connected;
 };
 
 #endif

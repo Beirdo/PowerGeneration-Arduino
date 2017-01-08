@@ -48,6 +48,8 @@ uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
+SerialCLI cli(SerialUSB);
+
 ADCRead adcread;
 int16_t core_temperature;
 SDLogging logging(SD_CS_PIN, SD_CD_PIN);
@@ -78,8 +80,8 @@ class GetRFIDCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
-                Serial.print("Current RF ID = ");
-                Serial.println(rf_id, HEX);
+                serial()->print("Current RF ID = ");
+                serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -92,8 +94,8 @@ class SetRFIDCLICommand : public CLICommand
             {
                 uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
-                Serial.print("New RF ID = ");
-                Serial.println(rf_id, HEX);
+                serial()->print("New RF ID = ");
+                serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -105,8 +107,8 @@ class GetRFUpstreamCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
-                Serial.print("Current RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                serial()->print("Current RF Upstream = ");
+                serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -119,8 +121,8 @@ class SetRFUpstreamCLICommand : public CLICommand
             {
                 uint8_t rf_up = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
-                Serial.print("New RF Upstream = ");
-                Serial.println(rf_up, HEX);
+                serial()->print("New RF Upstream = ");
+                serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -139,8 +141,6 @@ void setup()
     cli.registerCommand(new GetRFUpstreamCLICommand());
     cli.registerCommand(new SetRFUpstreamCLICommand());
 
-    Serial.begin(115200);
-
     cli.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
@@ -148,7 +148,7 @@ void setup()
 
     bool framInit = fram.begin();
     if (!framInit) {
-        Serial.println("Can't find attached FRAM");
+        cli.serial()->println("Can't find attached FRAM");
     }
     
     oled.begin(SSD1306_SWITCHCAPVCC);

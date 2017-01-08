@@ -182,26 +182,26 @@ void SerialCLI::listCommands(void)
 {
     CLICommand *cmd;
 
-    Serial.println("Commands (nargs)");
+    m_serial.println("Commands (nargs)");
     for (cmd = (CLICommand *)m_commands.head(); cmd;
          cmd = (CLICommand *)m_commands.next()) {
-        Serial.print(cmd->command());
-        Serial.print(" (");
-        Serial.print(cmd->nargs());
-        Serial.println(")");
+        m_serial.print(cmd->command());
+        m_serial.print(" (");
+        m_serial.print(cmd->nargs());
+        m_serial.println(")");
     }
 }
 
 void SerialCLI::handleInput(void)
 {
-    while (Serial.available()) {
-        uint8_t ch = Serial.read();
+    while (m_serial.available()) {
+        uint8_t ch = m_serial.read();
         uint8_t done = 0;
 
         if (ch == '\b') {
             if (m_index > 0) {
                 m_index--;
-                Serial.print("\b \b");
+                m_serial.print("\b \b");
             }
             continue;
         }

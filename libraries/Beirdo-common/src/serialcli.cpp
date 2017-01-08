@@ -51,6 +51,8 @@ SerialCLI::SerialCLI(Serial_ &serial, uint32_t baud) :
 
 void SerialCLI::initialize(void)
 {
+    // Wait for the serial port
+    while (!m_serial);
     m_serial.begin(m_baud);
     m_serial.println("CLI Ready");
     prompt();

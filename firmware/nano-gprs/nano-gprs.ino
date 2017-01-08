@@ -176,54 +176,42 @@ void loop()
     uint8_t len = 0;
     static bool gprsDisabled;
 
-    bool newDisabled = gprs.isDisabled();
-    if (newDisabled != gprsDisabled) {
-        gprsDisabled = newDisabled;
+    cli.handleInput();
 
-        if (gprsDisabled) {
-            Serial.begin(115200);
-            cli.initialize();
+    lcdTicks++;
+    if (lcdTicks >= SWAP_COUNT) {
+        lcdTicks -= SWAP_COUNT;
+
+        core_temperature = adcread.readCoreTemperature();
+        // Note:  actual max voltage is 3.3V - 0.6V = 2.7V
+        // We have an external divider to take 4.2V -> 2.1V, the default
+        // reference includes a gain of /2, so a full battery reading
+        // should end up at 1.05V when measured, an ADC reading of 2606
+        // (0xA2E)
+        battery_voltage = adcread.mapPin(VBATT_ADC_PIN, 0, 6600);
+
+        lcdIndex = lcdDeck.nextIndex();
+        lcdDeck.formatFrame(lcdIndex);
+        lcdDeck.displayFrame();
+
+        CborMessageBuild();
+        CborMessageBuffer(&buffer, &len);
+        if (buffer && len) {
+            gprs.sendCborPacket(CBOR_SOURCE_NANO_GPRS, buffer, len);
         }
     }
 
-    if (gprsDisabled) {
-        cli.handleInput();
-    } else {
-        lcdTicks++;
-        if (lcdTicks >= SWAP_COUNT) {
-            lcdTicks -= SWAP_COUNT;
-
-            core_temperature = adcread.readCoreTemperature();
-            // Note:  actual max voltage is 3.3V - 0.6V = 2.7V
-            // We have an external divider to take 3.7V -> 1.85V, the default
-            // reference includes a gain of /2, so a full battery reading
-            // should end up at 0.925V when measured, an ADC reading of 2296
-            // (0x8F8)
-            battery_voltage = adcread.mapPin(VBATT_ADC_PIN, 0, 6600);
-
-            lcdIndex = lcdDeck.nextIndex();
-            lcdDeck.formatFrame(lcdIndex);
-            lcdDeck.displayFrame();
-
-            CborMessageBuild();
-            CborMessageBuffer(&buffer, &len);
-            if (buffer && len) {
-                gprs.sendCborPacket(CBOR_SOURCE_NANO_GPRS, buffer, len);
-            }
-        }
-
-        uint8_t source;
-        len = rflink->receive(rf_rx_buffer, RF_RX_BUFFER_SIZE, &source);
-        if (len) {
-            gprs.sendCborPacket(source, rf_rx_buffer, len);
-        }
-
-        gprs.stateMachine();
+    uint8_t source;
+    len = rflink->receive(rf_rx_buffer, RF_RX_BUFFER_SIZE, &source);
+    if (len) {
+        gprs.sendCborPacket(source, rf_rx_buffer, len);
     }
+
+    gprs.stateMachine();
 
 //    LowPower.idle(SLEEP_1S, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_OFF,
 //                  SPI_OFF, USART0_ON, TWI_OFF);
-      delay(LOOP_CADENCE);
+    delay(LOOP_CADENCE);
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

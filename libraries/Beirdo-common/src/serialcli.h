@@ -9,7 +9,7 @@ class SerialCLI;
 class CLICommand {
     public:
         CLICommand(const char *command, uint8_t nargs);
-        void attach(SerialCLI *cli);
+        void attach(SerialCLI *cli_);
         uint8_t compare(const char *command);
         virtual uint8_t run(uint8_t nargs, uint8_t **args) = 0;
         uint8_t pre_run(uint8_t nargs);

@@ -16,9 +16,9 @@ Stream *CLICommand::serial(void)
     return m_cli->serial();
 }
 
-void CLICommand::attach(SerialCLI *cli)
+void CLICommand::attach(SerialCLI *cli_)
 {
-    m_cli = cli;
+    m_cli = cli_;
 }
 
 uint8_t CLICommand::compare(const char *command)

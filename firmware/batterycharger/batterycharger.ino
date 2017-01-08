@@ -31,7 +31,7 @@ int8_t lcdIndex;
 #error("Height incorrect, please fix SSD1306.h!");
 #endif
 
-SerialCLI cli(Serial);
+SerialCLI CLI(Serial);
 
 static const eeprom_t EEMEM eeprom_contents = { 0xFF, 0xFF };
 uint8_t rf_id;
@@ -79,27 +79,27 @@ class BatteryCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    cli.serial()->print("Battery ");
-                    cli.serial()->print((char *)args[0]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Battery ");
+                    CLI.serial()->print((char *)args[0]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t chargerEnable = *args[1] - 0x31;
                 if (chargerEnable < 0 || chargerEnable > 1) {
-                    cli.serial()->print("Enabled value ");
-                    cli.serial()->print((char *)args[1]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Enabled value ");
+                    CLI.serial()->print((char *)args[1]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
 
                 battery[batteryNum].setEnabled(chargerEnable);
 
-                cli.serial()->print("Battery Charger ");
-                cli.serial()->print(batteryNum);
+                CLI.serial()->print("Battery Charger ");
+                CLI.serial()->print(batteryNum);
                 if (chargerEnable) {
-                    cli.serial()->println(" enabled");
+                    CLI.serial()->println(" enabled");
                 } else {
-                    cli.serial()->println(" disabled");
+                    CLI.serial()->println(" disabled");
                 }
                 return 1;
             };
@@ -113,27 +113,27 @@ class DesulfateCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    cli.serial()->print("Battery ");
-                    cli.serial()->print((char *)args[0]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Battery ");
+                    CLI.serial()->print((char *)args[0]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t desulfateEnable = *args[1] - 0x31;
                 if (desulfateEnable < 0 || desulfateEnable > 1) {
-                    cli.serial()->print("Enabled value ");
-                    cli.serial()->print((char *)args[1]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Enabled value ");
+                    CLI.serial()->print((char *)args[1]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
 
                 battery[batteryNum].setDesulfate(desulfateEnable);
 
-                cli.serial()->print("Desulfator for battery ");
-                cli.serial()->print(batteryNum);
+                CLI.serial()->print("Desulfator for battery ");
+                CLI.serial()->print(batteryNum);
                 if (desulfateEnable) {
-                    cli.serial()->println(" enabled");
+                    CLI.serial()->println(" enabled");
                 } else {
-                    cli.serial()->println(" disabled");
+                    CLI.serial()->println(" disabled");
                 }
                 return 1;
             };
@@ -147,26 +147,26 @@ class CapacityCLICommand : public CLICommand
             { 
                 int8_t batteryNum = *args[0] - 0x31;
                 if (batteryNum < 0 || batteryNum > 1) {
-                    cli.serial()->print("Battery ");
-                    cli.serial()->print((char *)args[0]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Battery ");
+                    CLI.serial()->print((char *)args[0]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
                 int8_t capacity = (int8_t)strtoul(args[1], 0, 10);
                 if (capacity != 9 && capacity != 20) {
-                    cli.serial()->print("Enabled value ");
-                    cli.serial()->print((char *)args[1]);
-                    cli.serial()->println(" invalid");
+                    CLI.serial()->print("Enabled value ");
+                    CLI.serial()->print((char *)args[1]);
+                    CLI.serial()->println(" invalid");
                     return 0;
                 }
                 
                 battery[batteryNum].setCapacity(capacity);
 
-                cli.serial()->print("Capacity of battery ");
-                cli.serial()->print(batteryNum);
-                cli.serial()->print(" set to ");
-                cli.serial()->print(capacity);
-                cli.serial()->println(" Ah");
+                CLI.serial()->print("Capacity of battery ");
+                CLI.serial()->print(batteryNum);
+                CLI.serial()->print(" set to ");
+                CLI.serial()->print(capacity);
+                CLI.serial()->println(" Ah");
                 return 1;
             };
 };
@@ -178,9 +178,9 @@ class InitializeLogoCLICommand : public CLICommand
         InitializeLogoCLICommand(void) : CLICommand("initlogo", 0) {};
         uint8_t run(uint8_t nargs, uint8_t **args)
             { 
-                cli.serial()->println("Writing logo to FRAM");
+                CLI.serial()->println("Writing logo to FRAM");
                 oled.initializeLogo();
-                cli.serial()->println("Done");
+                CLI.serial()->println("Done");
                 return 1;
             };
 };
@@ -193,8 +193,8 @@ class GetRFIDCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
-                cli.serial()->print("Current RF ID = ");
-                cli.serial()->println(rf_id, HEX);
+                CLI.serial()->print("Current RF ID = ");
+                CLI.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -207,8 +207,8 @@ class SetRFIDCLICommand : public CLICommand
             {
                 uint8_t rf_id = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_id), rf_id);
-                cli.serial()->print("New RF ID = ");
-                cli.serial()->println(rf_id, HEX);
+                CLI.serial()->print("New RF ID = ");
+                CLI.serial()->println(rf_id, HEX);
                 return 1;
             };
 };
@@ -221,8 +221,8 @@ class GetRFUpstreamCLICommand : public CLICommand
         uint8_t run(uint8_t nargs, uint8_t **args)
             {
                 uint8_t rf_up = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
-                cli.serial()->print("Current RF Upstream = ");
-                cli.serial()->println(rf_up, HEX);
+                CLI.serial()->print("Current RF Upstream = ");
+                CLI.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -235,8 +235,8 @@ class SetRFUpstreamCLICommand : public CLICommand
             {
                 uint8_t rf_up = atou8(args[0]);
                 EEPROM.update(EEPROM_OFFSET(rf_link_upstream), rf_up);
-                cli.serial()->print("New RF Upstream = ");
-                cli.serial()->println(rf_up, HEX);
+                CLI.serial()->print("New RF Upstream = ");
+                CLI.serial()->println(rf_up, HEX);
                 return 1;
             };
 };
@@ -251,22 +251,22 @@ void setup()
     monitors[4] = new INA219PowerMonitor(0x44, 6, 10, 10, 0.5);
     monitors[5] = new INA219PowerMonitor(0x45, 6, 10, 10, 3.0);
     
-    cli.registerCommand(new GetRFIDCLICommand());
-    cli.registerCommand(new SetRFIDCLICommand());
-    cli.registerCommand(new GetRFUpstreamCLICommand());
-    cli.registerCommand(new SetRFUpstreamCLICommand());
-    cli.registerCommand(new BatteryCLICommand());
-    cli.registerCommand(new DesulfateCLICommand());
-    cli.registerCommand(new CapacityCLICommand());
-    cli.registerCommand(new InitializeLogoCLICommand());
-    cli.initialize();
+    CLI.registerCommand(new GetRFIDCLICommand());
+    CLI.registerCommand(new SetRFIDCLICommand());
+    CLI.registerCommand(new GetRFUpstreamCLICommand());
+    CLI.registerCommand(new SetRFUpstreamCLICommand());
+    CLI.registerCommand(new BatteryCLICommand());
+    CLI.registerCommand(new DesulfateCLICommand());
+    CLI.registerCommand(new CapacityCLICommand());
+    CLI.registerCommand(new InitializeLogoCLICommand());
+    CLI.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
     rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
 
     bool framInit = fram.begin();
     if (!framInit) {
-        cli.serial()->println("Can't find attached FRAM");
+        CLI.serial()->println("Can't find attached FRAM");
     }
 
     oled.begin(SSD1306_SWITCHCAPVCC);
@@ -357,7 +357,7 @@ void loop()
         }
     }
 
-    cli.handleInput();
+    CLI.handleInput();
 
     LowPower.idle(SLEEP_120MS, ADC_OFF, TIMER2_OFF, TIMER1_OFF, TIMER0_ON,
                   SPI_OFF, USART0_ON, TWI_OFF);

@@ -4,12 +4,12 @@
 #include <SHA204I2C.h>
 #include "serialcli.h"
 
-extern SerialCLI cli;
+extern SerialCLI CLI;
 SHA204I2C sha204dev;
 
 void Sha204Initialize(void)
 {
-    cli.serial()->println("Starting I2C");
+    CLI.serial()->println("Starting I2C");
     Wire.begin();
 
     // Be sure to wake up device right as I2C goes up otherwise you'll have
@@ -25,10 +25,10 @@ byte Sha204Wakeup(void)
     
     returnValue = sha204dev.resync(4, &response[0]);
     for (int i = 0; i < SHA204_RSP_SIZE_MIN; i++) {
-        cli.serial()->print(response[i], HEX);
-        cli.serial()->print(" ");
+        CLI.serial()->print(response[i], HEX);
+        CLI.serial()->print(" ");
     }
-    cli.serial()->println();
+    CLI.serial()->println();
     
     return returnValue;
 }
@@ -40,12 +40,12 @@ byte Sha204GetSerialNumber(void)
     
     returnValue = sha204dev.serialNumber(serialNumber);
     for (int i = 0; i < 9; i++) {
-        cli.serial()->print(serialNumber[i], HEX);
-        cli.serial()->print(" ");
+        CLI.serial()->print(serialNumber[i], HEX);
+        CLI.serial()->print(" ");
     }
-    cli.serial()->println();
+    CLI.serial()->println();
  
-    cli.serial()->println("-------"); 
+    CLI.serial()->println("-------"); 
     
     return returnValue;
 }
@@ -67,10 +67,10 @@ byte Sha204MacChallenge(void)
         sizeof(response), &response[0]);
 
     for (int i = 0; i < SHA204_RSP_SIZE_MAX; i++) {
-        cli.serial()->print(response[i], HEX);
-        cli.serial()->print(' ');
+        CLI.serial()->print(response[i], HEX);
+        CLI.serial()->print(' ');
     }
-    cli.serial()->println();
+    CLI.serial()->println();
     
     return ret_code;
 }

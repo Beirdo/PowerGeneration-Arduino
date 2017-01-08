@@ -48,7 +48,7 @@ uint32_t battery_voltage;
 
 RFLink *rflink = NULL;
 
-SerialCLI cli(SerialUSB);
+SerialCLI CLI(SerialUSB);
 
 ADCRead adcread;
 int16_t core_temperature;
@@ -136,19 +136,19 @@ class SetRFUpstreamCLICommand : public CLICommand
 
 void setup() 
 {
-    cli.registerCommand(new GetRFIDCLICommand());
-    cli.registerCommand(new SetRFIDCLICommand());
-    cli.registerCommand(new GetRFUpstreamCLICommand());
-    cli.registerCommand(new SetRFUpstreamCLICommand());
+    CLI.registerCommand(new GetRFIDCLICommand());
+    CLI.registerCommand(new SetRFIDCLICommand());
+    CLI.registerCommand(new GetRFUpstreamCLICommand());
+    CLI.registerCommand(new SetRFUpstreamCLICommand());
 
-    cli.initialize();
+    CLI.initialize();
 
     rf_id = EEPROM.read(EEPROM_OFFSET(rf_link_id));
     rf_upstream = EEPROM.read(EEPROM_OFFSET(rf_link_upstream));
 
     bool framInit = fram.begin();
     if (!framInit) {
-        cli.serial()->println("Can't find attached FRAM");
+        CLI.serial()->println("Can't find attached FRAM");
     }
     
     oled.begin(SSD1306_SWITCHCAPVCC);
@@ -176,7 +176,7 @@ void loop()
     uint8_t len = 0;
     static bool gprsDisabled;
 
-    cli.handleInput();
+    CLI.handleInput();
 
     lcdTicks++;
     if (lcdTicks >= SWAP_COUNT) {

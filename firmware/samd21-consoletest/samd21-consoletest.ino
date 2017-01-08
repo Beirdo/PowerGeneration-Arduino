@@ -14,6 +14,8 @@ SerialCLI cli(SerialUSB);
 void setup() 
 {
     cli.initialize();
+    pinMode(13, OUTPUT);
+    digitalWrite(13, 0);
 }
 
 void loop() 

@@ -1,32 +1,27 @@
-Arduino pins
+Arduino pins (on attached Nano module)
 
-0  - PD0 - RXD (UART) - IN
-1  - PD1 - TXD (UART) - OUT
+0  - PD0 - unused (RXD)
+1  - PD1 - unused (TXD)
 2  - PD2 - /RF_IRQ (EXT INT0) - IN
 3  - PD3 - /LI_ION_IRQ (EXT INT1) - IN
-4  - PD4 - /RF_CS - OUT
-5  - PD5 - /RF_CE - OUT
+4  - PD4 - /RF_CE - OUT
+5  - PD5 - unused
 6  - PD6 - DESULFATE_PWM (OC0A) - OUT
 7  - PD7 - /FRAM_CS - OUT
 8  - PB0 - /GPIO_IRQ (PCINT0) - IN
-9  - PB1 - unused
-10 - PB2 - unused
+9  - PB1 - ON_BATT - IN
+10 - PB2 - /RF_CE - OUT
 11 - PB3 - MOSI - OUT
 12 - PB4 - MISO - IN
 13 - PB5 - SCK - OUT
-14 - PC0 - unused
-15 - PC1 - unused
-16 - PC2 - unused
-17 - PC3 - unused
-18 - PC4 - SDA (I2C) - IN/OUT
-19 - PC5 - SCL (I2C) - IN/OUT
-20 - PB6 - unused
-21 - PB7 - unused
-22 - PC6 - /RESET
-23 - PE2 - unused
-24 - PE3 - unused
-25 - PE0 - unused
-26 - PE1 - unused
+14/A0 - PC0 - unused
+15/A1 - PC1 - unused
+16/A2 - PC2 - unused
+17/A3 - PC3 - unused
+18/A4 - PC4 - SDA (I2C) - IN/OUT
+19/A5 - PC5 - SCL (I2C) - IN/OUT
+A6 - unused
+A7 - VBATT - in
 
 Via I2C slave at address 0x20 (PCF8574)
 P0 - /STAT11 (IN, OD)
@@ -50,10 +45,10 @@ P7 - unused
 
 Via I2C slave at address 0x22 (PCF8574)
 P0 - LI_ION_EN (OUT)
-P1 - /REG_5V_PGOOD (IN)
-P2 - /LI_ION_PGOOD (IN)
-P3 - /LI_ION_STAT1 (IN)
-P4 - /LI_ION_STAT2 (IN)
+P1 - /LI_ION_PGOOD (IN)
+P2 - /LI_ION_STAT1 (IN)
+P3 - /LI_ION_STAT2 (IN)
+P4 - unused
 P5 - unused
 P6 - unused
 P7 - unused

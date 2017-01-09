@@ -1,7 +1,7 @@
 Arduino pins (on attached Nano module)
 
-0  - RXD (UART) - IN
-1  - TXD (UART) - OUT
+0  - unused (RXD)
+1  - unused (TXD)
 2  - /RF_IRQ (EXT INT0) - IN
 3  - unused
 4  - unused
@@ -14,11 +14,11 @@ Arduino pins (on attached Nano module)
 11 - MOSI - OUT
 12 - MISO - IN
 13 - SCK - OUT
-A0 - unused
-A1 - unused
-A2 - unused
-A3 - unused
-A4 - SDA (TWI)
-A5 - SCL (TWI)
+14/A0 - unused
+15/A1 - unused
+16/A2 - unused
+17/A3 - unused
+18/A4 - SDA (TWI)
+19/A5 - SCL (TWI)
 A6 - unused
 A7 - VBATT - IN

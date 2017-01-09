@@ -22,7 +22,7 @@ uint16_t lcdTicks;
 int8_t lcdIndex;
 
 #define RF_CE_PIN 5
-#define RF_CS_PIN 4
+#define RF_CS_PIN 10
 #define RF_IRQ_PIN 2
 
 #define FRAM_CS_PIN 7

@@ -1,6 +1,6 @@
 I2C Bus addresses:
 
 0x3D - SSD1306 - LCD Controller (or 3C)
-0x40 - INA219A - Monitoring - +3V3
+0x40 - INA219A - Monitoring - +5V
 0x41 - INA219A - Monitoring - +18V (output)
 0x48 - ADS1115 - Monitoring - Vin / Vmppt

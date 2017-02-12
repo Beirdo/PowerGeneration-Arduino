@@ -1,0 +1,24 @@
+Arduino pins (on attached Nano module)
+
+0  - unused (RXD)
+1  - unused (TXD)
+2  - /INT (EXT INT0) - IN
+3  - /NEWBATT (EXT INT1) - IN
+4  - unused
+5  - unused
+6  - unused
+7  - unused
+8  - POL - IN
+9  - /SHDN - OUT
+10 - /FRAM_CS - OUT
+11 - MOSI - OUT
+12 - MISO - IN
+13 - SCK - OUT
+14/A0 - unused
+15/A1 - unused
+16/A2 - unused
+17/A3 - unused
+18/A4 - SDA (TWI)
+19/A5 - SCL (TWI)
+A6 - unused
+A7 - VBATT - IN

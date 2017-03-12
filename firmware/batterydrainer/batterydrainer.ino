@@ -26,6 +26,7 @@ int8_t lcdIndex;
 
 #define NEWBATT_PIN 3
 
+// Thresholds for turning on/off the DC/DC converter (mV)
 #define THRESH_ON 900
 #define THRESH_OFF 800
 
@@ -126,22 +127,24 @@ void loop()
     uint8_t *buffer;
     uint8_t len;
 
+    supercap_voltage = adcread.readVcc();
+    battery_voltage  = adcread.mapPin(VBATT_ADC_PIN, 0, 5000);
+
+    if (shutdown && battery_voltage >= THRESH_ON) {
+        shutdown = 0;
+        digitalWrite(COUNT_SHDN_PIN, HIGH);
+    } else if (!shutdown && battery_voltage <= THRESH_OFF) {
+        shutdown = 1;
+        digitalWrite(COUNT_SHDN_PIN, LOW);
+    }
+
     lcdTicks++;
+
     if (lcdTicks >= SWAP_COUNT) {
         lcdTicks -= SWAP_COUNT;
 
         core_temperature = adcread.readCoreTemperature();
-        supercap_voltage = adcread.readVcc();
-        battery_voltage  = adcread.mapPin(VBATT_ADC_PIN, 0, 5000);
-
-        if (shutdown && battery_voltage >= THRESH_ON) {
-            shutdown = 0;
-            digitalWrite(COUNT_SHDN_PIN, HIGH);
-        } else if (!shutdown && battery_voltage <= THRESH_OFF) {
-            shutdown = 1;
-            digitalWrite(COUNT_SHDN_PIN, LOW);
-        }
-
+        
         lcdIndex = lcdDeck.nextIndex();
         lcdDeck.formatFrame(lcdIndex);
         lcdDeck.displayFrame();

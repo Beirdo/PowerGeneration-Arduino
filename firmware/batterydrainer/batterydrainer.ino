@@ -9,7 +9,7 @@
 #include "utils.h"
 
 // in ms
-#define LOOP_CADENCE 1000
+#define LOOP_CADENCE 120
 #define SWAP_TIME 2000
 #define SWAP_COUNT (SWAP_TIME / LOOP_CADENCE)
 
@@ -153,9 +153,9 @@ void loop()
                   SPI_OFF, USART0_ON, TWI_OFF);
 }
 
-// 1000 * 1 / (Gvf * Rsense)
-// = 1000 / (32.55 * 0.110)
-// = (1000 * 1000 * 1000) / (32550 * 110)
+// 1000000 * 1 / (Gvf * Rsense)
+// = 1000000 / (32.55 * 0.110)
+// = (1000000 * 100 * 100) / (3255 * 11)
 #define MICRO_COULOMB_PER_IRQ ((1000000L * 1000L) / (3255 * 11) * 10)
 
 void coulombISR(void)
@@ -186,7 +186,7 @@ void coulombISR(void)
 
 void newbattISR(void)
 {
-    // Reset the LiIon charge value to 0
+    // Reset the output charge value to 0
     output_charge_uC = 0;
     output_charge_uAh = 0;
     output_charge_uWh = 0;

@@ -6,7 +6,6 @@
 #include "adcread.h"
 #include "serialcli.h"
 #include "lcdscreen.h"
-#include "eeprom.h"
 #include "utils.h"
 
 // in ms
@@ -26,6 +25,9 @@ int8_t lcdIndex;
 #define COUNT_INT_PIN 2
 
 #define NEWBATT_PIN 3
+
+#define THRESH_ON 900
+#define THRESH_OFF 800
 
 #if (SSD1306_LCDHEIGHT != 64)
 #error("Height incorrect, please fix SSD1306.h!");
@@ -125,10 +127,10 @@ void loop()
         supercap_voltage = adcread.readVcc();
         battery_voltage  = adcread.mapPin(VBATT_ADC_PIN, 0, 5000);
 
-        if (shutdown && battery_voltage >= 900) {
+        if (shutdown && battery_voltage >= THRESH_ON) {
             shutdown = 0;
             digitalWrite(COUNT_SHDN_PIN, HIGH);
-        } else if (!shutdown && battery_voltage <= 800) {
+        } else if (!shutdown && battery_voltage <= THRESH_OFF) {
             shutdown = 1;
             digitalWrite(COUNT_SHDN_PIN, LOW);
         }
@@ -150,7 +152,7 @@ void loop()
 #define MILLI_COULOMB_PER_IRQ (1000000000L / (32550 * 110))
 void coulombISR(void)
 {
-    pol = digitalRead(COUNT_POL_PIN);
+    uint8_t pol = digitalRead(COUNT_POL_PIN);
     if (pol) {
         // High is charging the capacitors
         supercap_charge_q += MILLI_COULOMB_PER_IRQ;

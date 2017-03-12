@@ -45,10 +45,12 @@ uint32_t supercap_voltage;
 
 uint8_t shutdown;
 
-volatile uint32_t supercap_charge_q; 
-volatile uint32_t liion_charge_q; 
-volatile uint32_t supercap_charge_mAh; 
-volatile uint32_t liion_charge_mAh; 
+volatile uint32_t supercap_charge_uC;
+volatile uint32_t output_charge_uC;
+volatile uint32_t supercap_charge_uAh;
+volatile uint32_t output_charge_uAh;
+volatile uint32_t supercap_charge_uWh;
+volatile uint32_t output_charge_uWh;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
@@ -91,14 +93,19 @@ void setup()
                      (void *)&battery_voltage, formatAutoScale, "V"));
     lcdDeck.addFrame(new LCDScreen("Vcc",
                      (void *)&supercap_voltage, formatAutoScale, "V"));
-    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_q,
+    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uC,
                      formatAutoScale, "C"));
-    lcdDeck.addFrame(new LCDScreen("LiIon Charge", (void *)&liion_charge_q,
+    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uC,
                      formatAutoScale, "C"));
-    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_mAh,
+    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uAh,
                      formatAutoScale, "Ah"));
-    lcdDeck.addFrame(new LCDScreen("LiIon Charge", (void *)&liion_charge_mAh,
+    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uAh,
                      formatAutoScale, "Ah"));
+    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uWh,
+                     formatAutoScale, "Wh"));
+    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uWh,
+                     formatAutoScale, "Wh"));
+
 
     lcdTicks = 0;
 
@@ -149,29 +156,40 @@ void loop()
 // 1000 * 1 / (Gvf * Rsense)
 // = 1000 / (32.55 * 0.110)
 // = (1000 * 1000 * 1000) / (32550 * 110)
-#define MILLI_COULOMB_PER_IRQ (1000000000L / (32550 * 110))
+#define MICRO_COULOMB_PER_IRQ ((1000000L * 1000L) / (3255 * 11) * 10)
+
 void coulombISR(void)
 {
     uint8_t pol = digitalRead(COUNT_POL_PIN);
+    uint32_t old_output_uAh = output_charge_uAh;
+
     if (pol) {
-        // High is charging the capacitors
-        supercap_charge_q += MILLI_COULOMB_PER_IRQ;
+        // High is charging the capacitors, assume neglible power going to output
+        supercap_charge_uC += MICRO_COULOMB_PER_IRQ;
     } else {
-        // Low is discharging the capacitor, assume all power going to Li-Ion
-        supercap_charge_q = max(0, supercap_charge_q - MILLI_COULOMB_PER_IRQ);
-        liion_charge_q += MILLI_COULOMB_PER_IRQ;
+        // Low is discharging the capacitor, assume all power going to output
+        supercap_charge_uC = uint32_t(max(0, int32_t(supercap_charge_uC) - MICRO_COULOMB_PER_IRQ));
+        output_charge_uC += MICRO_COULOMB_PER_IRQ;
     }
 
-    // Convert from millicoulomb to mAh
-    supercap_charge_mAh = supercap_charge_q / 3600;
-    liion_charge_mAh = liion_charge_q / 3600;
+    // Convert from x [uC] to y [uAh]
+    supercap_charge_uAh = supercap_charge_uC / 3600;
+    output_charge_uAh = output_charge_uC / 3600;
+
+    // Convert from x [uAh] @ y [mV] to z [uWh]
+    // 1 [uAh] * 1 [mV] = 1 [nWh]
+    // 1000 [mAh] * 1 [mV] = 1000 [uWh]
+    // 1 [mAh] * 1 [mV] = 1 [uWh]
+    supercap_charge_uWh = (supercap_charge_uAh / 1000) * supercap_voltage;
+    output_charge_uWh += ((output_charge_uAh - old_output_uAh) / 1000) * supercap_voltage;
 }
 
 void newbattISR(void)
 {
     // Reset the LiIon charge value to 0
-    liion_charge_q = 0;
-    liion_charge_mAh = 0;
+    output_charge_uC = 0;
+    output_charge_uAh = 0;
+    output_charge_uWh = 0;
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4

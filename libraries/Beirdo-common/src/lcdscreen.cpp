@@ -27,15 +27,32 @@ static uint8_t digitCount(int32_t value, bool &negative)
     }
 
     uint8_t digitcount = 0;
-    for (; tempvalue; tempvalue /= 10) {
+    for (; tempvalue; tempvalue = tempvalue / 10L) {
         digitcount++;
     }
 
     return digitcount;
 }
 
-void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
-                     uint8_t *units)
+void formatAutoScaleMilli(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                          uint8_t *units)
+{
+    formatAutoScaleCommon(valptr, buffer, maxlen, units, 0);
+}
+
+void formatAutoScaleMicro(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                          uint8_t *units)
+{
+    formatAutoScaleCommon(valptr, buffer, maxlen, units, 1);
+}
+
+const char autoFormatScale[2][3] = {
+    { 'm', '\0', 'k' },
+    { 'u', 'm', '\0' }
+};
+
+void formatAutoScaleCommon(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                           uint8_t *units, uint8_t unitSet)
 {
     int32_t value = *(int32_t *)valptr;
 
@@ -49,25 +66,22 @@ void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
     uint8_t digitcount = digitCount(value, negative);
 
     char subUnit = digitcount / 3;
-
-    switch (subUnit) {
-        case 0:
-            subUnit = 'm';
-            break;
-        case 1:
-            subUnit = '\0';
-            break;
-        case 2:
-            subUnit = 'k';
-            break;
+    if (subUnit * 3 == digitcount) {
+        subUnit--;
     }
+
+    subUnit = constrain(subUnit, 0, 2);
+    bool minUnit = (subUnit == 0);
+
+    unitSet = constrain(unitSet, 0, 1);
+
+    subUnit = autoFormatScale[unitSet][subUnit];
 
     char precision = 4;
     char digits = digitcount % 3;
     digits = (digits ? digits : 3);
 
-    char decimals = (precision > digits && subUnit != 'm' ?
-                     precision - digits : 0);
+    char decimals = (precision > digits && !minUnit ? precision - digits : 0);
     digits += decimals;
 
     long scale;
@@ -208,6 +222,8 @@ void LCDDeck::displayString(int16_t &y, int16_t &h, uint8_t *str, uint8_t size)
     for (uint8_t *ch = str; *ch; ch++) {
         m_display->write(*ch);
     }
+
+    h = size * 8;
 }
 
 void LCDDeck::displayIndicator(void)
@@ -245,7 +261,6 @@ void LCDDeck::displayFrame(void)
     // Leave 4 pixels extra, put value, centered
     m_display->setTextSize(2);
     y += h + 4;
-    displayString(y, h, m_data_buffer, 2);
 
     // Put screen index indicator at bottom line, centered
     displayIndicator();
@@ -283,27 +298,30 @@ LCDScreen *LCDDeck::getFrame(uint8_t index)
     return frame;
 }
 
-#define BATTERY_X (m_width - 20)
-#define BATTERY_Y 0
+#define BATTERY_X (m_width - 22)
+#define BATTERY_Y 1
 void LCDDeck::displayBatteryLevel(void)
 {
-    m_display->drawRect(3 + BATTERY_X, 0 + BATTERY_Y, 4, 2, WHITE);
-    m_display->drawRect(0 + BATTERY_X, 2 + BATTERY_Y, 10, 20, WHITE);
-    m_display->drawRect(2 + BATTERY_X, 4 + BATTERY_Y, 6, 16, BLACK);
+    if (!m_batterySet) {
+        return;
+    }
+    m_display->drawRect(0 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
+    m_display->drawRect(2 + BATTERY_X, 0 + BATTERY_Y, 20, 10, WHITE);
+    m_display->drawRect(4 + BATTERY_X, 2 + BATTERY_Y, 16, 6, BLACK);
     if (m_batteryLevel > 85) {
-        m_display->drawRect(3 + BATTERY_X, 5 + BATTERY_Y, 4, 2, WHITE);
+        m_display->drawRect(5 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
     }
     if (m_batteryLevel > 65) {
-        m_display->drawRect(3 + BATTERY_X, 8 + BATTERY_Y, 4, 2, WHITE);
+        m_display->drawRect(8 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
     }
     if (m_batteryLevel > 45) {
-        m_display->drawRect(3 + BATTERY_X, 11 + BATTERY_Y, 4, 2, WHITE);
+        m_display->drawRect(11 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
     }
     if (m_batteryLevel > 25) {
-        m_display->drawRect(3 + BATTERY_X, 14 + BATTERY_Y, 4, 2, WHITE);
+        m_display->drawRect(14 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
     }
     if (m_batteryLevel > 5) {
-        m_display->drawRect(3 + BATTERY_X, 17 + BATTERY_Y, 4, 2, WHITE);
+        m_display->drawRect(17 + BATTERY_X, 3 + BATTERY_Y, 2, 4, WHITE);
     }
 }
 

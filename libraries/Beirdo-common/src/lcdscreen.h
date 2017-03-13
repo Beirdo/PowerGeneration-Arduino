@@ -7,8 +7,12 @@
 
 typedef void (*formatter_t)(void *, uint8_t *, uint8_t, uint8_t *);
 
-void formatAutoScale(void *valptr, uint8_t *buffer, uint8_t maxlen,
-                     uint8_t *units);
+void formatAutoScaleMilli(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                          uint8_t *units);
+void formatAutoScaleMicro(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                          uint8_t *units);
+void formatAutoScaleCommon(void *valptr, uint8_t *buffer, uint8_t maxlen,
+                           uint8_t *units, uint8_t unitSet);
 void formatTemperature(void *valptr, uint8_t *buffer, uint8_t maxlen,
                        uint8_t *units);
 

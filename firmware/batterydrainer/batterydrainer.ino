@@ -41,17 +41,17 @@ SerialCLI CLI(Serial);
 
 ADCRead adcread;
 int16_t core_temperature;
-uint32_t battery_voltage;
-uint32_t supercap_voltage;
+int32_t battery_voltage = 0;
+int32_t supercap_voltage = 0;
 
 uint8_t shutdown;
 
-volatile uint32_t supercap_charge_uC;
-volatile uint32_t output_charge_uC;
-volatile uint32_t supercap_charge_uAh;
-volatile uint32_t output_charge_uAh;
-volatile uint32_t supercap_charge_uWh;
-volatile uint32_t output_charge_uWh;
+volatile int32_t supercap_charge_uC = 0;
+volatile int32_t output_charge_uC = 0;
+volatile int32_t supercap_charge_uAh = 0;
+volatile int32_t output_charge_uAh = 0;
+volatile int32_t supercap_charge_uWh = 0;
+volatile int32_t output_charge_uWh = 0;
 
 Adafruit_FRAM_SPI fram(FRAM_CS_PIN);
 SSD1306 oled;
@@ -91,21 +91,21 @@ void setup()
     lcdDeck.addFrame(new LCDScreen("Core Temp",
                      (void *)&core_temperature, formatTemperature, "C"));
     lcdDeck.addFrame(new LCDScreen("Battery",
-                     (void *)&battery_voltage, formatAutoScale, "V"));
+                     (void *)&battery_voltage, formatAutoScaleMilli, "V"));
     lcdDeck.addFrame(new LCDScreen("Vcc",
-                     (void *)&supercap_voltage, formatAutoScale, "V"));
-    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uC,
-                     formatAutoScale, "C"));
-    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uC,
-                     formatAutoScale, "C"));
-    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uAh,
-                     formatAutoScale, "Ah"));
-    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uAh,
-                     formatAutoScale, "Ah"));
-    lcdDeck.addFrame(new LCDScreen("Cap Charge", (void *)&supercap_charge_uWh,
-                     formatAutoScale, "Wh"));
-    lcdDeck.addFrame(new LCDScreen("Output Charge", (void *)&output_charge_uWh,
-                     formatAutoScale, "Wh"));
+                     (void *)&supercap_voltage, formatAutoScaleMilli, "V"));
+    lcdDeck.addFrame(new LCDScreen("SuperCap", (void *)&supercap_charge_uC,
+                     formatAutoScaleMicro, "C"));
+    lcdDeck.addFrame(new LCDScreen("Output", (void *)&output_charge_uC,
+                     formatAutoScaleMicro, "C"));
+    lcdDeck.addFrame(new LCDScreen("SuperCap", (void *)&supercap_charge_uAh,
+                     formatAutoScaleMicro, "Ah"));
+    lcdDeck.addFrame(new LCDScreen("Output", (void *)&output_charge_uAh,
+                     formatAutoScaleMicro, "Ah"));
+    lcdDeck.addFrame(new LCDScreen("SuperCap", (void *)&supercap_charge_uWh,
+                     formatAutoScaleMicro, "Wh"));
+    lcdDeck.addFrame(new LCDScreen("Output", (void *)&output_charge_uWh,
+                     formatAutoScaleMicro, "Wh"));
 
 
     lcdTicks = 0;
@@ -144,6 +144,7 @@ void loop()
         lcdTicks -= SWAP_COUNT;
 
         core_temperature = adcread.readCoreTemperature();
+        lcdDeck.setBatteryLevel(supercap_voltage, 2700, 5000);
         
         lcdIndex = lcdDeck.nextIndex();
         lcdDeck.formatFrame(lcdIndex);
@@ -164,14 +165,14 @@ void loop()
 void coulombISR(void)
 {
     uint8_t pol = digitalRead(COUNT_POL_PIN);
-    uint32_t old_output_uAh = output_charge_uAh;
+    volatile int32_t old_output_uAh = output_charge_uAh;
 
     if (pol) {
         // High is charging the capacitors, assume neglible power going to output
         supercap_charge_uC += MICRO_COULOMB_PER_IRQ;
     } else {
         // Low is discharging the capacitor, assume all power going to output
-        supercap_charge_uC = uint32_t(max(0, int32_t(supercap_charge_uC) - MICRO_COULOMB_PER_IRQ));
+        supercap_charge_uC = max(0, supercap_charge_uC - MICRO_COULOMB_PER_IRQ);
         output_charge_uC += MICRO_COULOMB_PER_IRQ;
     }
 
@@ -183,8 +184,18 @@ void coulombISR(void)
     // 1 [uAh] * 1 [mV] = 1 [nWh]
     // 1000 [mAh] * 1 [mV] = 1000 [uWh]
     // 1 [mAh] * 1 [mV] = 1 [uWh]
-    supercap_charge_uWh = (supercap_charge_uAh / 1000) * supercap_voltage;
-    output_charge_uWh += ((output_charge_uAh - old_output_uAh) / 1000) * supercap_voltage;
+
+    if (supercap_charge_uAh >= 1000000) {
+        supercap_charge_uWh = (supercap_charge_uAh / 1000) * supercap_voltage;
+    } else {
+        supercap_charge_uWh = (supercap_charge_uAh * supercap_voltage) / 1000;
+    }
+
+    if (output_charge_uAh >= 1000000) {
+        output_charge_uWh += ((output_charge_uAh - old_output_uAh) / 1000) * supercap_voltage;
+    } else {
+        output_charge_uWh += ((output_charge_uAh - old_output_uAh) * supercap_voltage) / 1000;
+    }
 }
 
 void newbattISR(void)
@@ -196,3 +207,4 @@ void newbattISR(void)
 }
 
 // vim:ts=4:sw=4:ai:et:si:sts=4
+

@@ -43,3 +43,6 @@
 [submodule "libraries/Arduino-FRAM-Cache"]
 	path = libraries/Arduino-FRAM-Cache
 	url = git@github.com:Beirdo/Arduino-FRAM-Cache.git
+[submodule "libraries/Arduino-HD44780-I2C"]
+	path = libraries/Arduino-HD44780-I2C
+	url = git@github.com:Beirdo/Arduino-HD44780-I2C.git

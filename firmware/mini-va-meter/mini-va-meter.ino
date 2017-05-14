@@ -10,6 +10,7 @@
 #define BLANK_TIME 2000
 #define BLANK_COUNT (BLANK_TIME / LOOP_CADENCE)
 
+uint32_t blankTicks;
 uint32_t current;
 uint32_t voltage;
 uint8_t enabled;
@@ -24,6 +25,7 @@ void setup(void)
     current = 0;
     voltage = 0;
     enabled = 0;
+    blankTicks = 0;
 }
 
 void loop(void)
